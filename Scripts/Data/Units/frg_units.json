@@ -1,114 +1,114 @@
 {
   "frg_leopard1a5": {
-    "name": "豹1A5 主战坦克",
-    "class_type": "mbt",
-    "visuals": {
-      "icon": "icon_mbt_blue",
-      "model_scale": 1.0
-    },
-    "combat_stats": {
-      "max_hp": 8,
-      "attack": 1.5,
-      "defense": 2.5
-    },
-    "system_vars": {
-      "cost": 125,
-      "base_weight": 10
-    },
-    "tactical_tags": {
-      "domain": "Ground",
-      "capabilities": ["AntiTank", "Armor"]
-    }
+	"name": "豹1A5 主战坦克",
+	"class_type": "mbt",
+	"visuals": {
+	  "icon": "icon_mbt_blue",
+	  "model_scale": 1.0
+	},
+	"combat_stats": {
+	  "max_hp": 8,
+	  "attack": 1.5,
+	  "defense": 2.5
+	},
+	"system_vars": {
+	  "cost": 125,
+	  "base_weight": 10
+	},
+	"tactical_tags": {
+	  "domain": "Ground",
+	  "capabilities": ["AntiTank", "Armor"]
+	}
   },
 
   "frg_marder1A1": {
-    "name": "Marder1A1 步兵战车",
-    "class_type": "ifv",
-    "visuals": {
-      "icon": "icon_ifv_blue",
-      "model_scale": 1.0
-    },
-    "combat_stats": {
-      "max_hp": 8,
-      "attack": 1.2,
-      "defense": 1.5
-    },
-    "system_vars": {
-      "cost": 40,
-      "base_weight": 8
-    },
-    "tactical_tags": {
-      "domain": "Ground",
-      "capabilities": ["LightAntiTank", "Armor"]
-    }
+	"name": "Marder1A1 步兵战车",
+	"class_type": "ifv",
+	"visuals": {
+	  "icon": "icon_ifv_blue",
+	  "model_scale": 1.0
+	},
+	"combat_stats": {
+	  "max_hp": 8,
+	  "attack": 1.2,
+	  "defense": 1.5
+	},
+	"system_vars": {
+	  "cost": 40,
+	  "base_weight": 8
+	},
+	"tactical_tags": {
+	  "domain": "Ground",
+	  "capabilities": ["LightAntiTank", "Armor"]
+	}
   },
 
   "frg_marder1A1_milan": {
-    "name": "Marder1A1 步兵战车（带米兰反坦克导弹）",
-    "class_type": "ifv",
-    "visuals": {
-      "icon": "icon_ifv_blue",
-      "model_scale": 1.0
-    },
-    "combat_stats": {
-      "max_hp": 8,
-      "attack": 1.3,
-      "defense": 1.8
-    },
-    "system_vars": {
-      "cost": 50,
-      "base_weight": 8
-    },
-    "tactical_tags": {
-      "domain": "Ground",
-      "capabilities": ["AntiTank", "Armor"]
-    }
+	"name": "Marder1A1 步兵战车（带米兰反坦克导弹）",
+	"class_type": "ifv",
+	"visuals": {
+	  "icon": "icon_ifv_blue",
+	  "model_scale": 1.0
+	},
+	"combat_stats": {
+	  "max_hp": 8,
+	  "attack": 1.3,
+	  "defense": 1.8
+	},
+	"system_vars": {
+	  "cost": 50,
+	  "base_weight": 8
+	},
+	"tactical_tags": {
+	  "domain": "Ground",
+	  "capabilities": ["AntiTank", "Armor"]
+	}
   },
 
   "frg_Gepard1A1": {
-    "name": "Gepard1A1 自行高射炮（联邦德国）",
-    "class_type": "spaag",
-    "visuals": {
-      "icon": "icon_spaag_blue",
-      "model_scale": 1.0
-    },
-    "combat_stats": {
-      "max_hp": 7,
-      "attack": 1.2,
-      "defense": 1.2
-    },
-    "aa_area": 4,
-    "system_vars": {
-      "cost": 85,
-      "base_weight": 4
-    },
-    "tactical_tags": {
-      "domain": "Rear",
-      "capabilities": ["Armor"]
-    }
+	"name": "Gepard1A1 自行高射炮（联邦德国）",
+	"class_type": "spaag",
+	"visuals": {
+	  "icon": "icon_spaag_blue",
+	  "model_scale": 1.0
+	},
+	"combat_stats": {
+	  "max_hp": 7,
+	  "attack": 1.2,
+	  "defense": 1.2
+	},
+	"aa_area": 4,
+	"system_vars": {
+	  "cost": 85,
+	  "base_weight": 4
+	},
+	"tactical_tags": {
+	  "domain": "Rear",
+	  "capabilities": ["Armor"]
+	}
   },
 
   "frg_roland3": {
-    "name": "Roland3 防空导弹系统（联邦德国）",
-    "class_type": "sam_tac",
-    "visuals": {
-      "icon": "icon_sam_tac_blue",
-      "model_scale": 1.0
-    },
-    "combat_stats": {
-      "max_hp": 6,
-      "attack": 0.2,
-      "defense": 0.2
-    },
-    "aa_area": 7,
-    "system_vars": {
-      "cost": 140,
-      "base_weight": 4
-    },
-    "tactical_tags": {
-      "domain": "Rear",
-      "capabilities": [""]
-    }
+	"name": "Roland3 防空导弹系统（联邦德国）",
+	"class_type": "sam_tac",
+	"visuals": {
+	  "icon": "icon_sam_tac_blue",
+	  "model_scale": 1.0
+	},
+	"combat_stats": {
+	  "max_hp": 6,
+	  "attack": 0.2,
+	  "defense": 0.2
+	},
+	"aa_area": 7,
+	"system_vars": {
+	  "cost": 140,
+	  "base_weight": 4
+	},
+	"tactical_tags": {
+	  "domain": "Rear",
+	  "capabilities": [""]
+	}
   }
   
 }

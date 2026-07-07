@@ -1,0 +1,32 @@
+{
+  "faction_blue": [
+    {
+      "instance_id": "1st_battalion_7th_cav",
+      "template_id": "us_mech_battalion_standard",
+      "x": 12,
+      "y": 15,
+      "structure_overrides": {
+        "remove_nodes": [
+          "companies/Company_A/platoons/Platoon_A3"  
+        ],
+        "add_nodes": {
+          "companies/Company_HQ/platoons/us_m1a1_abrams_cp_1": {
+            "type": "standard",
+            "units": {
+              "tank_cp_1": { "unit_id": "us_m1a1_abrams_cp", "current_hp": 12, "max_hp": 12 }
+            }
+          }
+        }
+      },
+      "state_overrides": {
+        "Company_A": {
+          "Platoon_A1": {
+            "vehicle": {
+              "veh_1": { "current_hp": 0 } 
+            }
+          }
+        }
+      }
+    }
+  ]
+}

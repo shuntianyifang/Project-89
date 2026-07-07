@@ -24,5 +24,9 @@ namespace ColdWarWargame.Core
         public int Cost => Template.SystemVars.Cost;
         public int BaseWeight => Template.SystemVars.BaseWeight;
         public bool HasCapability(string cap) => Template.TacticalTags.Capabilities.Contains(cap);
+
+        public string NodeId { get; set; }   
+        public string Category { get; set; } 
+
     }
 }

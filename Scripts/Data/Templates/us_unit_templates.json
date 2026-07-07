@@ -1,0 +1,69 @@
+{
+  "us_mech_battalion_standard": {
+	"name": "美军标准机械化步兵营",
+	"visuals": {
+	  "icon": "icon_ifv_blue",
+	  "model_scale": 1.0
+	},
+	"companies": {
+	  "Company_A": {
+		"name": "A连 (装甲步兵)",
+		"platoons": {
+		  "Platoon_A1": {
+			"type": "composite",
+			"infantry": {
+			  "squad_1": { "unit_id": "us_mech_rifles", "current_hp": 9, "max_hp": 9 },
+			  "squad_2": { "unit_id": "us_mech_rifles", "current_hp": 9, "max_hp": 9 },
+			  "squad_3": { "unit_id": "us_mech_rifles", "current_hp": 9, "max_hp": 9 }
+			},
+			"vehicle": {
+			  "veh_1": { "unit_id": "us_m2a2_bradley", "current_hp": 8, "max_hp": 8 },
+			  "veh_2": { "unit_id": "us_m2a2_bradley", "current_hp": 8, "max_hp": 8 },
+			  "veh_3": { "unit_id": "us_m2a2_bradley", "current_hp": 8, "max_hp": 8 }
+			}
+		  },
+		  "Platoon_A2": {
+			"type": "composite",
+			"infantry": {
+			  "squad_1": { "unit_id": "us_mech_rifles", "current_hp": 9, "max_hp": 9 },
+			  "squad_2": { "unit_id": "us_mech_rifles", "current_hp": 9, "max_hp": 9 },
+			  "squad_3": { "unit_id": "us_mech_rifles", "current_hp": 9, "max_hp": 9 }
+			},
+			"vehicle": {
+			  "veh_1": { "unit_id": "us_m2a2_bradley", "current_hp": 8, "max_hp": 8 },
+			  "veh_2": { "unit_id": "us_m2a2_bradley", "current_hp": 8, "max_hp": 8 },
+			  "veh_3": { "unit_id": "us_m2a2_bradley", "current_hp": 8, "max_hp": 8 }
+			}
+		  },
+		  "Platoon_A3": {
+			"type": "composite",
+			"infantry": {
+			  "squad_1": { "unit_id": "us_mech_rifles", "current_hp": 9, "max_hp": 9 },
+			  "squad_2": { "unit_id": "us_mech_rifles", "current_hp": 9, "max_hp": 9 },
+			  "squad_3": { "unit_id": "us_mech_rifles", "current_hp": 9, "max_hp": 9 }
+			},
+			"vehicle": {
+			  "veh_1": { "unit_id": "us_m2a2_bradley", "current_hp": 8, "max_hp": 8 },
+			  "veh_2": { "unit_id": "us_m2a2_bradley", "current_hp": 8, "max_hp": 8 },
+			  "veh_3": { "unit_id": "us_m2a2_bradley", "current_hp": 8, "max_hp": 8 }
+			}
+		  }
+		}
+	  },
+	  "Company_C": {
+		"name": "C连 (坦克连)",
+		"platoons": {
+		  "Platoon_C1": {
+			"type": "standard",
+			"units": {
+			  "tank_1": { "unit_id": "us_m1a1_abrams", "current_hp": 12, "max_hp": 12 },
+			  "tank_2": { "unit_id": "us_m1a1_abrams", "current_hp": 12, "max_hp": 12 },
+			  "tank_3": { "unit_id": "us_m1a1_abrams", "current_hp": 12, "max_hp": 12 },
+			  "tank_4": { "unit_id": "us_m1a1_abrams", "current_hp": 12, "max_hp": 12 }
+			}
+		  }
+		}
+	  }
+	}
+  }
+}
