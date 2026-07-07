@@ -1,0 +1,26 @@
+{
+
+  "fra_roland3": {
+    "name": "Roland3 防空导弹系统（法国）",
+    "class_type": "sam_tac",
+    "visuals": {
+      "icon": "icon_sam_tac_blue",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 6,
+      "attack": 0.2,
+      "defense": 0.2
+    },
+    "aa_area": 7,
+    "system_vars": {
+      "cost": 140,
+      "base_weight": 4
+    },
+    "tactical_tags": {
+      "domain": "Rear",
+      "capabilities": [""]
+    }
+  }
+
+}

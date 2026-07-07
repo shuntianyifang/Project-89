@@ -1,0 +1,23 @@
+{
+  "gdr_t55a": {
+    "name": "T-55A 主战坦克（民主德国）",
+    "class_type": "mbt",
+    "visuals": {
+      "icon": "icon_mbt_red",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 9,
+      "attack": 1.7,
+      "defense": 1.7
+    },
+    "system_vars": {
+      "cost": 90,
+      "base_weight": 10
+    },
+    "tactical_tags": {
+      "domain": "Ground",
+      "capabilities": ["AntiTank", "Armor"]
+    }
+  }
+}

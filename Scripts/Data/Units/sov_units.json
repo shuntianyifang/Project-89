@@ -1,0 +1,23 @@
+{
+  "sov_motostrelkovy": {
+    "name": "苏联摩托步兵",
+    "class_type": "infantry",
+    "visuals": {
+      "icon": "icon_inf_red",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 9,
+      "attack": 1.1,
+      "defense": 1.1
+    },
+    "system_vars": {
+      "cost": 45,
+      "base_weight": 10
+    },
+    "tactical_tags": {
+      "domain": "Ground",
+      "capabilities": ["AntiTank"]
+    }
+  }
+}
