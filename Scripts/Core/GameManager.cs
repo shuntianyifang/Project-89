@@ -12,6 +12,8 @@ public partial class GameManager : Node
         TemplateDatabase.Initialize("res://Scripts/Data/Templates");
 
         GD.Print("系统引擎初始化完毕。");
+
+        ColdWarWargame.Core.Combat.CombatResolverTests.RunAll();
         
         // 2. 试运行兵工厂：下线一个美军标准机步营
         var testBat = BattalionFactory.CreateFullBattalion("1st_bat_7th_cav", "us_mech_battalion_standard", 1);

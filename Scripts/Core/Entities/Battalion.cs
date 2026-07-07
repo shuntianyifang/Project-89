@@ -58,7 +58,25 @@ namespace ColdWarWargame.Core.Entities
             return (baseAttack * GetOrganizationalDebuff()) / 10f; // 聚合缩放常量 K=10[cite: 3]
         }
         
-        // 防御力同理... (GetActualDefense)
+        // 计算面板防御力：与攻击力对称实现
+        public float GetActualDefense()
+        {
+            float baseDef = GetAllSubUnits()
+                .Where(u => u.SurvivalState == 1)
+                .Sum(u => u.Template.CombatStats.Defense * u.SurvivalState);
+
+            return (baseDef * GetOrganizationalDebuff()) / 10f; // 使用相同的聚合缩放常量 K=10
+        }
+
+        public int GetTotalCurrentHp()
+        {
+            return GetAllSubUnits().Sum(u => u.CurrentHp);
+        }
+
+        public int GetTotalMaxHp()
+        {
+            return GetAllSubUnits().Sum(u => u.Template.CombatStats.MaxHp);
+        }
         
         // 4. 视野聚合规则[cite: 3]
         public int CalculateVisionRange()
@@ -74,5 +92,6 @@ namespace ColdWarWargame.Core.Entities
             
             return 6; 
         }
+
     }
 }
