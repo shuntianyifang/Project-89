@@ -8,8 +8,8 @@ public partial class GameManager : Node
     public override void _Ready()
     {
         // 1. 启动数据库引擎
-        UnitDatabase.Initialize("res://Data/Units");
-        TemplateDatabase.Initialize("res://Data/Templates");
+        UnitDatabase.Initialize("res://Scripts/Data/Units");
+        TemplateDatabase.Initialize("res://Scripts/Data/Templates");
 
         GD.Print("系统引擎初始化完毕。");
         
