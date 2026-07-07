@@ -1,0 +1,68 @@
+﻿{
+  "sov_motorifle_battalion": {
+    "name": "苏军摩步营",
+    "visuals": {
+      "icon": "icon_mr_red",
+      "model_scale": 1.0
+    },
+    "companies": {
+      "Company_A": {
+        "name": "A连（摩步）",
+        "platoons": {
+          "Platoon_A1": {
+            "type": "composite",
+            "infantry": {
+              "squad_1": { "unit_id": "sov_motostrelkovy", "max_hp": 9 },
+              "squad_2": { "unit_id": "sov_motostrelkovy", "max_hp": 9 },
+              "squad_3": { "unit_id": "sov_motostrelkovy", "max_hp": 9 }
+            },
+            "vehicle": {
+              "veh_1": { "unit_id": "sov_bmp1", "max_hp": 7 },
+              "veh_2": { "unit_id": "sov_bmp1", "max_hp": 7 },
+              "veh_3": { "unit_id": "sov_bmp1", "max_hp": 7 }
+            }
+          },
+          "Platoon_A2": {
+            "type": "composite",
+            "infantry": {
+              "squad_1": { "unit_id": "sov_motostrelkovy", "max_hp": 9 },
+              "squad_2": { "unit_id": "sov_motostrelkovy", "max_hp": 9 },
+              "squad_3": { "unit_id": "sov_motostrelkovy", "max_hp": 9 }
+            },
+            "vehicle": {
+              "veh_1": { "unit_id": "sov_bmp1", "max_hp": 7 },
+              "veh_2": { "unit_id": "sov_bmp1", "max_hp": 7 },
+              "veh_3": { "unit_id": "sov_bmp1", "max_hp": 7 }
+            }
+          },
+          "Platoon_A3": {
+            "type": "composite",
+            "infantry": {
+              "squad_1": { "unit_id": "sov_motostrelkovy", "max_hp": 9 },
+              "squad_2": { "unit_id": "sov_motostrelkovy", "max_hp": 9 },
+              "squad_3": { "unit_id": "sov_motostrelkovy", "max_hp": 9 }
+            },
+            "vehicle": {
+              "veh_1": { "unit_id": "sov_bmp1", "max_hp": 7 },
+              "veh_2": { "unit_id": "sov_bmp1", "max_hp": 7 },
+              "veh_3": { "unit_id": "sov_bmp1", "max_hp": 7 }
+            }
+          }
+        }
+      },
+      "Company_C": {
+        "name": "C连（坦克）",
+        "platoons": {
+          "Platoon_C1": {
+            "type": "standard",
+            "units": {
+              "tank_1": { "unit_id": "gdr_t55a", "max_hp": 9 },
+              "tank_2": { "unit_id": "gdr_t55a", "max_hp": 9 },
+              "tank_3": { "unit_id": "gdr_t55a", "max_hp": 9 }
+            }
+          }
+        }
+      }
+    }
+  }
+}

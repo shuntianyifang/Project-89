@@ -1,7 +1,8 @@
-using Godot;
+﻿using Godot;
 using ColdWarWargame.Data;
 using ColdWarWargame.Data.TOE;
 using ColdWarWargame.Core.Factories;
+using ColdWarWargame.Scenarios;
 
 public partial class GameManager : Node
 {
@@ -13,19 +14,37 @@ public partial class GameManager : Node
 
         GD.Print("系统引擎初始化完毕。");
 
+        // 2. 运行已有测试
         ColdWarWargame.Core.Combat.CombatResolverTests.RunAll();
-        
-        // 2. 试运行兵工厂：下线一个美军标准机步营
-        var testBat = BattalionFactory.CreateFullBattalion("1st_bat_7th_cav", "us_mech_battalion_standard", 1);
-        
-        // 3. 打印核心验算数据
-        GD.Print($"=== 兵工厂测试报告 ===");
-        GD.Print($"营名称: {testBat.Name} (阵营: {testBat.Faction})");
-        GD.Print($"下辖连队数: {testBat.Companies.Count}");
-        GD.Print($"全营总子单位数: {System.Linq.Enumerable.Count(testBat.GetAllSubUnits())}");
-        GD.Print($"初始战斗效能比 (CE): {testBat.CalculateCE() * 100}%");
-        GD.Print($"初始面板攻击力: {testBat.GetActualAttack()}");
-        GD.Print($"侦察视野范围: {testBat.CalculateVisionRange()} 格");
-        GD.Print($"======================");
+        ColdWarWargame.Battlefield.GridTests.RunAll();
+
+        // 3. 加载 Fulda Gap 场景
+        GD.Print("");
+        GD.Print("========== 加载 Fulda Gap 场景 ==========");
+        var scenario = new FuldaGapScenario();
+        scenario.LoadOOB(
+            "res://Scripts/Data/Scenarios/Fulda_Gap/oob_blue.json",
+            "res://Scripts/Data/Scenarios/Fulda_Gap/oob_red.json"
+        );
+        scenario.PrintSummary();
+
+        // 4. 演示移动范围
+        GD.Print("");
+        GD.Print("========== 移动演示 ==========");
+        // 蓝军机步营（平原上，AP=12）
+        scenario.PrintReachableFor("美军机步营", scenario.BlueBattalions[0].pos, 12f);
+        // 红军摩步营（平原上，AP=12）
+        scenario.PrintReachableFor("苏军摩步营", scenario.RedBattalions[0].pos, 12f);
+
+        // 5. 演示战斗
+        GD.Print("");
+        GD.Print("========== 战斗演示 ==========");
+        // 蓝军坦克营(西德) 进攻 红军摩步营(苏军)
+        scenario.RunDemoCombat(
+            scenario.BlueBattalions[1].bat, scenario.BlueBattalions[1].pos,
+            scenario.RedBattalions[0].bat, scenario.RedBattalions[0].pos
+        );
+
+        GD.Print("场景初始化完成。");
     }
 }

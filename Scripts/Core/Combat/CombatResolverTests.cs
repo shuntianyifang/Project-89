@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Collections.Generic;
 using ColdWarWargame.Core.Entities;
@@ -7,21 +7,20 @@ using Godot;
 
 namespace ColdWarWargame.Core.Combat
 {
-    // 简单的内建测试运行器：在 GameManager 中调用 CombatResolverTests.RunAll();
     public static class CombatResolverTests
     {
         static int fails = 0;
         static void Assert(bool cond, string msg)
         {
-            if (!cond)
-            {
-                fails++;
-                GD.PrintErr("[TEST FAIL] " + msg);
-            }
-            else
-            {
-                GD.Print("[TEST PASS] " + msg);
-            }
+            if (!cond) { fails++; GD.PrintErr("[TEST FAIL] " + msg); }
+            else { GD.Print("[TEST PASS] " + msg); }
+        }
+
+        static void AssertFloat(float actual, float expected, string msg, float eps = 0.01f)
+        {
+            bool ok = Math.Abs(actual - expected) < eps;
+            if (!ok) { fails++; GD.PrintErr("[TEST FAIL] " + msg + ": expected " + expected + ", got " + actual); }
+            else { GD.Print("[TEST PASS] " + msg + ": " + actual); }
         }
 
         static Battalion MakeBatWithUnitIds(params string[] unitIds)
@@ -36,53 +35,96 @@ namespace ColdWarWargame.Core.Combat
             return bat;
         }
 
+        static void Test_TerrainPlain()
+        {
+            var resolver = new CombatResolver();
+            var atk = MakeBatWithUnitIds("us_mech_rifles");
+            var def = MakeBatWithUnitIds("us_mech_rifles");
+            var ctx = new CombatContext { DefenderTerrainBonus = 0f, AttackerOOSTurns = 0, DefenderOOSTurns = 0 };
+            var result = resolver.ComputeAdvantage(atk, def, ctx);
+            bool hasTerrainMod = result.Modifiers.Exists(m => m.Source == "TerrainDefenderBonus");
+            Assert(!hasTerrainMod, "Plain terrain: no TerrainDefenderBonus modifier (bonus = 0)");
+        }
+
+        static void Test_TerrainUrban()
+        {
+            var resolver = new CombatResolver();
+            var atk = MakeBatWithUnitIds("us_mech_rifles");
+            var def = MakeBatWithUnitIds("us_mech_rifles");
+            var ctxPlain = new CombatContext { DefenderTerrainBonus = 0f, AttackerOOSTurns = 0, DefenderOOSTurns = 0 };
+            var ctxUrban = new CombatContext { DefenderTerrainBonus = 0.4f, AttackerOOSTurns = 0, DefenderOOSTurns = 0 };
+
+            var resultPlain = resolver.ComputeAdvantage(atk, def, ctxPlain);
+            var resultUrban = resolver.ComputeAdvantage(atk, def, ctxUrban);
+
+            var mod = resultUrban.Modifiers.Find(m => m.Source == "TerrainDefenderBonus");
+            Assert(mod != null, "Urban terrain: TerrainDefenderBonus modifier exists");
+            if (mod != null)
+                AssertFloat(mod.Value, -0.4f, "Urban terrain: modifier value = -0.4");
+
+            float vDiff = resultUrban.Value - resultPlain.Value;
+            AssertFloat(vDiff, -0.4f, "Urban terrain: V is ~0.4 lower than plain");
+        }
+
+        static void Test_TerrainForest()
+        {
+            var resolver = new CombatResolver();
+            var atk = MakeBatWithUnitIds("us_mech_rifles");
+            var def = MakeBatWithUnitIds("us_mech_rifles");
+            var ctx = new CombatContext { DefenderTerrainBonus = 0.1f, AttackerOOSTurns = 0, DefenderOOSTurns = 0 };
+            var result = resolver.ComputeAdvantage(atk, def, ctx);
+
+            var mod = result.Modifiers.Find(m => m.Source == "TerrainDefenderBonus");
+            Assert(mod != null, "Forest terrain: TerrainDefenderBonus modifier exists");
+            if (mod != null)
+                AssertFloat(mod.Value, -0.1f, "Forest terrain: modifier value = -0.1");
+        }
+
         public static void RunAll()
         {
             fails = 0;
             var resolver = new CombatResolver();
 
-            // Test-02 HeavyArmor 单侧惩罚
-            var defHeavy = MakeBatWithUnitIds("us_m1a1_abrams"); // has HeavyArmor
-            var atkNoAnti = MakeBatWithUnitIds("us_mech_rifles"); // light infantry, has LightAntiTank but for demonstration treat as lacking HeavyAntiTank/AntiTank
+            // ---- Terrain tests ----
+            Test_TerrainPlain();
+            Test_TerrainUrban();
+            Test_TerrainForest();
+
+            // ---- Existing tests ----
+            var defHeavy = MakeBatWithUnitIds("us_m1a1_abrams");
+            var atkNoAnti = MakeBatWithUnitIds("us_mech_rifles");
             var ctx = new CombatContext { AttackerOOSTurns = 0, DefenderOOSTurns = 0 };
             var r1 = resolver.ComputeAdvantage(atkNoAnti, defHeavy, ctx);
             Assert(r1.Modifiers.Exists(m => m.Source == "HeavyArmorOverride" && m.Target == "attacker"), "HeavyArmorOverride applied to attacker when defender has HeavyArmor");
 
-            // Test-04 AntiTank only vs HeavyArmor (-0.5)
-            var atkAntiOnly = MakeBatWithUnitIds("us_tow2"); // us_tow2 has HeavyAntiTank in JSON but demonstrates anti-case; adjust if needed
+            var atkAntiOnly = MakeBatWithUnitIds("us_tow2");
             var r2 = resolver.ComputeAdvantage(atkAntiOnly, defHeavy, ctx);
-            // check for AntiTankVsHeavyArmor or HeavyArmorOverride presence (either is acceptable baseline)
             Assert(r2.Modifiers.Count >= 1, "AntiTank/HeavyArmor related modifiers present");
 
-            // Test-11 Heli vs NoAA
             var atkHeli = MakeBatWithUnitIds("us_ah64a_apache");
             var defNoAA = MakeBatWithUnitIds("us_mech_rifles");
             var r3 = resolver.ComputeAdvantage(atkHeli, defNoAA, ctx);
             Assert(r3.Modifiers.Exists(m => m.Source == "NoAAAgainstHeli"), "NoAAAgainstHeli applied to defender");
 
-            // Test-10 Artillery difference
             var atkArt = MakeBatWithUnitIds("us_m109a2");
             var defNoArt = MakeBatWithUnitIds("us_mech_rifles");
             var r4 = resolver.ComputeAdvantage(atkArt, defNoArt, ctx);
             Assert(r4.Modifiers.Exists(m => m.Source == "NoArtilleryAgainstArtillery" || m.Source == "NoAAAgainstHeli"), "Artillery difference produces modifier");
 
-            // Test casualty resolution path with deterministic seed
             var combatResult = resolver.ResolveCombat(atkHeli, defNoAA, ctx, 12345);
             Assert(combatResult.DefenderHpLost > 0, "Defender takes casualties in Heli vs NoAA scenario");
             Assert(combatResult.AttackerHpLost >= 0, "Attacker casualties computed");
             Assert(combatResult.AttackerCasualties.Sum(c => c.HpLost) == combatResult.AttackerHpLost, "Attacker casualty totals match");
             Assert(combatResult.DefenderCasualties.Sum(c => c.HpLost) == combatResult.DefenderHpLost, "Defender casualty totals match");
 
-            // Test symmetry: both no Recon
-            var aNoRecon = MakeBatWithUnitIds("us_m1a1_abrams"); // this one actually has Recon? if so pick other
+            var aNoRecon = MakeBatWithUnitIds("us_m1a1_abrams");
             var bNoRecon = MakeBatWithUnitIds("us_m109a2");
             var r5 = resolver.ComputeAdvantage(aNoRecon, bNoRecon, ctx);
-            // we expect NoRecon possibly present on one or both depending on templates; just print summary
             GD.Print("Symmetry test modifiers count: " + r5.Modifiers.Count);
 
             // Report
             if (fails == 0) GD.Print("All CombatResolverTests passed");
-            else GD.PrintErr($"{fails} CombatResolverTests failed");
+            else GD.PrintErr(fails + " CombatResolverTests failed");
         }
     }
 }

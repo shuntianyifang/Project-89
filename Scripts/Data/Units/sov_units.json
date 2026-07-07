@@ -1,4 +1,4 @@
-{
+﻿{
   "sov_motostrelkovy": {
     "name": "苏联摩托步兵",
     "class_type": "infantry",
@@ -18,6 +18,48 @@
     "tactical_tags": {
       "domain": "Ground",
       "capabilities": ["AntiTank"]
+    }
+  },
+  "sov_bmp1": {
+    "name": "BMP-1 步兵战车",
+    "class_type": "ifv",
+    "visuals": {
+      "icon": "icon_ifv_red",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 7,
+      "attack": 1.3,
+      "defense": 1.5
+    },
+    "system_vars": {
+      "cost": 50,
+      "base_weight": 8
+    },
+    "tactical_tags": {
+      "domain": "Ground",
+      "capabilities": ["AntiTank", "Armor"]
+    }
+  },
+  "sov_btr70": {
+    "name": "BTR-70 装甲输送车",
+    "class_type": "apc",
+    "visuals": {
+      "icon": "icon_apc_red",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 5,
+      "attack": 0.5,
+      "defense": 1.0
+    },
+    "system_vars": {
+      "cost": 20,
+      "base_weight": 6
+    },
+    "tactical_tags": {
+      "domain": "Ground",
+      "capabilities": ["LightAntiTank"]
     }
   }
 }

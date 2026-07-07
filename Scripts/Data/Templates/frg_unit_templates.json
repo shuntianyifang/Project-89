@@ -1,0 +1,53 @@
+﻿{
+  "frg_tank_battalion": {
+    "name": "西德坦克营",
+    "visuals": {
+      "icon": "icon_tank_blue",
+      "model_scale": 1.0
+    },
+    "companies": {
+      "Company_A": {
+        "name": "A连（坦克）",
+        "platoons": {
+          "Platoon_A1": {
+            "type": "standard",
+            "units": {
+              "tank_1": { "unit_id": "frg_leopard1a5", "max_hp": 8 },
+              "tank_2": { "unit_id": "frg_leopard1a5", "max_hp": 8 },
+              "tank_3": { "unit_id": "frg_leopard1a5", "max_hp": 8 }
+            }
+          },
+          "Platoon_A2": {
+            "type": "standard",
+            "units": {
+              "tank_1": { "unit_id": "frg_leopard1a5", "max_hp": 8 },
+              "tank_2": { "unit_id": "frg_leopard1a5", "max_hp": 8 },
+              "tank_3": { "unit_id": "frg_leopard1a5", "max_hp": 8 }
+            }
+          }
+        }
+      },
+      "Company_B": {
+        "name": "B连（坦克）",
+        "platoons": {
+          "Platoon_B1": {
+            "type": "standard",
+            "units": {
+              "tank_1": { "unit_id": "frg_leopard1a5", "max_hp": 8 },
+              "tank_2": { "unit_id": "frg_leopard1a5", "max_hp": 8 },
+              "tank_3": { "unit_id": "frg_leopard1a5", "max_hp": 8 }
+            }
+          },
+          "Platoon_B2": {
+            "type": "standard",
+            "units": {
+              "tank_1": { "unit_id": "frg_leopard1a5", "max_hp": 8 },
+              "tank_2": { "unit_id": "frg_leopard1a5", "max_hp": 8 },
+              "tank_3": { "unit_id": "frg_leopard1a5", "max_hp": 8 }
+            }
+          }
+        }
+      }
+    }
+  }
+}

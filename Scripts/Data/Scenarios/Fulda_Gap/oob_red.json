@@ -1,0 +1,16 @@
+﻿{
+  "faction_red": [
+    {
+      "instance_id": "1st_battalion_27th_msd",
+      "template_id": "sov_motorifle_battalion",
+      "x": 10,
+      "y": 2
+    },
+    {
+      "instance_id": "1st_battalion_9th_pz",
+      "template_id": "gdr_tank_battalion",
+      "x": 20,
+      "y": 2
+    }
+  ]
+}
