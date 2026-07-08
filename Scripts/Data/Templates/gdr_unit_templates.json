@@ -1,4 +1,4 @@
-﻿{
+{
   "gdr_tank_battalion": {
     "name": "东德坦克营",
     "visuals": {
@@ -12,17 +12,35 @@
           "Platoon_A1": {
             "type": "standard",
             "units": {
-              "tank_1": { "unit_id": "gdr_t55a", "max_hp": 9 },
-              "tank_2": { "unit_id": "gdr_t55a", "max_hp": 9 },
-              "tank_3": { "unit_id": "gdr_t55a", "max_hp": 9 }
+              "tank_1": {
+                "unit_id": "gdr_t55a",
+                "max_hp": 9
+              },
+              "tank_2": {
+                "unit_id": "gdr_t55a",
+                "max_hp": 9
+              },
+              "tank_3": {
+                "unit_id": "gdr_t55a",
+                "max_hp": 9
+              }
             }
           },
           "Platoon_A2": {
             "type": "standard",
             "units": {
-              "tank_1": { "unit_id": "gdr_t55a", "max_hp": 9 },
-              "tank_2": { "unit_id": "gdr_t55a", "max_hp": 9 },
-              "tank_3": { "unit_id": "gdr_t55a", "max_hp": 9 }
+              "tank_1": {
+                "unit_id": "gdr_t55a",
+                "max_hp": 9
+              },
+              "tank_2": {
+                "unit_id": "gdr_t55a",
+                "max_hp": 9
+              },
+              "tank_3": {
+                "unit_id": "gdr_t55a",
+                "max_hp": 9
+              }
             }
           }
         }
@@ -33,17 +51,107 @@
           "Platoon_B1": {
             "type": "standard",
             "units": {
-              "tank_1": { "unit_id": "gdr_t55a", "max_hp": 9 },
-              "tank_2": { "unit_id": "gdr_t55a", "max_hp": 9 },
-              "tank_3": { "unit_id": "gdr_t55a", "max_hp": 9 }
+              "tank_1": {
+                "unit_id": "gdr_t55a",
+                "max_hp": 9
+              },
+              "tank_2": {
+                "unit_id": "gdr_t55a",
+                "max_hp": 9
+              },
+              "tank_3": {
+                "unit_id": "gdr_t55a",
+                "max_hp": 9
+              }
             }
           },
           "Platoon_B2": {
             "type": "standard",
             "units": {
-              "tank_1": { "unit_id": "gdr_t55a", "max_hp": 9 },
-              "tank_2": { "unit_id": "gdr_t55a", "max_hp": 9 },
-              "tank_3": { "unit_id": "gdr_t55a", "max_hp": 9 }
+              "tank_1": {
+                "unit_id": "gdr_t55a",
+                "max_hp": 9
+              },
+              "tank_2": {
+                "unit_id": "gdr_t55a",
+                "max_hp": 9
+              },
+              "tank_3": {
+                "unit_id": "gdr_t55a",
+                "max_hp": 9
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "gdr_motorifle_battalion": {
+    "name": "东德摩步营",
+    "visuals": {
+      "icon": "icon_inf_red",
+      "model_scale": 1.0
+    },
+    "companies": {
+      "Company_A": {
+        "name": "A连（摩步）",
+        "platoons": {
+          "Platoon_A1": {
+            "type": "composite",
+            "infantry": {
+              "squad_1": {
+                "unit_id": "gdr_motostrelkovy",
+                "max_hp": 8
+              },
+              "squad_2": {
+                "unit_id": "gdr_motostrelkovy",
+                "max_hp": 8
+              },
+              "squad_3": {
+                "unit_id": "gdr_motostrelkovy",
+                "max_hp": 8
+              }
+            },
+            "vehicle": {
+              "veh_1": {
+                "unit_id": "gdr_bmp1",
+                "max_hp": 7
+              },
+              "veh_2": {
+                "unit_id": "gdr_bmp1",
+                "max_hp": 7
+              },
+              "veh_3": {
+                "unit_id": "gdr_bmp1",
+                "max_hp": 7
+              }
+            }
+          },
+          "Platoon_A2": {
+            "type": "composite",
+            "infantry": {
+              "squad_1": {
+                "unit_id": "gdr_motostrelkovy",
+                "max_hp": 8
+              },
+              "squad_2": {
+                "unit_id": "gdr_motostrelkovy",
+                "max_hp": 8
+              },
+              "squad_3": {
+                "unit_id": "gdr_motostrelkovy",
+                "max_hp": 8
+              }
+            },
+            "vehicle": {
+              "veh_1": {
+                "unit_id": "gdr_bmp1",
+                "max_hp": 7
+              },
+              "veh_2": {
+                "unit_id": "gdr_bmp1",
+                "max_hp": 7
+              }
             }
           }
         }

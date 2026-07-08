@@ -1,4 +1,4 @@
-﻿{
+{
   "faction_blue": [
     {
       "instance_id": "1st_battalion_7th_cav",
@@ -11,6 +11,36 @@
       "template_id": "frg_tank_battalion",
       "x": 20,
       "y": 16
+    },
+    {
+      "instance_id": "3rd_battalion_11th_armor",
+      "template_id": "us_armor_battalion",
+      "x": 14,
+      "y": 17
+    },
+    {
+      "instance_id": "1st_squadron_2nd_cav",
+      "template_id": "us_cav_squadron",
+      "x": 5,
+      "y": 14
+    },
+    {
+      "instance_id": "4th_battalion_101st_aviation",
+      "template_id": "us_aviation_battalion",
+      "x": 14,
+      "y": 18
+    },
+    {
+      "instance_id": "1st_battalion_505th_airborne",
+      "template_id": "us_airborne_battalion",
+      "x": 22,
+      "y": 14
+    },
+    {
+      "instance_id": "1st_battalion_12th_panzergrenadier",
+      "template_id": "frg_panzergrenadier_battalion",
+      "x": 25,
+      "y": 17
     }
   ]
 }

@@ -1,4 +1,4 @@
-﻿{
+{
   "faction_red": [
     {
       "instance_id": "1st_battalion_27th_msd",
@@ -11,6 +11,36 @@
       "template_id": "gdr_tank_battalion",
       "x": 20,
       "y": 2
+    },
+    {
+      "instance_id": "1st_battalion_79th_guards_tank",
+      "template_id": "sov_heavy_tank_battalion",
+      "x": 14,
+      "y": 4
+    },
+    {
+      "instance_id": "5th_guards_recon_battalion",
+      "template_id": "sov_recon_battalion",
+      "x": 5,
+      "y": 3
+    },
+    {
+      "instance_id": "3rd_battalion_57th_msd",
+      "template_id": "sov_aviation_battalion",
+      "x": 22,
+      "y": 3
+    },
+    {
+      "instance_id": "1st_guards_arty_regiment",
+      "template_id": "sov_arty_group",
+      "x": 14,
+      "y": 1
+    },
+    {
+      "instance_id": "2nd_battalion_23rd_gdr_motorifle",
+      "template_id": "gdr_motorifle_battalion",
+      "x": 25,
+      "y": 4
     }
   ]
 }

@@ -17,10 +17,12 @@
 	},
 	"tactical_tags": {
 	  "domain": "Ground",
-	  "capabilities": ["AntiTank", "Armor"]
+	  "capabilities": [
+		"AntiTank",
+        "Armor"
+	  ]
 	}
   },
-
   "frg_marder1A1": {
 	"name": "Marder1A1 步兵战车",
 	"class_type": "ifv",
@@ -39,10 +41,12 @@
 	},
 	"tactical_tags": {
 	  "domain": "Ground",
-	  "capabilities": ["LightAntiTank", "Armor"]
+	  "capabilities": [
+		"LightAntiTank",
+        "Armor"
+	  ]
 	}
   },
-
   "frg_marder1A1_milan": {
 	"name": "Marder1A1 步兵战车（带米兰反坦克导弹）",
 	"class_type": "ifv",
@@ -61,10 +65,12 @@
 	},
 	"tactical_tags": {
 	  "domain": "Ground",
-	  "capabilities": ["AntiTank", "Armor"]
+	  "capabilities": [
+		"AntiTank",
+        "Armor"
+	  ]
 	}
   },
-
   "frg_Gepard1A1": {
 	"name": "Gepard1A1 自行高射炮（联邦德国）",
 	"class_type": "spaag",
@@ -84,10 +90,11 @@
 	},
 	"tactical_tags": {
 	  "domain": "Rear",
-	  "capabilities": ["Armor"]
+	  "capabilities": [
+        "Armor"
+	  ]
 	}
   },
-
   "frg_roland3": {
 	"name": "Roland3 防空导弹系统（联邦德国）",
 	"class_type": "sam_tac",
@@ -107,8 +114,32 @@
 	},
 	"tactical_tags": {
 	  "domain": "Rear",
-	  "capabilities": [""]
+	  "capabilities": [
+        ""
+	  ]
+	}
+  },
+  "frg_grenadiers": {
+	"name": "联邦德国装甲掷弹兵班",
+	"class_type": "infantry",
+	"visuals": {
+	  "icon": "icon_inf_blue",
+	  "model_scale": 1.0
+	},
+	"combat_stats": {
+	  "max_hp": 8,
+	  "attack": 1.0,
+	  "defense": 1.1
+	},
+	"system_vars": {
+	  "cost": 30,
+	  "base_weight": 10
+	},
+	"tactical_tags": {
+	  "domain": "Ground",
+	  "capabilities": [
+        "LightAntiTank"
+	  ]
 	}
   }
-  
 }

@@ -17,7 +17,81 @@
     },
     "tactical_tags": {
       "domain": "Ground",
-      "capabilities": ["AntiTank", "Armor"]
+      "capabilities": [
+        "AntiTank",
+        "Armor"
+      ]
+    }
+  },
+  "gdr_motostrelkovy": {
+    "name": "东德摩托步兵班",
+    "class_type": "infantry",
+    "visuals": {
+      "icon": "icon_inf_red",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 8,
+      "attack": 1.0,
+      "defense": 1.0
+    },
+    "system_vars": {
+      "cost": 35,
+      "base_weight": 10
+    },
+    "tactical_tags": {
+      "domain": "Ground",
+      "capabilities": [
+        "AntiTank"
+      ]
+    }
+  },
+  "gdr_bmp1": {
+    "name": "BMP-1 步兵战车（东德）",
+    "class_type": "ifv",
+    "visuals": {
+      "icon": "icon_ifv_red",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 7,
+      "attack": 1.3,
+      "defense": 1.5
+    },
+    "system_vars": {
+      "cost": 50,
+      "base_weight": 8
+    },
+    "tactical_tags": {
+      "domain": "Ground",
+      "capabilities": [
+        "AntiTank",
+        "Armor"
+      ]
+    }
+  },
+  "gdr_t72b": {
+    "name": "T-72B 主战坦克（东德）",
+    "class_type": "mbt",
+    "visuals": {
+      "icon": "icon_mbt_red",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 9,
+      "attack": 2.3,
+      "defense": 2.0
+    },
+    "system_vars": {
+      "cost": 150,
+      "base_weight": 10
+    },
+    "tactical_tags": {
+      "domain": "Ground",
+      "capabilities": [
+        "AntiTank",
+        "HeavyArmor"
+      ]
     }
   }
 }

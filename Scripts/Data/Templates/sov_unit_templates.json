@@ -1,4 +1,4 @@
-﻿{
+{
   "sov_motorifle_battalion": {
     "name": "苏军摩步营",
     "visuals": {
@@ -12,40 +12,94 @@
           "Platoon_A1": {
             "type": "composite",
             "infantry": {
-              "squad_1": { "unit_id": "sov_motostrelkovy", "max_hp": 9 },
-              "squad_2": { "unit_id": "sov_motostrelkovy", "max_hp": 9 },
-              "squad_3": { "unit_id": "sov_motostrelkovy", "max_hp": 9 }
+              "squad_1": {
+                "unit_id": "sov_motostrelkovy",
+                "max_hp": 9
+              },
+              "squad_2": {
+                "unit_id": "sov_motostrelkovy",
+                "max_hp": 9
+              },
+              "squad_3": {
+                "unit_id": "sov_motostrelkovy",
+                "max_hp": 9
+              }
             },
             "vehicle": {
-              "veh_1": { "unit_id": "sov_bmp1", "max_hp": 7 },
-              "veh_2": { "unit_id": "sov_bmp1", "max_hp": 7 },
-              "veh_3": { "unit_id": "sov_bmp1", "max_hp": 7 }
+              "veh_1": {
+                "unit_id": "sov_bmp1",
+                "max_hp": 7
+              },
+              "veh_2": {
+                "unit_id": "sov_bmp1",
+                "max_hp": 7
+              },
+              "veh_3": {
+                "unit_id": "sov_bmp1",
+                "max_hp": 7
+              }
             }
           },
           "Platoon_A2": {
             "type": "composite",
             "infantry": {
-              "squad_1": { "unit_id": "sov_motostrelkovy", "max_hp": 9 },
-              "squad_2": { "unit_id": "sov_motostrelkovy", "max_hp": 9 },
-              "squad_3": { "unit_id": "sov_motostrelkovy", "max_hp": 9 }
+              "squad_1": {
+                "unit_id": "sov_motostrelkovy",
+                "max_hp": 9
+              },
+              "squad_2": {
+                "unit_id": "sov_motostrelkovy",
+                "max_hp": 9
+              },
+              "squad_3": {
+                "unit_id": "sov_motostrelkovy",
+                "max_hp": 9
+              }
             },
             "vehicle": {
-              "veh_1": { "unit_id": "sov_bmp1", "max_hp": 7 },
-              "veh_2": { "unit_id": "sov_bmp1", "max_hp": 7 },
-              "veh_3": { "unit_id": "sov_bmp1", "max_hp": 7 }
+              "veh_1": {
+                "unit_id": "sov_bmp1",
+                "max_hp": 7
+              },
+              "veh_2": {
+                "unit_id": "sov_bmp1",
+                "max_hp": 7
+              },
+              "veh_3": {
+                "unit_id": "sov_bmp1",
+                "max_hp": 7
+              }
             }
           },
           "Platoon_A3": {
             "type": "composite",
             "infantry": {
-              "squad_1": { "unit_id": "sov_motostrelkovy", "max_hp": 9 },
-              "squad_2": { "unit_id": "sov_motostrelkovy", "max_hp": 9 },
-              "squad_3": { "unit_id": "sov_motostrelkovy", "max_hp": 9 }
+              "squad_1": {
+                "unit_id": "sov_motostrelkovy",
+                "max_hp": 9
+              },
+              "squad_2": {
+                "unit_id": "sov_motostrelkovy",
+                "max_hp": 9
+              },
+              "squad_3": {
+                "unit_id": "sov_motostrelkovy",
+                "max_hp": 9
+              }
             },
             "vehicle": {
-              "veh_1": { "unit_id": "sov_bmp1", "max_hp": 7 },
-              "veh_2": { "unit_id": "sov_bmp1", "max_hp": 7 },
-              "veh_3": { "unit_id": "sov_bmp1", "max_hp": 7 }
+              "veh_1": {
+                "unit_id": "sov_bmp1",
+                "max_hp": 7
+              },
+              "veh_2": {
+                "unit_id": "sov_bmp1",
+                "max_hp": 7
+              },
+              "veh_3": {
+                "unit_id": "sov_bmp1",
+                "max_hp": 7
+              }
             }
           }
         }
@@ -56,9 +110,237 @@
           "Platoon_C1": {
             "type": "standard",
             "units": {
-              "tank_1": { "unit_id": "gdr_t55a", "max_hp": 9 },
-              "tank_2": { "unit_id": "gdr_t55a", "max_hp": 9 },
-              "tank_3": { "unit_id": "gdr_t55a", "max_hp": 9 }
+              "tank_1": {
+                "unit_id": "gdr_t55a",
+                "max_hp": 9
+              },
+              "tank_2": {
+                "unit_id": "gdr_t55a",
+                "max_hp": 9
+              },
+              "tank_3": {
+                "unit_id": "gdr_t55a",
+                "max_hp": 9
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "sov_heavy_tank_battalion": {
+    "name": "苏军重型坦克营",
+    "visuals": {
+      "icon": "icon_mbt_red",
+      "model_scale": 1.0
+    },
+    "companies": {
+      "Company_A": {
+        "name": "A连（坦克）",
+        "platoons": {
+          "Platoon_A1": {
+            "type": "standard",
+            "units": {
+              "tank_1": {
+                "unit_id": "sov_t72b",
+                "max_hp": 10
+              },
+              "tank_2": {
+                "unit_id": "sov_t72b",
+                "max_hp": 10
+              },
+              "tank_3": {
+                "unit_id": "sov_t72b",
+                "max_hp": 10
+              }
+            }
+          },
+          "Platoon_A2": {
+            "type": "standard",
+            "units": {
+              "tank_1": {
+                "unit_id": "sov_t72b",
+                "max_hp": 10
+              },
+              "tank_2": {
+                "unit_id": "sov_t72b",
+                "max_hp": 10
+              },
+              "tank_3": {
+                "unit_id": "sov_t72b",
+                "max_hp": 10
+              }
+            }
+          }
+        }
+      },
+      "Company_HQ": {
+        "name": "营部连",
+        "platoons": {
+          "Platoon_HQ": {
+            "type": "standard",
+            "units": {
+              "cp_1": {
+                "unit_id": "sov_t72b_cp",
+                "max_hp": 10
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "sov_recon_battalion": {
+    "name": "苏军侦察营",
+    "visuals": {
+      "icon": "icon_recon_red",
+      "model_scale": 1.0
+    },
+    "companies": {
+      "Company_A": {
+        "name": "A连（侦察）",
+        "platoons": {
+          "Platoon_A1": {
+            "type": "standard",
+            "units": {
+              "rec_1": {
+                "unit_id": "sov_brdm2",
+                "max_hp": 3
+              },
+              "rec_2": {
+                "unit_id": "sov_brdm2",
+                "max_hp": 3
+              },
+              "rec_3": {
+                "unit_id": "sov_brdm2",
+                "max_hp": 3
+              }
+            }
+          },
+          "Platoon_A2": {
+            "type": "standard",
+            "units": {
+              "rec_1": {
+                "unit_id": "sov_brdm2",
+                "max_hp": 3
+              },
+              "rec_2": {
+                "unit_id": "sov_brdm2",
+                "max_hp": 3
+              },
+              "rec_3": {
+                "unit_id": "sov_brdm2",
+                "max_hp": 3
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "sov_arty_group": {
+    "name": "苏军炮兵团（2S1）",
+    "visuals": {
+      "icon": "icon_spa_arty_red",
+      "model_scale": 1.0
+    },
+    "companies": {
+      "Company_A": {
+        "name": "A连（炮兵）",
+        "platoons": {
+          "Platoon_A1": {
+            "type": "standard",
+            "units": {
+              "arty_1": {
+                "unit_id": "sov_2s1_gvozdika",
+                "max_hp": 3
+              },
+              "arty_2": {
+                "unit_id": "sov_2s1_gvozdika",
+                "max_hp": 3
+              },
+              "arty_3": {
+                "unit_id": "sov_2s1_gvozdika",
+                "max_hp": 3
+              }
+            }
+          },
+          "Platoon_A2": {
+            "type": "standard",
+            "units": {
+              "arty_1": {
+                "unit_id": "sov_2s1_gvozdika",
+                "max_hp": 3
+              },
+              "arty_2": {
+                "unit_id": "sov_2s1_gvozdika",
+                "max_hp": 3
+              },
+              "arty_3": {
+                "unit_id": "sov_2s1_gvozdika",
+                "max_hp": 3
+              }
+            }
+          },
+          "Platoon_AA": {
+            "type": "standard",
+            "units": {
+              "aa_1": {
+                "unit_id": "sov_zsu234_shilka",
+                "max_hp": 5
+              },
+              "aa_2": {
+                "unit_id": "sov_sa8_gecko",
+                "max_hp": 4
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "sov_aviation_battalion": {
+    "name": "苏军航空营（雌鹿）",
+    "visuals": {
+      "icon": "icon_heli_red",
+      "model_scale": 1.0
+    },
+    "companies": {
+      "Company_A": {
+        "name": "A连（攻击直升机）",
+        "platoons": {
+          "Platoon_A1": {
+            "type": "standard",
+            "units": {
+              "heli_1": {
+                "unit_id": "sov_mi24_hind",
+                "max_hp": 5
+              },
+              "heli_2": {
+                "unit_id": "sov_mi24_hind",
+                "max_hp": 5
+              },
+              "heli_3": {
+                "unit_id": "sov_mi24_hind",
+                "max_hp": 5
+              }
+            }
+          },
+          "Platoon_A2": {
+            "type": "standard",
+            "units": {
+              "heli_1": {
+                "unit_id": "sov_mi24_hind",
+                "max_hp": 5
+              },
+              "heli_2": {
+                "unit_id": "sov_mi24_hind",
+                "max_hp": 5
+              },
+              "heli_3": {
+                "unit_id": "sov_mi24_hind",
+                "max_hp": 5
+              }
             }
           }
         }

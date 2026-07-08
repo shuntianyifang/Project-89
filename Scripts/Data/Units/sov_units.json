@@ -1,4 +1,4 @@
-﻿{
+{
   "sov_motostrelkovy": {
     "name": "苏联摩托步兵",
     "class_type": "infantry",
@@ -17,7 +17,9 @@
     },
     "tactical_tags": {
       "domain": "Ground",
-      "capabilities": ["AntiTank"]
+      "capabilities": [
+        "AntiTank"
+      ]
     }
   },
   "sov_bmp1": {
@@ -38,7 +40,10 @@
     },
     "tactical_tags": {
       "domain": "Ground",
-      "capabilities": ["AntiTank", "Armor"]
+      "capabilities": [
+        "AntiTank",
+        "Armor"
+      ]
     }
   },
   "sov_btr70": {
@@ -59,7 +64,170 @@
     },
     "tactical_tags": {
       "domain": "Ground",
-      "capabilities": ["LightAntiTank"]
+      "capabilities": [
+        "LightAntiTank"
+      ]
+    }
+  },
+  "sov_t72b": {
+    "name": "T-72B 主战坦克",
+    "class_type": "mbt",
+    "visuals": {
+      "icon": "icon_mbt_red",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 10,
+      "attack": 2.5,
+      "defense": 2.3
+    },
+    "system_vars": {
+      "cost": 180,
+      "base_weight": 10
+    },
+    "tactical_tags": {
+      "domain": "Ground",
+      "capabilities": [
+        "HeavyAntiTank",
+        "HeavyArmor"
+      ]
+    }
+  },
+  "sov_t72b_cp": {
+    "name": "T-72B 指挥坦克",
+    "class_type": "mbt",
+    "visuals": {
+      "icon": "icon_mbt_red",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 10,
+      "attack": 2.5,
+      "defense": 2.3
+    },
+    "system_vars": {
+      "cost": 220,
+      "base_weight": 4
+    },
+    "tactical_tags": {
+      "domain": "Rear",
+      "capabilities": [
+        "HeavyAntiTank",
+        "HeavyArmor",
+        "Command"
+      ]
+    }
+  },
+  "sov_2s1_gvozdika": {
+    "name": "2S1 康乃馨自行榴弹炮",
+    "class_type": "spa_arty",
+    "visuals": {
+      "icon": "icon_spa_arty_red",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 3,
+      "attack": 1.8,
+      "defense": 1.8
+    },
+    "system_vars": {
+      "cost": 170,
+      "base_weight": 4
+    },
+    "tactical_tags": {
+      "domain": "Rear",
+      "capabilities": []
+    }
+  },
+  "sov_zsu234_shilka": {
+    "name": "ZSU-23-4 石勒喀河自行高炮",
+    "class_type": "spaag",
+    "visuals": {
+      "icon": "icon_spaag_red",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 5,
+      "attack": 1.0,
+      "defense": 0.8
+    },
+    "aa_area": 3,
+    "system_vars": {
+      "cost": 60,
+      "base_weight": 4
+    },
+    "tactical_tags": {
+      "domain": "Rear",
+      "capabilities": []
+    }
+  },
+  "sov_sa8_gecko": {
+    "name": "SA-8 壁虎防空导弹系统",
+    "class_type": "sam_tac",
+    "visuals": {
+      "icon": "icon_sam_tac_red",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 4,
+      "attack": 0.2,
+      "defense": 0.2
+    },
+    "aa_area": 8,
+    "system_vars": {
+      "cost": 120,
+      "base_weight": 4
+    },
+    "tactical_tags": {
+      "domain": "Rear",
+      "capabilities": []
+    }
+  },
+  "sov_brdm2": {
+    "name": "BRDM-2 装甲侦察车",
+    "class_type": "recon",
+    "visuals": {
+      "icon": "icon_recon_red",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 3,
+      "attack": 0.3,
+      "defense": 0.5
+    },
+    "system_vars": {
+      "cost": 25,
+      "base_weight": 4
+    },
+    "tactical_tags": {
+      "domain": "Rear",
+      "capabilities": [
+        "Recon",
+        "LightAntiTank"
+      ]
+    }
+  },
+  "sov_mi24_hind": {
+    "name": "Mi-24 雌鹿武装直升机",
+    "class_type": "atk_heli",
+    "visuals": {
+      "icon": "icon_heli_red",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 5,
+      "attack": 2.3,
+      "defense": 2.5
+    },
+    "system_vars": {
+      "cost": 200,
+      "base_weight": 4
+    },
+    "tactical_tags": {
+      "domain": "Heli",
+      "capabilities": [
+        "HeavyAntiTank"
+      ]
     }
   }
 }
