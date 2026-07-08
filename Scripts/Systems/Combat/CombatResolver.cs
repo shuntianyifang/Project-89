@@ -12,7 +12,7 @@ namespace ColdWarWargame.Systems.Combat
         public CombatResolutionResult ResolveCombat(Battalion attacker, Battalion defender, CombatContext ctx, ulong? randomSeed = null)
         {
             var advantage = ComputeAdvantage(attacker, defender, ctx);
-            var (attackerRate, defenderRate) = GetCasualtyRates(advantage.Value);
+            var (attackerRate, defenderRate, atkFat, defFat) = GetCasualtyRates(advantage.Value);
 
             int attackerDamagePool = CalculateDamagePool(attacker, attackerRate);
             int defenderDamagePool = CalculateDamagePool(defender, defenderRate);
@@ -29,7 +29,9 @@ namespace ColdWarWargame.Systems.Combat
                 AttackerHpLost = attackerCasualties.Sum(c => c.HpLost),
                 DefenderHpLost = defenderCasualties.Sum(c => c.HpLost),
                 AttackerCasualties = attackerCasualties,
-                DefenderCasualties = defenderCasualties
+                DefenderCasualties = defenderCasualties,
+                AttackerFatigueGained = atkFat,
+                DefenderFatigueGained = defFat
             };
         }
 
@@ -40,15 +42,15 @@ namespace ColdWarWargame.Systems.Combat
             return new System.Random();
         }
 
-        (float attackerRate, float defenderRate) GetCasualtyRates(float advantage)
+        (float attackerRate, float defenderRate, int attackerFatigue, int defenderFatigue) GetCasualtyRates(float advantage)
         {
-            if (advantage >= 1.5f) return (0.03f, 0.60f);
-            if (advantage >= 1.0f) return (0.10f, 0.35f);
-            if (advantage >= 0.5f) return (0.15f, 0.25f);
-            if (advantage >= 0f) return (0.20f, 0.20f);
-            if (advantage >= -0.5f) return (0.25f, 0.15f);
-            if (advantage >= -1.0f) return (0.35f, 0.10f);
-            return (0.60f, 0.03f);
+            if (advantage >= 1.5f) return (0.03f, 0.60f, 2, 5);
+            if (advantage >= 1.0f) return (0.10f, 0.35f, 2, 4);
+            if (advantage >= 0.5f) return (0.15f, 0.25f, 2, 3);
+            if (advantage >= 0f) return (0.20f, 0.20f, 2, 1);
+            if (advantage >= -0.5f) return (0.25f, 0.15f, 3, 1);
+            if (advantage >= -1.0f) return (0.35f, 0.10f, 4, 1);
+            return (0.60f, 0.03f, 5, 1);
         }
 
         int CalculateDamagePool(Battalion battalion, float casualtyRate)

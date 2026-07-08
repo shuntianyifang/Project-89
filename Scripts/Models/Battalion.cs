@@ -50,7 +50,7 @@ namespace ColdWarWargame.Models
                 .Where(u => u.SurvivalState == 1)
                 .Sum(u => u.Template.CombatStats.Attack * u.SurvivalState); // 也可以直接乘以 1
             
-            return (baseAttack * GetOrganizationalDebuff()) / 10f; // 聚合缩放常量 K=10[cite: 3]
+            return (baseAttack * GetOrganizationalDebuff() * GetFatigueCombatMultiplier()) / 10f; // 聚合缩放常量 K=10[cite: 3]
         }
         
         // 计算面板防御力：与攻击力对称实现
@@ -60,7 +60,7 @@ namespace ColdWarWargame.Models
                 .Where(u => u.SurvivalState == 1)
                 .Sum(u => u.Template.CombatStats.Defense * u.SurvivalState);
 
-            return (baseDef * GetOrganizationalDebuff()) / 10f; // 使用相同的聚合缩放常量 K=10
+            return (baseDef * GetOrganizationalDebuff() * GetFatigueCombatMultiplier()) / 10f; // 使用相同的聚合缩放常量 K=10
         }
 
         public int GetTotalCurrentHp()
@@ -75,6 +75,7 @@ namespace ColdWarWargame.Models
         
         // 4. 视野聚合规则[cite: 3]
         /// <summary>考虑疲劳度的最大 AP（PRD §2.5.1）</summary>
+        public float GetFatigueCombatMultiplier() { if (Fatigue >= 7) return 0.5f; if (Fatigue >= 5) return 0.9f; return 1.0f; }
         public float GetMaxAP()
         {
             float baseAP = 12f;

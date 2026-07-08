@@ -53,5 +53,7 @@ namespace ColdWarWargame.Systems.Combat
         public int DefenderHpLost { get; set; }
         public List<CasualtyRecord> AttackerCasualties { get; set; } = new();
         public List<CasualtyRecord> DefenderCasualties { get; set; } = new();
+        public int AttackerFatigueGained { get; set; }
+        public int DefenderFatigueGained { get; set; }
     }
 }

@@ -23,7 +23,7 @@ namespace ColdWarWargame.Systems.Supply
             ColdWarWargame.Systems.Battlefield.GridMap map,
             int faction,
             HashSet<Vector2I> enemyOccupied,
-            HashSet<Vector2I> enemyZOC)
+            HashSet<Vector2I> enemyZOC, Dictionary<Vector2I, float> enemyAP = null)
         {
             int w = map.Width, h = map.Height;
             var cost = new float[w, h];
@@ -73,7 +73,7 @@ namespace ColdWarWargame.Systems.Supply
                     float tileCost = map.GetTile(nb).GetMovementCost();
                     if (float.IsPositiveInfinity(tileCost)) continue;
 
-                    float extra = enemyZOC.Contains(nb) ? ZOC_PENALTY : 0f;
+                    bool zocActive = enemyZOC.Contains(nb); if (zocActive && enemyAP != null && enemyAP.TryGetValue(nb, out float ap) && ap < 4f) zocActive = false; float extra = zocActive ? ZOC_PENALTY : 0f;
                     float newCost = minCost + tileCost + extra;
 
                     if (newCost < cost[nb.X, nb.Y] - EPS && newCost < MAX_SP - EPS)

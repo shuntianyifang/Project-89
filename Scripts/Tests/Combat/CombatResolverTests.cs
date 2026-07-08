@@ -80,6 +80,18 @@ namespace ColdWarWargame.Tests.Combat
                 AssertFloat(mod.Value, -0.1f, "Forest terrain: modifier value = -0.1");
         }
 
+        static Battalion MakeFatigueBat(float ap, int fatigue) => new Battalion { Name = "FatigueTest", Faction = 1, CurrentAP = ap, Fatigue = fatigue };
+
+        static void Test_FatigueMultiplier()
+        {
+            var fresh = MakeFatigueBat(12f, 0);
+            var tired = MakeFatigueBat(12f, 6);
+            var exhausted = MakeFatigueBat(12f, 8);
+            AssertFloat(fresh.GetFatigueCombatMultiplier(), 1.0f, "Fatigue 0: mult 1.0");
+            AssertFloat(tired.GetFatigueCombatMultiplier(), 0.9f, "Fatigue 6: mult 0.9");
+            AssertFloat(exhausted.GetFatigueCombatMultiplier(), 0.5f, "Fatigue 8: mult 0.5");
+        }
+
         public static void RunAll()
         {
             fails = 0;
@@ -121,6 +133,7 @@ namespace ColdWarWargame.Tests.Combat
             var bNoRecon = MakeBatWithUnitIds("us_m109a2");
             var r5 = resolver.ComputeAdvantage(aNoRecon, bNoRecon, ctx);
             GD.Print("Symmetry test modifiers count: " + r5.Modifiers.Count);
+
 
             // Report
             if (fails == 0) GD.Print("All CombatResolverTests passed");
