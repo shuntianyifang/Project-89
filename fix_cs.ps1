@@ -1,1 +1,0 @@
-(Get-Content D:\project-89\Scripts\Scenarios\FuldaGapScenario.cs) -replace chr(92)+chr(120)+chr(50)+chr(50), chr(34) ^| Set-Content D:\project-89\Scripts\Scenarios\FuldaGapScenario.cs
