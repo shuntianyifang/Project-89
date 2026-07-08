@@ -22,6 +22,8 @@ namespace ColdWarWargame.Systems.Gameplay
         private readonly CombatResolver _resolver = new();
         private readonly GameFlowController _flow;
         private readonly GameSessionRules _rules = new();
+        private readonly GameplayEventHub _eventHub = new();
+        private readonly TurnFlowController _turnFlow;
 
         private Vector2 _lastMouseScreenPos;
 
@@ -41,8 +43,9 @@ namespace ColdWarWargame.Systems.Gameplay
             _renderer = renderer;
             _hud = hud;
             _flow = new GameFlowController();
-            _rules.RaiseEvent(new GameplayEvent(GameplayEventType.MatchStarted));
-            _rules.RaiseEvent(new GameplayEvent(GameplayEventType.TurnEnded));
+            _rules.Bind(_eventHub);
+            _turnFlow = new TurnFlowController(_eventHub);
+            _turnFlow.StartMatch();
             _combatFlow = new CombatFlowController(
                 hud.Canvas,
                 hud,
@@ -103,7 +106,7 @@ namespace ColdWarWargame.Systems.Gameplay
                 }
 
                 _flow.BeginMovement();
-                _rules.RaiseEvent(new GameplayEvent(GameplayEventType.MovementStarted));
+                _eventHub.Publish(new GameplayEvent(GameplayEventType.MovementStarted));
                 _renderer.ClearPath();
                 _renderer.StartMoveAnimation(path, _flow.CurrentSelection.Unit);
 
@@ -132,7 +135,7 @@ namespace ColdWarWargame.Systems.Gameplay
                     UpdateArtilleryOverlay(_flow.CurrentSelection.Unit, pos);
                     _hud.SetInfoText("Moved to (" + pos.X + "," + pos.Y + ") AP=" + _flow.CurrentSelection.Unit.CurrentAP.ToString("0.0"));
                     _flow.CompleteMovement();
-                    _rules.RaiseEvent(new GameplayEvent(GameplayEventType.MovementCompleted));
+                    _eventHub.Publish(new GameplayEvent(GameplayEventType.MovementCompleted));
                 };
             }
             else
@@ -217,7 +220,7 @@ namespace ColdWarWargame.Systems.Gameplay
             if (!_rules.IsActionAllowed(_flow.CurrentState, GameAction.EndTurn)) return;
             ClearSelection();
             _flow.EndTurn();
-            _rules.RaiseEvent(new GameplayEvent(GameplayEventType.TurnEnded));
+            _turnFlow.EndTurn();
             _turnMgr.EndStrategicTurn();
             _renderer.SetBlueUnits(_scenario.BlueBattalions);
             _renderer.SetRedUnits(_scenario.RedBattalions);
@@ -236,7 +239,7 @@ namespace ColdWarWargame.Systems.Gameplay
         private void SelectUnit(Battalion bat, Vector2I pos)
         {
             _flow.EnterSelection(bat, pos, null);
-            _rules.RaiseEvent(new GameplayEvent(GameplayEventType.UnitSelected, new SelectionEventData(bat, pos)));
+            _eventHub.Publish(new GameplayEvent(GameplayEventType.UnitSelected, new SelectionEventData(bat, pos)));
             _renderer.SetSel(pos);
             var enemyFaction = _turnMgr.CurrentFaction == 1 ? 2 : 1;
             var enemyPositions = (enemyFaction == 1 ? _scenario.BlueBattalions : _scenario.RedBattalions).Select(u => u.Item2);
@@ -245,7 +248,7 @@ namespace ColdWarWargame.Systems.Gameplay
             bool occ(Vector2I p) => _scenario.BlueBattalions.Concat(_scenario.RedBattalions).Any(u => u.Item2 == p && u.Item1 != bat);
             var reachable = _scenario.Movement.GetReachableTiles(pos, bat.CurrentAP, isEnemyZOC, occ);
             _flow.EnterSelection(bat, pos, reachable);
-            _rules.RaiseEvent(new GameplayEvent(GameplayEventType.UnitSelected, new SelectionEventData(bat, pos, reachable)));
+            _eventHub.Publish(new GameplayEvent(GameplayEventType.UnitSelected, new SelectionEventData(bat, pos, reachable)));
             _renderer.SetReachable(reachable, bat.CurrentAP);
             _hud.SetInfoText("Selected: " + bat.Name + " reachable " + reachable.Count + " tiles");
             UpdateArtilleryOverlay(bat, pos);
@@ -254,7 +257,7 @@ namespace ColdWarWargame.Systems.Gameplay
         private void StartCombat(Battalion defBat, Vector2I defPos)
         {
             _flow.EnterCombat();
-            _rules.RaiseEvent(new GameplayEvent(GameplayEventType.CombatStarted));
+            _turnFlow.StartCombat();
 
             _combatFlow.StartCombat(
                 _flow.CurrentSelection.Unit,
@@ -263,20 +266,20 @@ namespace ColdWarWargame.Systems.Gameplay
                 (attackerForce, defenderForce, result) =>
                 {
                     _flow.ExitCombat();
-                    _rules.RaiseEvent(new GameplayEvent(GameplayEventType.CombatResolved));
+                    _turnFlow.ResolveCombat();
                     ClearSelection();
                 },
                 () =>
                 {
                     ClearSelection();
                     _flow.ExitCombat();
-                    _rules.RaiseEvent(new GameplayEvent(GameplayEventType.CombatCancelled));
+                    _turnFlow.CancelCombat();
                     _hud.SetInfoText("Combat cancelled");
                 },
                 () =>
                 {
                     _flow.ExitCombat();
-                    _rules.RaiseEvent(new GameplayEvent(GameplayEventType.PhaseFinished));
+                    _turnFlow.FinishPhase();
                     _hud.SetInfoText("Click to select");
                 });
         }
@@ -285,7 +288,7 @@ namespace ColdWarWargame.Systems.Gameplay
         {
             _flow.ClearSelection();
             _renderer.ClearSel();
-            _rules.RaiseEvent(new GameplayEvent(GameplayEventType.UnitDeselected));
+            _eventHub.Publish(new GameplayEvent(GameplayEventType.UnitDeselected));
         }
 
         private void UpdateArtilleryOverlay(Battalion unit, Vector2I pos)

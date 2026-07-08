@@ -42,6 +42,11 @@ namespace ColdWarWargame.Systems.Gameplay
             _ => false
         };
 
+        public void Bind(GameplayEventHub eventHub)
+        {
+            eventHub.EventPublished += OnGameplayEvent;
+        }
+
         public void RaiseEvent(GameplayEvent gameplayEvent)
         {
             _eventLog.Add(gameplayEvent);
@@ -90,6 +95,11 @@ namespace ColdWarWargame.Systems.Gameplay
                     DeclareDraw();
                     break;
             }
+        }
+
+        private void OnGameplayEvent(GameplayEvent gameplayEvent)
+        {
+            RaiseEvent(gameplayEvent);
         }
 
         public void BeginStrategicPhase() => _turnPhaseRules.StartStrategicPhase();
