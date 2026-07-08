@@ -230,5 +230,27 @@
         "HeavyAntiTank"
       ]
     }
+  },
+  "sov_2s3_akatsiya": {
+    "name": "2S3 金合欢自行榴弹炮",
+    "class_type": "spa_arty",
+    "visuals": {
+      "icon": "icon_spa_arty_red",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 4,
+      "attack": 2.0,
+      "defense": 2.0
+    },
+    "arty_area": 8,
+    "system_vars": {
+      "cost": 190,
+      "base_weight": 4
+    },
+    "tactical_tags": {
+      "domain": "Rear",
+      "capabilities": []
+    }
   }
 }

@@ -1,43 +1,22 @@
 {
   "frg_tank_battalion": {
-    "name": "西德坦克营",
+    "name": "西德坦克营(PzBtl)",
     "visuals": {
       "icon": "icon_tank_blue",
       "model_scale": 1.0
     },
     "companies": {
-      "Company_A": {
-        "name": "A连（坦克）",
+      "Company_1": {
+        "name": "1连(营部与补给)",
         "platoons": {
-          "Platoon_A1": {
+          "Platoon_1_HQ": {
             "type": "standard",
             "units": {
-              "tank_1": {
+              "cmd_tank_1": {
                 "unit_id": "frg_leopard1a5",
                 "max_hp": 8
               },
-              "tank_2": {
-                "unit_id": "frg_leopard1a5",
-                "max_hp": 8
-              },
-              "tank_3": {
-                "unit_id": "frg_leopard1a5",
-                "max_hp": 8
-              }
-            }
-          },
-          "Platoon_A2": {
-            "type": "standard",
-            "units": {
-              "tank_1": {
-                "unit_id": "frg_leopard1a5",
-                "max_hp": 8
-              },
-              "tank_2": {
-                "unit_id": "frg_leopard1a5",
-                "max_hp": 8
-              },
-              "tank_3": {
+              "cmd_tank_2": {
                 "unit_id": "frg_leopard1a5",
                 "max_hp": 8
               }
@@ -45,38 +24,230 @@
           }
         }
       },
-      "Company_B": {
-        "name": "B连（坦克）",
+      "Company_2": {
+        "name": "2连(坦克)",
         "platoons": {
-          "Platoon_B1": {
+          "Platoon_2_HQ": {
             "type": "standard",
             "units": {
-              "tank_1": {
-                "unit_id": "frg_leopard1a5",
-                "max_hp": 8
-              },
-              "tank_2": {
-                "unit_id": "frg_leopard1a5",
-                "max_hp": 8
-              },
-              "tank_3": {
+              "tank_hq_1": {
                 "unit_id": "frg_leopard1a5",
                 "max_hp": 8
               }
             }
           },
-          "Platoon_B2": {
+          "Platoon_2_1": {
             "type": "standard",
             "units": {
-              "tank_1": {
+              "tank_1_1": {
                 "unit_id": "frg_leopard1a5",
                 "max_hp": 8
               },
-              "tank_2": {
+              "tank_1_2": {
                 "unit_id": "frg_leopard1a5",
                 "max_hp": 8
               },
-              "tank_3": {
+              "tank_1_3": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              },
+              "tank_1_4": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              }
+            }
+          },
+          "Platoon_2_2": {
+            "type": "standard",
+            "units": {
+              "tank_2_1": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              },
+              "tank_2_2": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              },
+              "tank_2_3": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              },
+              "tank_2_4": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              }
+            }
+          },
+          "Platoon_2_3": {
+            "type": "standard",
+            "units": {
+              "tank_3_1": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              },
+              "tank_3_2": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              },
+              "tank_3_3": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              },
+              "tank_3_4": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              }
+            }
+          }
+        }
+      },
+      "Company_3": {
+        "name": "3连(坦克)",
+        "platoons": {
+          "Platoon_3_HQ": {
+            "type": "standard",
+            "units": {
+              "tank_hq_1": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              }
+            }
+          },
+          "Platoon_3_1": {
+            "type": "standard",
+            "units": {
+              "tank_1_1": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              },
+              "tank_1_2": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              },
+              "tank_1_3": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              },
+              "tank_1_4": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              }
+            }
+          },
+          "Platoon_3_2": {
+            "type": "standard",
+            "units": {
+              "tank_2_1": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              },
+              "tank_2_2": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              },
+              "tank_2_3": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              },
+              "tank_2_4": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              }
+            }
+          },
+          "Platoon_3_3": {
+            "type": "standard",
+            "units": {
+              "tank_3_1": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              },
+              "tank_3_2": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              },
+              "tank_3_3": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              },
+              "tank_3_4": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              }
+            }
+          }
+        }
+      },
+      "Company_4": {
+        "name": "4连(坦克)",
+        "platoons": {
+          "Platoon_4_HQ": {
+            "type": "standard",
+            "units": {
+              "tank_hq_1": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              }
+            }
+          },
+          "Platoon_4_1": {
+            "type": "standard",
+            "units": {
+              "tank_1_1": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              },
+              "tank_1_2": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              },
+              "tank_1_3": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              },
+              "tank_1_4": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              }
+            }
+          },
+          "Platoon_4_2": {
+            "type": "standard",
+            "units": {
+              "tank_2_1": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              },
+              "tank_2_2": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              },
+              "tank_2_3": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              },
+              "tank_2_4": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              }
+            }
+          },
+          "Platoon_4_3": {
+            "type": "standard",
+            "units": {
+              "tank_3_1": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              },
+              "tank_3_2": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              },
+              "tank_3_3": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              },
+              "tank_3_4": {
                 "unit_id": "frg_leopard1a5",
                 "max_hp": 8
               }
@@ -88,15 +259,24 @@
     "role": "main"
   },
   "frg_panzergrenadier_battalion": {
-    "name": "西德装甲掷弹兵营",
+    "name": "西德装甲掷弹兵营(PzGrenBtl)",
     "visuals": {
       "icon": "icon_ifv_blue",
       "model_scale": 1.0
     },
     "companies": {
       "Company_A": {
-        "name": "A连（装甲掷弹兵）",
+        "name": "A连(装甲掷弹兵)",
         "platoons": {
+          "Platoon_A_HQ": {
+            "type": "standard",
+            "units": {
+              "marder_hq_1": {
+                "unit_id": "frg_marder1A1",
+                "max_hp": 8
+              }
+            }
+          },
           "Platoon_A1": {
             "type": "composite",
             "infantry": {
@@ -115,11 +295,11 @@
             },
             "vehicle": {
               "veh_1": {
-                "unit_id": "frg_marder1A1",
+                "unit_id": "frg_marder1A1_milan",
                 "max_hp": 8
               },
               "veh_2": {
-                "unit_id": "frg_marder1A1_milan",
+                "unit_id": "frg_marder1A1",
                 "max_hp": 8
               },
               "veh_3": {
@@ -146,11 +326,42 @@
             },
             "vehicle": {
               "veh_1": {
-                "unit_id": "frg_marder1A1",
+                "unit_id": "frg_marder1A1_milan",
                 "max_hp": 8
               },
               "veh_2": {
+                "unit_id": "frg_marder1A1",
+                "max_hp": 8
+              },
+              "veh_3": {
+                "unit_id": "frg_marder1A1",
+                "max_hp": 8
+              }
+            }
+          },
+          "Platoon_A3": {
+            "type": "composite",
+            "infantry": {
+              "squad_1": {
+                "unit_id": "frg_grenadiers",
+                "max_hp": 8
+              },
+              "squad_2": {
+                "unit_id": "frg_grenadiers",
+                "max_hp": 8
+              },
+              "squad_3": {
+                "unit_id": "frg_grenadiers",
+                "max_hp": 8
+              }
+            },
+            "vehicle": {
+              "veh_1": {
                 "unit_id": "frg_marder1A1_milan",
+                "max_hp": 8
+              },
+              "veh_2": {
+                "unit_id": "frg_marder1A1",
                 "max_hp": 8
               },
               "veh_3": {
@@ -161,10 +372,224 @@
           }
         }
       },
-      "Company_Leopard": {
-        "name": "营属坦克连",
+      "Company_B": {
+        "name": "B连(装甲掷弹兵)",
         "platoons": {
-          "Platoon_L1": {
+          "Platoon_B_HQ": {
+            "type": "standard",
+            "units": {
+              "marder_hq_1": {
+                "unit_id": "frg_marder1A1",
+                "max_hp": 8
+              }
+            }
+          },
+          "Platoon_B1": {
+            "type": "composite",
+            "infantry": {
+              "squad_1": {
+                "unit_id": "frg_grenadiers",
+                "max_hp": 8
+              },
+              "squad_2": {
+                "unit_id": "frg_grenadiers",
+                "max_hp": 8
+              },
+              "squad_3": {
+                "unit_id": "frg_grenadiers",
+                "max_hp": 8
+              }
+            },
+            "vehicle": {
+              "veh_1": {
+                "unit_id": "frg_marder1A1_milan",
+                "max_hp": 8
+              },
+              "veh_2": {
+                "unit_id": "frg_marder1A1",
+                "max_hp": 8
+              },
+              "veh_3": {
+                "unit_id": "frg_marder1A1",
+                "max_hp": 8
+              }
+            }
+          },
+          "Platoon_B2": {
+            "type": "composite",
+            "infantry": {
+              "squad_1": {
+                "unit_id": "frg_grenadiers",
+                "max_hp": 8
+              },
+              "squad_2": {
+                "unit_id": "frg_grenadiers",
+                "max_hp": 8
+              },
+              "squad_3": {
+                "unit_id": "frg_grenadiers",
+                "max_hp": 8
+              }
+            },
+            "vehicle": {
+              "veh_1": {
+                "unit_id": "frg_marder1A1_milan",
+                "max_hp": 8
+              },
+              "veh_2": {
+                "unit_id": "frg_marder1A1",
+                "max_hp": 8
+              },
+              "veh_3": {
+                "unit_id": "frg_marder1A1",
+                "max_hp": 8
+              }
+            }
+          },
+          "Platoon_B3": {
+            "type": "composite",
+            "infantry": {
+              "squad_1": {
+                "unit_id": "frg_grenadiers",
+                "max_hp": 8
+              },
+              "squad_2": {
+                "unit_id": "frg_grenadiers",
+                "max_hp": 8
+              },
+              "squad_3": {
+                "unit_id": "frg_grenadiers",
+                "max_hp": 8
+              }
+            },
+            "vehicle": {
+              "veh_1": {
+                "unit_id": "frg_marder1A1_milan",
+                "max_hp": 8
+              },
+              "veh_2": {
+                "unit_id": "frg_marder1A1",
+                "max_hp": 8
+              },
+              "veh_3": {
+                "unit_id": "frg_marder1A1",
+                "max_hp": 8
+              }
+            }
+          }
+        }
+      },
+      "Company_C": {
+        "name": "C连(装甲掷弹兵)",
+        "platoons": {
+          "Platoon_C_HQ": {
+            "type": "standard",
+            "units": {
+              "marder_hq_1": {
+                "unit_id": "frg_marder1A1",
+                "max_hp": 8
+              }
+            }
+          },
+          "Platoon_C1": {
+            "type": "composite",
+            "infantry": {
+              "squad_1": {
+                "unit_id": "frg_grenadiers",
+                "max_hp": 8
+              },
+              "squad_2": {
+                "unit_id": "frg_grenadiers",
+                "max_hp": 8
+              },
+              "squad_3": {
+                "unit_id": "frg_grenadiers",
+                "max_hp": 8
+              }
+            },
+            "vehicle": {
+              "veh_1": {
+                "unit_id": "frg_marder1A1_milan",
+                "max_hp": 8
+              },
+              "veh_2": {
+                "unit_id": "frg_marder1A1",
+                "max_hp": 8
+              },
+              "veh_3": {
+                "unit_id": "frg_marder1A1",
+                "max_hp": 8
+              }
+            }
+          },
+          "Platoon_C2": {
+            "type": "composite",
+            "infantry": {
+              "squad_1": {
+                "unit_id": "frg_grenadiers",
+                "max_hp": 8
+              },
+              "squad_2": {
+                "unit_id": "frg_grenadiers",
+                "max_hp": 8
+              },
+              "squad_3": {
+                "unit_id": "frg_grenadiers",
+                "max_hp": 8
+              }
+            },
+            "vehicle": {
+              "veh_1": {
+                "unit_id": "frg_marder1A1_milan",
+                "max_hp": 8
+              },
+              "veh_2": {
+                "unit_id": "frg_marder1A1",
+                "max_hp": 8
+              },
+              "veh_3": {
+                "unit_id": "frg_marder1A1",
+                "max_hp": 8
+              }
+            }
+          },
+          "Platoon_C3": {
+            "type": "composite",
+            "infantry": {
+              "squad_1": {
+                "unit_id": "frg_grenadiers",
+                "max_hp": 8
+              },
+              "squad_2": {
+                "unit_id": "frg_grenadiers",
+                "max_hp": 8
+              },
+              "squad_3": {
+                "unit_id": "frg_grenadiers",
+                "max_hp": 8
+              }
+            },
+            "vehicle": {
+              "veh_1": {
+                "unit_id": "frg_marder1A1_milan",
+                "max_hp": 8
+              },
+              "veh_2": {
+                "unit_id": "frg_marder1A1",
+                "max_hp": 8
+              },
+              "veh_3": {
+                "unit_id": "frg_marder1A1",
+                "max_hp": 8
+              }
+            }
+          }
+        }
+      },
+      "Company_D": {
+        "name": "D连(营属坦克)",
+        "platoons": {
+          "Platoon_D1": {
             "type": "standard",
             "units": {
               "tank_1": {
@@ -178,24 +603,41 @@
               "tank_3": {
                 "unit_id": "frg_leopard1a5",
                 "max_hp": 8
+              },
+              "tank_4": {
+                "unit_id": "frg_leopard1a5",
+                "max_hp": 8
+              }
+            }
+          },
+          "Platoon_AA": {
+            "type": "standard",
+            "units": {
+              "gepard_1": {
+                "unit_id": "frg_Gepard1A1",
+                "max_hp": 7
+              },
+              "gepard_2": {
+                "unit_id": "frg_Gepard1A1",
+                "max_hp": 7
               }
             }
           }
         }
       },
-      "Company_AA": {
-        "name": "防空排",
+      "Company_Mortar": {
+        "name": "迫击炮排",
         "platoons": {
-          "Platoon_AA1": {
+          "Platoon_Mortar": {
             "type": "standard",
             "units": {
-              "aa_1": {
-                "unit_id": "frg_Gepard1A1",
-                "max_hp": 7
+              "mortar_carrier_1": {
+                "unit_id": "frg_marder1A1",
+                "max_hp": 8
               },
-              "aa_2": {
-                "unit_id": "frg_Gepard1A1",
-                "max_hp": 7
+              "mortar_carrier_2": {
+                "unit_id": "frg_marder1A1",
+                "max_hp": 8
               }
             }
           }
@@ -203,5 +645,255 @@
       }
     },
     "role": "main"
+  },
+  "frg_recon_battalion": {
+    "name": "西德装甲侦察营",
+    "visuals": {
+      "icon": "icon_recon_blue",
+      "model_scale": 1.0
+    },
+    "companies": {
+      "Company_A": {
+        "name": "A连(侦察)",
+        "platoons": {
+          "Platoon_A1": {
+            "type": "composite",
+            "infantry": {
+              "squad_1": {
+                "unit_id": "frg_grenadiers",
+                "max_hp": 8
+              },
+              "squad_2": {
+                "unit_id": "frg_grenadiers",
+                "max_hp": 8
+              }
+            },
+            "vehicle": {
+              "veh_1": {
+                "unit_id": "frg_marder1A1",
+                "max_hp": 8
+              },
+              "veh_2": {
+                "unit_id": "frg_marder1A1",
+                "max_hp": 8
+              }
+            }
+          },
+          "Platoon_A2": {
+            "type": "composite",
+            "infantry": {
+              "squad_1": {
+                "unit_id": "frg_grenadiers",
+                "max_hp": 8
+              },
+              "squad_2": {
+                "unit_id": "frg_grenadiers",
+                "max_hp": 8
+              }
+            },
+            "vehicle": {
+              "veh_1": {
+                "unit_id": "frg_marder1A1",
+                "max_hp": 8
+              },
+              "veh_2": {
+                "unit_id": "frg_marder1A1",
+                "max_hp": 8
+              }
+            }
+          },
+          "Platoon_A3": {
+            "type": "composite",
+            "infantry": {
+              "squad_1": {
+                "unit_id": "frg_grenadiers",
+                "max_hp": 8
+              },
+              "squad_2": {
+                "unit_id": "frg_grenadiers",
+                "max_hp": 8
+              }
+            },
+            "vehicle": {
+              "veh_1": {
+                "unit_id": "frg_marder1A1",
+                "max_hp": 8
+              },
+              "veh_2": {
+                "unit_id": "frg_marder1A1",
+                "max_hp": 8
+              }
+            }
+          }
+        }
+      }
+    },
+    "role": "support"
+  },
+  "frg_arty_battalion": {
+    "name": "西德装甲炮兵营(M109)",
+    "visuals": {
+      "icon": "icon_spa_arty_blue",
+      "model_scale": 1.0
+    },
+    "companies": {
+      "Battery_A": {
+        "name": "A连(炮兵)",
+        "platoons": {
+          "Platoon_A_HQ": {
+            "type": "standard",
+            "units": {
+              "arty_hq_1": {
+                "unit_id": "us_m109a2",
+                "max_hp": 4
+              },
+              "arty_hq_2": {
+                "unit_id": "us_m109a2",
+                "max_hp": 4
+              }
+            }
+          },
+          "Platoon_A1": {
+            "type": "standard",
+            "units": {
+              "arty_1": {
+                "unit_id": "us_m109a2",
+                "max_hp": 4
+              },
+              "arty_2": {
+                "unit_id": "us_m109a2",
+                "max_hp": 4
+              },
+              "arty_3": {
+                "unit_id": "us_m109a2",
+                "max_hp": 4
+              }
+            }
+          },
+          "Platoon_A2": {
+            "type": "standard",
+            "units": {
+              "arty_1": {
+                "unit_id": "us_m109a2",
+                "max_hp": 4
+              },
+              "arty_2": {
+                "unit_id": "us_m109a2",
+                "max_hp": 4
+              },
+              "arty_3": {
+                "unit_id": "us_m109a2",
+                "max_hp": 4
+              }
+            }
+          }
+        }
+      },
+      "Battery_B": {
+        "name": "B连(炮兵)",
+        "platoons": {
+          "Platoon_B_HQ": {
+            "type": "standard",
+            "units": {
+              "arty_hq_1": {
+                "unit_id": "us_m109a2",
+                "max_hp": 4
+              },
+              "arty_hq_2": {
+                "unit_id": "us_m109a2",
+                "max_hp": 4
+              }
+            }
+          },
+          "Platoon_B1": {
+            "type": "standard",
+            "units": {
+              "arty_1": {
+                "unit_id": "us_m109a2",
+                "max_hp": 4
+              },
+              "arty_2": {
+                "unit_id": "us_m109a2",
+                "max_hp": 4
+              },
+              "arty_3": {
+                "unit_id": "us_m109a2",
+                "max_hp": 4
+              }
+            }
+          },
+          "Platoon_B2": {
+            "type": "standard",
+            "units": {
+              "arty_1": {
+                "unit_id": "us_m109a2",
+                "max_hp": 4
+              },
+              "arty_2": {
+                "unit_id": "us_m109a2",
+                "max_hp": 4
+              },
+              "arty_3": {
+                "unit_id": "us_m109a2",
+                "max_hp": 4
+              }
+            }
+          }
+        }
+      },
+      "Battery_C": {
+        "name": "C连(炮兵)",
+        "platoons": {
+          "Platoon_C_HQ": {
+            "type": "standard",
+            "units": {
+              "arty_hq_1": {
+                "unit_id": "us_m109a2",
+                "max_hp": 4
+              },
+              "arty_hq_2": {
+                "unit_id": "us_m109a2",
+                "max_hp": 4
+              }
+            }
+          },
+          "Platoon_C1": {
+            "type": "standard",
+            "units": {
+              "arty_1": {
+                "unit_id": "us_m109a2",
+                "max_hp": 4
+              },
+              "arty_2": {
+                "unit_id": "us_m109a2",
+                "max_hp": 4
+              },
+              "arty_3": {
+                "unit_id": "us_m109a2",
+                "max_hp": 4
+              }
+            }
+          },
+          "Platoon_C2": {
+            "type": "standard",
+            "units": {
+              "arty_1": {
+                "unit_id": "us_m109a2",
+                "max_hp": 4
+              },
+              "arty_2": {
+                "unit_id": "us_m109a2",
+                "max_hp": 4
+              },
+              "arty_3": {
+                "unit_id": "us_m109a2",
+                "max_hp": 4
+              }
+            }
+          }
+        }
+      }
+    },
+    "role": "artillery"
   }
 }

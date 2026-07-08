@@ -1,46 +1,328 @@
 {
   "faction_blue": [
     {
-      "instance_id": "1st_battalion_7th_cav",
-      "template_id": "us_mech_battalion_standard",
-      "x": 8,
-      "y": 16
-    },
-    {
-      "instance_id": "2nd_battalion_33rd_pz",
-      "template_id": "frg_tank_battalion",
-      "x": 20,
-      "y": 16
-    },
-    {
-      "instance_id": "3rd_battalion_11th_armor",
-      "template_id": "us_armor_battalion",
-      "x": 14,
-      "y": 17
-    },
-    {
-      "instance_id": "1st_squadron_2nd_cav",
+      "instance_id": "11ACR_1Sqdn",
       "template_id": "us_cav_squadron",
-      "x": 5,
+      "x": 22,
+      "y": 15
+    },
+    {
+      "instance_id": "11ACR_2Sqdn",
+      "template_id": "us_cav_squadron",
+      "x": 24,
       "y": 14
     },
     {
-      "instance_id": "4th_battalion_101st_aviation",
+      "instance_id": "11ACR_3Sqdn",
+      "template_id": "us_cav_squadron",
+      "x": 25,
+      "y": 16
+    },
+    {
+      "instance_id": "11ACR_4AvnSqdn",
       "template_id": "us_aviation_battalion",
+      "x": 21,
+      "y": 17
+    },
+    {
+      "instance_id": "3AD_1Bde_1_67AR",
+      "template_id": "us_armor_battalion",
+      "x": 16,
+      "y": 18
+    },
+    {
+      "instance_id": "3AD_1Bde_2_67AR",
+      "template_id": "us_armor_battalion",
+      "x": 18,
+      "y": 17
+    },
+    {
+      "instance_id": "3AD_1Bde_1_36IN",
+      "template_id": "us_mech_battalion_standard",
+      "x": 20,
+      "y": 18
+    },
+    {
+      "instance_id": "3AD_2Bde_1_32AR",
+      "template_id": "us_armor_battalion",
+      "x": 14,
+      "y": 19
+    },
+    {
+      "instance_id": "3AD_2Bde_2_32AR",
+      "template_id": "us_armor_battalion",
+      "x": 16,
+      "y": 19
+    },
+    {
+      "instance_id": "3AD_2Bde_1_48IN",
+      "template_id": "us_mech_battalion_standard",
+      "x": 18,
+      "y": 19
+    },
+    {
+      "instance_id": "3AD_3Bde_1_8IN",
+      "template_id": "us_mech_battalion_standard",
+      "x": 20,
+      "y": 20
+    },
+    {
+      "instance_id": "3AD_3Bde_2_8IN",
+      "template_id": "us_mech_battalion_standard",
+      "x": 22,
+      "y": 20
+    },
+    {
+      "instance_id": "3AD_3Bde_3_8AR",
+      "template_id": "us_armor_battalion",
+      "x": 14,
+      "y": 21
+    },
+    {
+      "instance_id": "3AD_4Bde_4_AR",
+      "template_id": "us_armor_battalion",
+      "x": 16,
+      "y": 21
+    },
+    {
+      "instance_id": "3AD_DivCav",
+      "template_id": "us_div_recon_squadron",
+      "x": 22,
+      "y": 17
+    },
+    {
+      "instance_id": "3AD_Avn_1Bn",
+      "template_id": "us_aviation_battalion",
+      "x": 12,
+      "y": 20
+    },
+    {
+      "instance_id": "3AD_Avn_2Bn",
+      "template_id": "us_aviation_battalion",
+      "x": 20,
+      "y": 22
+    },
+    {
+      "instance_id": "3AD_Arty_1_40FA",
+      "template_id": "us_div_arty_battalion",
       "x": 14,
       "y": 18
     },
     {
-      "instance_id": "1st_battalion_505th_airborne",
-      "template_id": "us_airborne_battalion",
-      "x": 22,
-      "y": 14
+      "instance_id": "3AD_Arty_2_41FA",
+      "template_id": "us_div_arty_battalion",
+      "x": 16,
+      "y": 18
     },
     {
-      "instance_id": "1st_battalion_12th_panzergrenadier",
+      "instance_id": "3AD_Arty_3_42FA",
+      "template_id": "us_div_arty_battalion",
+      "x": 18,
+      "y": 18
+    },
+    {
+      "instance_id": "3AD_Arty_4_333FA",
+      "template_id": "us_div_arty_battalion",
+      "x": 20,
+      "y": 19
+    },
+    {
+      "instance_id": "8ID_1Bde_1_13IN",
+      "template_id": "us_mech_battalion_standard",
+      "x": 2,
+      "y": 20
+    },
+    {
+      "instance_id": "8ID_1Bde_2_13IN",
+      "template_id": "us_mech_battalion_standard",
+      "x": 4,
+      "y": 19
+    },
+    {
+      "instance_id": "8ID_1Bde_1_68AR",
+      "template_id": "us_armor_battalion",
+      "x": 6,
+      "y": 20
+    },
+    {
+      "instance_id": "8ID_2Bde_1_68IN",
+      "template_id": "us_mech_battalion_standard",
+      "x": 8,
+      "y": 21
+    },
+    {
+      "instance_id": "8ID_2Bde_2_68IN",
+      "template_id": "us_mech_battalion_standard",
+      "x": 10,
+      "y": 20
+    },
+    {
+      "instance_id": "8ID_2Bde_2_68AR",
+      "template_id": "us_armor_battalion",
+      "x": 12,
+      "y": 21
+    },
+    {
+      "instance_id": "8ID_3Bde_1_77AR",
+      "template_id": "us_armor_battalion",
+      "x": 4,
+      "y": 22
+    },
+    {
+      "instance_id": "8ID_3Bde_2_77AR",
+      "template_id": "us_armor_battalion",
+      "x": 6,
+      "y": 22
+    },
+    {
+      "instance_id": "8ID_3Bde_3_39IN",
+      "template_id": "us_mech_battalion_standard",
+      "x": 8,
+      "y": 23
+    },
+    {
+      "instance_id": "8ID_4_AR",
+      "template_id": "us_armor_battalion",
+      "x": 10,
+      "y": 23
+    },
+    {
+      "instance_id": "8ID_DivCav",
+      "template_id": "us_div_recon_squadron",
+      "x": 0,
+      "y": 22
+    },
+    {
+      "instance_id": "8ID_Avn_1Bn",
+      "template_id": "us_aviation_battalion",
+      "x": 4,
+      "y": 24
+    },
+    {
+      "instance_id": "8ID_Avn_2Bn",
+      "template_id": "us_aviation_battalion",
+      "x": 8,
+      "y": 25
+    },
+    {
+      "instance_id": "8ID_Arty_1_29FA",
+      "template_id": "us_div_arty_battalion",
+      "x": 2,
+      "y": 18
+    },
+    {
+      "instance_id": "8ID_Arty_2_45FA",
+      "template_id": "us_div_arty_battalion",
+      "x": 4,
+      "y": 18
+    },
+    {
+      "instance_id": "8ID_Arty_3_46FA",
+      "template_id": "us_div_arty_battalion",
+      "x": 6,
+      "y": 18
+    },
+    {
+      "instance_id": "8ID_Arty_4_47FA",
+      "template_id": "us_div_arty_battalion",
+      "x": 8,
+      "y": 18
+    },
+    {
+      "instance_id": "8ID_ADA",
+      "template_id": "us_airborne_battalion",
+      "x": 2,
+      "y": 26
+    },
+    {
+      "instance_id": "5PzDiv_14PzBde_PzBtl141",
+      "template_id": "frg_tank_battalion",
+      "x": 26,
+      "y": 18
+    },
+    {
+      "instance_id": "5PzDiv_14PzBde_PzBtl142",
+      "template_id": "frg_tank_battalion",
+      "x": 28,
+      "y": 18
+    },
+    {
+      "instance_id": "5PzDiv_14PzBde_PzGrenBtl143",
       "template_id": "frg_panzergrenadier_battalion",
-      "x": 25,
-      "y": 17
+      "x": 28,
+      "y": 20
+    },
+    {
+      "instance_id": "5PzDiv_15PzBde_PzBtl151",
+      "template_id": "frg_tank_battalion",
+      "x": 26,
+      "y": 21
+    },
+    {
+      "instance_id": "5PzDiv_15PzBde_PzBtl152",
+      "template_id": "frg_tank_battalion",
+      "x": 28,
+      "y": 22
+    },
+    {
+      "instance_id": "5PzDiv_15PzBde_PzGrenBtl153",
+      "template_id": "frg_panzergrenadier_battalion",
+      "x": 30,
+      "y": 21
+    },
+    {
+      "instance_id": "5PzDiv_13PzGrenBde_PzBtl131",
+      "template_id": "frg_tank_battalion",
+      "x": 32,
+      "y": 18
+    },
+    {
+      "instance_id": "5PzDiv_13PzGrenBde_PzBtl132",
+      "template_id": "frg_tank_battalion",
+      "x": 32,
+      "y": 20
+    },
+    {
+      "instance_id": "5PzDiv_13PzGrenBde_PzGrenBtl133",
+      "template_id": "frg_panzergrenadier_battalion",
+      "x": 30,
+      "y": 23
+    },
+    {
+      "instance_id": "5PzDiv_13PzGrenBde_PzGrenBtl134",
+      "template_id": "frg_panzergrenadier_battalion",
+      "x": 32,
+      "y": 24
+    },
+    {
+      "instance_id": "5PzDiv_AufklBtl",
+      "template_id": "frg_recon_battalion",
+      "x": 24,
+      "y": 18
+    },
+    {
+      "instance_id": "5PzDiv_Reserve",
+      "template_id": "frg_tank_battalion",
+      "x": 30,
+      "y": 26
+    },
+    {
+      "instance_id": "5PzDiv_Arty_1Bn",
+      "template_id": "frg_arty_battalion",
+      "x": 26,
+      "y": 20
+    },
+    {
+      "instance_id": "5PzDiv_Arty_2Bn",
+      "template_id": "frg_arty_battalion",
+      "x": 28,
+      "y": 21
+    },
+    {
+      "instance_id": "5PzDiv_Arty_3Bn",
+      "template_id": "frg_arty_battalion",
+      "x": 30,
+      "y": 22
     }
   ]
 }

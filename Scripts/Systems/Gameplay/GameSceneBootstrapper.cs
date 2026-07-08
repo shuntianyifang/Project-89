@@ -41,7 +41,7 @@ namespace ColdWarWargame.Systems.Gameplay
 
         public void Initialize()
         {
-            float gw = 30f, gh = 20f;
+            float gw = 50f, gh = 30f;
             Camera = new GameCamera();
             Camera.Target = new Vector3(gw / 2, 0, gh / 2);
             _root.AddChild(Camera);

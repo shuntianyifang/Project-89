@@ -1,46 +1,520 @@
 {
   "faction_red": [
     {
-      "instance_id": "1st_battalion_27th_msd",
-      "template_id": "sov_motorifle_battalion",
-      "x": 10,
-      "y": 2
-    },
-    {
-      "instance_id": "1st_battalion_9th_pz",
-      "template_id": "gdr_tank_battalion",
-      "x": 20,
-      "y": 2
-    },
-    {
-      "instance_id": "1st_battalion_79th_guards_tank",
+      "instance_id": "79GTD_1TkR_1Bn",
       "template_id": "sov_heavy_tank_battalion",
-      "x": 14,
+      "x": 40,
+      "y": 10
+    },
+    {
+      "instance_id": "79GTD_1TkR_2Bn",
+      "template_id": "sov_heavy_tank_battalion",
+      "x": 42,
+      "y": 10
+    },
+    {
+      "instance_id": "79GTD_1TkR_3Bn",
+      "template_id": "sov_heavy_tank_battalion",
+      "x": 44,
+      "y": 10
+    },
+    {
+      "instance_id": "79GTD_1TkR_MRBn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 43,
+      "y": 12
+    },
+    {
+      "instance_id": "79GTD_2TkR_1Bn",
+      "template_id": "sov_heavy_tank_battalion",
+      "x": 42,
+      "y": 12
+    },
+    {
+      "instance_id": "79GTD_2TkR_2Bn",
+      "template_id": "sov_heavy_tank_battalion",
+      "x": 44,
+      "y": 12
+    },
+    {
+      "instance_id": "79GTD_2TkR_3Bn",
+      "template_id": "sov_heavy_tank_battalion",
+      "x": 46,
+      "y": 10
+    },
+    {
+      "instance_id": "79GTD_2TkR_MRBn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 45,
+      "y": 14
+    },
+    {
+      "instance_id": "79GTD_3TkR_1Bn",
+      "template_id": "sov_heavy_tank_battalion",
+      "x": 46,
+      "y": 12
+    },
+    {
+      "instance_id": "79GTD_3TkR_2Bn",
+      "template_id": "sov_heavy_tank_battalion",
+      "x": 48,
+      "y": 11
+    },
+    {
+      "instance_id": "79GTD_3TkR_3Bn",
+      "template_id": "sov_heavy_tank_battalion",
+      "x": 47,
+      "y": 9
+    },
+    {
+      "instance_id": "79GTD_3TkR_MRBn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 49,
+      "y": 13
+    },
+    {
+      "instance_id": "79GTD_MRR_1Bn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 38,
+      "y": 14
+    },
+    {
+      "instance_id": "79GTD_MRR_2Bn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 40,
+      "y": 14
+    },
+    {
+      "instance_id": "79GTD_MRR_3Bn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 42,
+      "y": 14
+    },
+    {
+      "instance_id": "79GTD_MRR_TkBn",
+      "template_id": "sov_heavy_tank_battalion",
+      "x": 44,
+      "y": 14
+    },
+    {
+      "instance_id": "79GTD_Recon",
+      "template_id": "sov_recon_battalion",
+      "x": 38,
+      "y": 9
+    },
+    {
+      "instance_id": "79GTD_Avn",
+      "template_id": "sov_aviation_battalion",
+      "x": 46,
+      "y": 14
+    },
+    {
+      "instance_id": "79GTD_Arty_1Bn",
+      "template_id": "sov_arty_group",
+      "x": 40,
+      "y": 8
+    },
+    {
+      "instance_id": "79GTD_Arty_2Bn",
+      "template_id": "sov_arty_group",
+      "x": 42,
+      "y": 8
+    },
+    {
+      "instance_id": "79GTD_Arty_3Bn",
+      "template_id": "sov_heavy_arty_battalion",
+      "x": 44,
+      "y": 8
+    },
+    {
+      "instance_id": "39GMRD_1MRR_1Bn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 35,
+      "y": 2
+    },
+    {
+      "instance_id": "39GMRD_1MRR_2Bn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 37,
+      "y": 2
+    },
+    {
+      "instance_id": "39GMRD_1MRR_3Bn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 35,
       "y": 4
     },
     {
-      "instance_id": "5th_guards_recon_battalion",
-      "template_id": "sov_recon_battalion",
-      "x": 5,
-      "y": 3
+      "instance_id": "39GMRD_1MRR_TkBn",
+      "template_id": "sov_heavy_tank_battalion",
+      "x": 37,
+      "y": 4
     },
     {
-      "instance_id": "3rd_battalion_57th_msd",
-      "template_id": "sov_aviation_battalion",
-      "x": 22,
-      "y": 3
+      "instance_id": "39GMRD_2MRR_1Bn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 39,
+      "y": 2
     },
     {
-      "instance_id": "1st_guards_arty_regiment",
-      "template_id": "sov_arty_group",
-      "x": 14,
+      "instance_id": "39GMRD_2MRR_2Bn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 41,
       "y": 1
     },
     {
-      "instance_id": "2nd_battalion_23rd_gdr_motorifle",
-      "template_id": "gdr_motorifle_battalion",
-      "x": 25,
+      "instance_id": "39GMRD_2MRR_3Bn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 39,
       "y": 4
+    },
+    {
+      "instance_id": "39GMRD_2MRR_TkBn",
+      "template_id": "sov_heavy_tank_battalion",
+      "x": 41,
+      "y": 4
+    },
+    {
+      "instance_id": "39GMRD_3MRR_1Bn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 43,
+      "y": 2
+    },
+    {
+      "instance_id": "39GMRD_3MRR_2Bn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 45,
+      "y": 2
+    },
+    {
+      "instance_id": "39GMRD_3MRR_3Bn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 43,
+      "y": 4
+    },
+    {
+      "instance_id": "39GMRD_3MRR_TkBn",
+      "template_id": "sov_heavy_tank_battalion",
+      "x": 45,
+      "y": 4
+    },
+    {
+      "instance_id": "39GMRD_TkR_1Bn",
+      "template_id": "sov_heavy_tank_battalion",
+      "x": 33,
+      "y": 6
+    },
+    {
+      "instance_id": "39GMRD_TkR_2Bn",
+      "template_id": "sov_heavy_tank_battalion",
+      "x": 35,
+      "y": 6
+    },
+    {
+      "instance_id": "39GMRD_TkR_3Bn",
+      "template_id": "sov_heavy_tank_battalion",
+      "x": 37,
+      "y": 6
+    },
+    {
+      "instance_id": "39GMRD_TkR_MRBn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 39,
+      "y": 6
+    },
+    {
+      "instance_id": "39GMRD_Recon",
+      "template_id": "sov_recon_battalion",
+      "x": 33,
+      "y": 3
+    },
+    {
+      "instance_id": "39GMRD_Avn",
+      "template_id": "sov_aviation_battalion",
+      "x": 41,
+      "y": 6
+    },
+    {
+      "instance_id": "39GMRD_Arty_1Bn",
+      "template_id": "sov_arty_group",
+      "x": 34,
+      "y": 2
+    },
+    {
+      "instance_id": "39GMRD_Arty_2Bn",
+      "template_id": "sov_arty_group",
+      "x": 36,
+      "y": 2
+    },
+    {
+      "instance_id": "39GMRD_Arty_3Bn",
+      "template_id": "sov_heavy_arty_battalion",
+      "x": 38,
+      "y": 2
+    },
+    {
+      "instance_id": "57GMRD_1MRR_1Bn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 38,
+      "y": 6
+    },
+    {
+      "instance_id": "57GMRD_1MRR_2Bn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 40,
+      "y": 5
+    },
+    {
+      "instance_id": "57GMRD_1MRR_3Bn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 38,
+      "y": 8
+    },
+    {
+      "instance_id": "57GMRD_1MRR_TkBn",
+      "template_id": "sov_heavy_tank_battalion",
+      "x": 40,
+      "y": 8
+    },
+    {
+      "instance_id": "57GMRD_2MRR_1Bn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 42,
+      "y": 6
+    },
+    {
+      "instance_id": "57GMRD_2MRR_2Bn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 44,
+      "y": 5
+    },
+    {
+      "instance_id": "57GMRD_2MRR_3Bn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 42,
+      "y": 8
+    },
+    {
+      "instance_id": "57GMRD_2MRR_TkBn",
+      "template_id": "sov_heavy_tank_battalion",
+      "x": 44,
+      "y": 8
+    },
+    {
+      "instance_id": "57GMRD_3MRR_1Bn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 46,
+      "y": 6
+    },
+    {
+      "instance_id": "57GMRD_3MRR_2Bn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 48,
+      "y": 5
+    },
+    {
+      "instance_id": "57GMRD_3MRR_3Bn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 46,
+      "y": 8
+    },
+    {
+      "instance_id": "57GMRD_3MRR_TkBn",
+      "template_id": "sov_heavy_tank_battalion",
+      "x": 48,
+      "y": 8
+    },
+    {
+      "instance_id": "57GMRD_TkR_1Bn",
+      "template_id": "sov_heavy_tank_battalion",
+      "x": 36,
+      "y": 10
+    },
+    {
+      "instance_id": "57GMRD_TkR_2Bn",
+      "template_id": "sov_heavy_tank_battalion",
+      "x": 38,
+      "y": 10
+    },
+    {
+      "instance_id": "57GMRD_TkR_3Bn",
+      "template_id": "sov_heavy_tank_battalion",
+      "x": 40,
+      "y": 10
+    },
+    {
+      "instance_id": "57GMRD_TkR_MRBn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 42,
+      "y": 10
+    },
+    {
+      "instance_id": "57GMRD_Recon",
+      "template_id": "sov_recon_battalion",
+      "x": 37,
+      "y": 7
+    },
+    {
+      "instance_id": "57GMRD_Avn",
+      "template_id": "sov_aviation_battalion",
+      "x": 44,
+      "y": 10
+    },
+    {
+      "instance_id": "57GMRD_Arty_1Bn",
+      "template_id": "sov_arty_group",
+      "x": 37,
+      "y": 5
+    },
+    {
+      "instance_id": "57GMRD_Arty_2Bn",
+      "template_id": "sov_arty_group",
+      "x": 39,
+      "y": 5
+    },
+    {
+      "instance_id": "57GMRD_Arty_3Bn",
+      "template_id": "sov_heavy_arty_battalion",
+      "x": 41,
+      "y": 5
+    },
+    {
+      "instance_id": "27GMRD_1MRR_1Bn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 38,
+      "y": 16
+    },
+    {
+      "instance_id": "27GMRD_1MRR_2Bn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 40,
+      "y": 16
+    },
+    {
+      "instance_id": "27GMRD_1MRR_3Bn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 38,
+      "y": 18
+    },
+    {
+      "instance_id": "27GMRD_1MRR_TkBn",
+      "template_id": "sov_heavy_tank_battalion",
+      "x": 40,
+      "y": 18
+    },
+    {
+      "instance_id": "27GMRD_2MRR_1Bn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 42,
+      "y": 16
+    },
+    {
+      "instance_id": "27GMRD_2MRR_2Bn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 44,
+      "y": 18
+    },
+    {
+      "instance_id": "27GMRD_2MRR_TkBn",
+      "template_id": "sov_heavy_tank_battalion",
+      "x": 44,
+      "y": 16
+    },
+    {
+      "instance_id": "27GMRD_3MRR_1Bn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 46,
+      "y": 16
+    },
+    {
+      "instance_id": "27GMRD_3MRR_2Bn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 48,
+      "y": 18
+    },
+    {
+      "instance_id": "27GMRD_TkR_1Bn",
+      "template_id": "sov_heavy_tank_battalion",
+      "x": 36,
+      "y": 14
+    },
+    {
+      "instance_id": "27GMRD_TkR_2Bn",
+      "template_id": "sov_heavy_tank_battalion",
+      "x": 38,
+      "y": 14
+    },
+    {
+      "instance_id": "27GMRD_Recon",
+      "template_id": "sov_recon_battalion",
+      "x": 37,
+      "y": 17
+    },
+    {
+      "instance_id": "27GMRD_Avn",
+      "template_id": "sov_aviation_battalion",
+      "x": 46,
+      "y": 18
+    },
+    {
+      "instance_id": "27GMRD_Arty_1Bn",
+      "template_id": "sov_arty_group",
+      "x": 38,
+      "y": 13
+    },
+    {
+      "instance_id": "27GMRD_Arty_2Bn",
+      "template_id": "sov_arty_group",
+      "x": 40,
+      "y": 13
+    },
+    {
+      "instance_id": "119ITR_1Bn",
+      "template_id": "sov_heavy_tank_battalion",
+      "x": 47,
+      "y": 14
+    },
+    {
+      "instance_id": "119ITR_2Bn",
+      "template_id": "sov_heavy_tank_battalion",
+      "x": 48,
+      "y": 15
+    },
+    {
+      "instance_id": "119ITR_3Bn",
+      "template_id": "sov_heavy_tank_battalion",
+      "x": 46,
+      "y": 16
+    },
+    {
+      "instance_id": "119ITR_MRBn",
+      "template_id": "sov_motorifle_battalion",
+      "x": 49,
+      "y": 16
+    },
+    {
+      "instance_id": "GDR_9PzD_1TkB",
+      "template_id": "gdr_tank_battalion",
+      "x": 32,
+      "y": 1
+    },
+    {
+      "instance_id": "GDR_9PzD_2TkB",
+      "template_id": "gdr_tank_battalion",
+      "x": 34,
+      "y": 1
+    },
+    {
+      "instance_id": "GDR_9PzD_1MRB",
+      "template_id": "gdr_motorifle_battalion",
+      "x": 33,
+      "y": 3
+    },
+    {
+      "instance_id": "GDR_9PzD_2MRB",
+      "template_id": "gdr_motorifle_battalion",
+      "x": 35,
+      "y": 3
     }
   ]
 }

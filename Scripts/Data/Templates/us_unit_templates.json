@@ -1,160 +1,4 @@
 {
-  "us_mech_battalion_standard": {
-	"name": "美军标准机械化步兵营",
-	"visuals": {
-	  "icon": "icon_ifv_blue",
-	  "model_scale": 1.0
-	},
-	"companies": {
-	  "Company_A": {
-		"name": "A连 (装甲步兵)",
-		"platoons": {
-		  "Platoon_A1": {
-			"type": "composite",
-			"infantry": {
-			  "squad_1": {
-				"unit_id": "us_mech_rifles",
-				"current_hp": 9,
-				"max_hp": 9
-			  },
-			  "squad_2": {
-				"unit_id": "us_mech_rifles",
-				"current_hp": 9,
-				"max_hp": 9
-			  },
-			  "squad_3": {
-				"unit_id": "us_mech_rifles",
-				"current_hp": 9,
-				"max_hp": 9
-			  }
-			},
-			"vehicle": {
-			  "veh_1": {
-				"unit_id": "us_m2a2_bradley",
-				"current_hp": 8,
-				"max_hp": 8
-			  },
-			  "veh_2": {
-				"unit_id": "us_m2a2_bradley",
-				"current_hp": 8,
-				"max_hp": 8
-			  },
-			  "veh_3": {
-				"unit_id": "us_m2a2_bradley",
-				"current_hp": 8,
-				"max_hp": 8
-			  }
-			}
-		  },
-		  "Platoon_A2": {
-			"type": "composite",
-			"infantry": {
-			  "squad_1": {
-				"unit_id": "us_mech_rifles",
-				"current_hp": 9,
-				"max_hp": 9
-			  },
-			  "squad_2": {
-				"unit_id": "us_mech_rifles",
-				"current_hp": 9,
-				"max_hp": 9
-			  },
-			  "squad_3": {
-				"unit_id": "us_mech_rifles",
-				"current_hp": 9,
-				"max_hp": 9
-			  }
-			},
-			"vehicle": {
-			  "veh_1": {
-				"unit_id": "us_m2a2_bradley",
-				"current_hp": 8,
-				"max_hp": 8
-			  },
-			  "veh_2": {
-				"unit_id": "us_m2a2_bradley",
-				"current_hp": 8,
-				"max_hp": 8
-			  },
-			  "veh_3": {
-				"unit_id": "us_m2a2_bradley",
-				"current_hp": 8,
-				"max_hp": 8
-			  }
-			}
-		  },
-		  "Platoon_A3": {
-			"type": "composite",
-			"infantry": {
-			  "squad_1": {
-				"unit_id": "us_mech_rifles",
-				"current_hp": 9,
-				"max_hp": 9
-			  },
-			  "squad_2": {
-				"unit_id": "us_mech_rifles",
-				"current_hp": 9,
-				"max_hp": 9
-			  },
-			  "squad_3": {
-				"unit_id": "us_mech_rifles",
-				"current_hp": 9,
-				"max_hp": 9
-			  }
-			},
-			"vehicle": {
-			  "veh_1": {
-				"unit_id": "us_m2a2_bradley",
-				"current_hp": 8,
-				"max_hp": 8
-			  },
-			  "veh_2": {
-				"unit_id": "us_m2a2_bradley",
-				"current_hp": 8,
-				"max_hp": 8
-			  },
-			  "veh_3": {
-				"unit_id": "us_m2a2_bradley",
-				"current_hp": 8,
-				"max_hp": 8
-			  }
-			}
-		  }
-		}
-	  },
-	  "Company_C": {
-		"name": "C连 (坦克连)",
-		"platoons": {
-		  "Platoon_C1": {
-			"type": "standard",
-			"units": {
-			  "tank_1": {
-				"unit_id": "us_m1a1_abrams",
-				"current_hp": 12,
-				"max_hp": 12
-			  },
-			  "tank_2": {
-				"unit_id": "us_m1a1_abrams",
-				"current_hp": 12,
-				"max_hp": 12
-			  },
-			  "tank_3": {
-				"unit_id": "us_m1a1_abrams",
-				"current_hp": 12,
-				"max_hp": 12
-			  },
-			  "tank_4": {
-				"unit_id": "us_m1a1_abrams",
-				"current_hp": 12,
-				"max_hp": 12
-			  }
-			}
-		  }
-		}
-	  }
-	},
-	"role": "main"
-  },
   "us_armor_battalion": {
 	"name": "美军装甲营",
 	"visuals": {
@@ -162,53 +6,6 @@
 	  "model_scale": 1.0
 	},
 	"companies": {
-	  "Company_A": {
-		"name": "A连（坦克）",
-		"platoons": {
-		  "Platoon_A1": {
-			"type": "standard",
-			"units": {
-			  "tank_1": {
-				"unit_id": "us_m1a1_abrams",
-				"max_hp": 12
-			  },
-			  "tank_2": {
-				"unit_id": "us_m1a1_abrams",
-				"max_hp": 12
-			  },
-			  "tank_3": {
-				"unit_id": "us_m1a1_abrams",
-				"max_hp": 12
-			  },
-			  "tank_4": {
-				"unit_id": "us_m1a1_abrams",
-				"max_hp": 12
-			  }
-			}
-		  },
-		  "Platoon_A2": {
-			"type": "standard",
-			"units": {
-			  "tank_1": {
-				"unit_id": "us_m1a1_abrams",
-				"max_hp": 12
-			  },
-			  "tank_2": {
-				"unit_id": "us_m1a1_abrams",
-				"max_hp": 12
-			  },
-			  "tank_3": {
-				"unit_id": "us_m1a1_abrams",
-				"max_hp": 12
-			  },
-			  "tank_4": {
-				"unit_id": "us_m1a1_abrams",
-				"max_hp": 12
-			  }
-			}
-		  }
-		}
-	  },
 	  "Company_HQ": {
 		"name": "营部连",
 		"platoons": {
@@ -218,6 +15,961 @@
 			  "cp_1": {
 				"unit_id": "us_m1a1_abrams_cp",
 				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_Scout": {
+			"type": "standard",
+			"units": {
+			  "scout_1": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "scout_2": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "scout_3": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "scout_4": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  }
+			}
+		  },
+		  "Platoon_Mortar": {
+			"type": "standard",
+			"units": {
+			  "mortar_1": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  },
+			  "mortar_2": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  }
+			}
+		  }
+		}
+	  },
+	  "Company_A": {
+		"name": "A连(坦克)",
+		"platoons": {
+		  "Platoon_A_HQ": {
+			"type": "standard",
+			"units": {
+			  "tank_hq_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_hq_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_A1": {
+			"type": "standard",
+			"units": {
+			  "tank_1_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_1_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_1_3": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_1_4": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_A2": {
+			"type": "standard",
+			"units": {
+			  "tank_2_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_2_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_2_3": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_2_4": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_A3": {
+			"type": "standard",
+			"units": {
+			  "tank_3_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_3_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_3_3": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_3_4": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  }
+			}
+		  }
+		}
+	  },
+	  "Company_B": {
+		"name": "B连(坦克)",
+		"platoons": {
+		  "Platoon_B_HQ": {
+			"type": "standard",
+			"units": {
+			  "tank_hq_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_hq_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_B1": {
+			"type": "standard",
+			"units": {
+			  "tank_1_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_1_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_1_3": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_1_4": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_B2": {
+			"type": "standard",
+			"units": {
+			  "tank_2_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_2_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_2_3": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_2_4": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_B3": {
+			"type": "standard",
+			"units": {
+			  "tank_3_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_3_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_3_3": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_3_4": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  }
+			}
+		  }
+		}
+	  },
+	  "Company_C": {
+		"name": "C连(坦克)",
+		"platoons": {
+		  "Platoon_C_HQ": {
+			"type": "standard",
+			"units": {
+			  "tank_hq_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_hq_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_C1": {
+			"type": "standard",
+			"units": {
+			  "tank_1_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_1_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_1_3": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_1_4": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_C2": {
+			"type": "standard",
+			"units": {
+			  "tank_2_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_2_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_2_3": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_2_4": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_C3": {
+			"type": "standard",
+			"units": {
+			  "tank_3_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_3_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_3_3": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_3_4": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  }
+			}
+		  }
+		}
+	  },
+	  "Company_D": {
+		"name": "D连(坦克)",
+		"platoons": {
+		  "Platoon_D_HQ": {
+			"type": "standard",
+			"units": {
+			  "tank_hq_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_hq_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_D1": {
+			"type": "standard",
+			"units": {
+			  "tank_1_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_1_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_1_3": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_1_4": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_D2": {
+			"type": "standard",
+			"units": {
+			  "tank_2_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_2_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_2_3": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_2_4": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_D3": {
+			"type": "standard",
+			"units": {
+			  "tank_3_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_3_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_3_3": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_3_4": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  }
+			}
+		  }
+		}
+	  }
+	},
+	"role": "main"
+  },
+  "us_mech_battalion_standard": {
+	"name": "美军标准机械化步兵营",
+	"visuals": {
+	  "icon": "icon_ifv_blue",
+	  "model_scale": 1.0
+	},
+	"companies": {
+	  "Company_A": {
+		"name": "A连(机步)",
+		"platoons": {
+		  "Platoon_A_HQ": {
+			"type": "standard",
+			"units": {
+			  "brad_hq_1": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "brad_hq_2": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  }
+			}
+		  },
+		  "Platoon_A1": {
+			"type": "composite",
+			"infantry": {
+			  "squad_1": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_2": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_3": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_4": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  }
+			},
+			"vehicle": {
+			  "veh_1": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_2": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_3": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_4": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  }
+			}
+		  },
+		  "Platoon_A2": {
+			"type": "composite",
+			"infantry": {
+			  "squad_1": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_2": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_3": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_4": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  }
+			},
+			"vehicle": {
+			  "veh_1": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_2": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_3": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_4": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  }
+			}
+		  },
+		  "Platoon_A3": {
+			"type": "composite",
+			"infantry": {
+			  "squad_1": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_2": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_3": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_4": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  }
+			},
+			"vehicle": {
+			  "veh_1": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_2": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_3": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_4": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  }
+			}
+		  }
+		}
+	  },
+	  "Company_B": {
+		"name": "B连(机步)",
+		"platoons": {
+		  "Platoon_B_HQ": {
+			"type": "standard",
+			"units": {
+			  "brad_hq_1": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "brad_hq_2": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  }
+			}
+		  },
+		  "Platoon_B1": {
+			"type": "composite",
+			"infantry": {
+			  "squad_1": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_2": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_3": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_4": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  }
+			},
+			"vehicle": {
+			  "veh_1": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_2": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_3": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_4": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  }
+			}
+		  },
+		  "Platoon_B2": {
+			"type": "composite",
+			"infantry": {
+			  "squad_1": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_2": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_3": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_4": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  }
+			},
+			"vehicle": {
+			  "veh_1": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_2": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_3": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_4": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  }
+			}
+		  },
+		  "Platoon_B3": {
+			"type": "composite",
+			"infantry": {
+			  "squad_1": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_2": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_3": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_4": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  }
+			},
+			"vehicle": {
+			  "veh_1": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_2": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_3": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_4": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  }
+			}
+		  }
+		}
+	  },
+	  "Company_C": {
+		"name": "C连(机步)",
+		"platoons": {
+		  "Platoon_C_HQ": {
+			"type": "standard",
+			"units": {
+			  "brad_hq_1": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "brad_hq_2": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  }
+			}
+		  },
+		  "Platoon_C1": {
+			"type": "composite",
+			"infantry": {
+			  "squad_1": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_2": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_3": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_4": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  }
+			},
+			"vehicle": {
+			  "veh_1": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_2": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_3": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_4": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  }
+			}
+		  },
+		  "Platoon_C2": {
+			"type": "composite",
+			"infantry": {
+			  "squad_1": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_2": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_3": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_4": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  }
+			},
+			"vehicle": {
+			  "veh_1": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_2": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_3": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_4": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  }
+			}
+		  },
+		  "Platoon_C3": {
+			"type": "composite",
+			"infantry": {
+			  "squad_1": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_2": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_3": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_4": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  }
+			},
+			"vehicle": {
+			  "veh_1": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_2": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_3": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_4": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  }
+			}
+		  }
+		}
+	  },
+	  "Company_D": {
+		"name": "D连(机步)",
+		"platoons": {
+		  "Platoon_D_HQ": {
+			"type": "standard",
+			"units": {
+			  "brad_hq_1": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "brad_hq_2": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  }
+			}
+		  },
+		  "Platoon_D1": {
+			"type": "composite",
+			"infantry": {
+			  "squad_1": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_2": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_3": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_4": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  }
+			},
+			"vehicle": {
+			  "veh_1": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_2": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_3": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_4": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  }
+			}
+		  },
+		  "Platoon_D2": {
+			"type": "composite",
+			"infantry": {
+			  "squad_1": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_2": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_3": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_4": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  }
+			},
+			"vehicle": {
+			  "veh_1": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_2": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_3": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_4": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  }
+			}
+		  },
+		  "Platoon_D3": {
+			"type": "composite",
+			"infantry": {
+			  "squad_1": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_2": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_3": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  },
+			  "squad_4": {
+				"unit_id": "us_mech_rifles",
+				"max_hp": 9
+			  }
+			},
+			"vehicle": {
+			  "veh_1": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_2": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_3": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  },
+			  "veh_4": {
+				"unit_id": "us_m2a2_bradley",
+				"max_hp": 8
+			  }
+			}
+		  }
+		}
+	  },
+	  "Company_E": {
+		"name": "E连(反装甲)",
+		"platoons": {
+		  "Platoon_E1": {
+			"type": "standard",
+			"units": {
+			  "tow_1": {
+				"unit_id": "us_tow2",
+				"max_hp": 2
+			  },
+			  "tow_2": {
+				"unit_id": "us_tow2",
+				"max_hp": 2
+			  },
+			  "tow_3": {
+				"unit_id": "us_tow2",
+				"max_hp": 2
+			  },
+			  "tow_4": {
+				"unit_id": "us_tow2",
+				"max_hp": 2
+			  }
+			}
+		  },
+		  "Platoon_E2": {
+			"type": "standard",
+			"units": {
+			  "tow_1": {
+				"unit_id": "us_tow2",
+				"max_hp": 2
+			  },
+			  "tow_2": {
+				"unit_id": "us_tow2",
+				"max_hp": 2
+			  },
+			  "tow_3": {
+				"unit_id": "us_tow2",
+				"max_hp": 2
+			  },
+			  "tow_4": {
+				"unit_id": "us_tow2",
+				"max_hp": 2
 			  }
 			}
 		  }
@@ -233,70 +985,427 @@
 	  "model_scale": 1.0
 	},
 	"companies": {
-	  "Company_A": {
-		"name": "A连（侦察）",
+	  "Troop_A": {
+		"name": "A连(装甲骑兵)",
 		"platoons": {
-		  "Platoon_A1": {
-			"type": "composite",
-			"infantry": {
-			  "squad_1": {
-				"unit_id": "us_aero_rifles",
-				"max_hp": 9
-			  },
-			  "squad_2": {
-				"unit_id": "us_aero_rifles",
-				"max_hp": 9
-			  }
-			},
-			"vehicle": {
-			  "veh_1": {
+		  "Platoon_A_HQ": {
+			"type": "standard",
+			"units": {
+			  "cfv_hq_1": {
 				"unit_id": "us_m1a1_acav",
 				"max_hp": 12
 			  },
-			  "veh_2": {
+			  "cfv_hq_2": {
 				"unit_id": "us_m1a1_acav",
 				"max_hp": 12
 			  }
 			}
 		  },
-		  "Platoon_A2": {
-			"type": "composite",
-			"infantry": {
-			  "squad_1": {
-				"unit_id": "us_aero_rifles",
-				"max_hp": 9
-			  }
-			},
-			"vehicle": {
-			  "veh_1": {
+		  "Platoon_A_Scout1": {
+			"type": "standard",
+			"units": {
+			  "scout1_1": {
 				"unit_id": "us_m1a1_acav",
 				"max_hp": 12
 			  },
-			  "veh_2": {
+			  "scout1_2": {
 				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "scout1_3": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "scout1_4": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_A_Scout2": {
+			"type": "standard",
+			"units": {
+			  "scout2_1": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "scout2_2": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "scout2_3": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "scout2_4": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_A_Tank1": {
+			"type": "standard",
+			"units": {
+			  "tank1_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank1_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank1_3": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank1_4": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_A_Tank2": {
+			"type": "standard",
+			"units": {
+			  "tank2_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank2_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank2_3": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank2_4": {
+				"unit_id": "us_m1a1_abrams",
 				"max_hp": 12
 			  }
 			}
 		  }
 		}
 	  },
-	  "Company_AT": {
-		"name": "反坦克排",
+	  "Troop_B": {
+		"name": "B连(装甲骑兵)",
 		"platoons": {
-		  "Platoon_AT1": {
+		  "Platoon_B_HQ": {
 			"type": "standard",
 			"units": {
-			  "at_1": {
-				"unit_id": "us_tow2",
-				"max_hp": 2
+			  "cfv_hq_1": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
 			  },
-			  "at_2": {
-				"unit_id": "us_tow2",
-				"max_hp": 2
+			  "cfv_hq_2": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_B_Scout1": {
+			"type": "standard",
+			"units": {
+			  "scout1_1": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
 			  },
-			  "at_3": {
-				"unit_id": "us_tow2",
-				"max_hp": 2
+			  "scout1_2": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "scout1_3": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "scout1_4": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_B_Scout2": {
+			"type": "standard",
+			"units": {
+			  "scout2_1": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "scout2_2": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "scout2_3": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "scout2_4": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_B_Tank1": {
+			"type": "standard",
+			"units": {
+			  "tank1_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank1_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank1_3": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank1_4": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_B_Tank2": {
+			"type": "standard",
+			"units": {
+			  "tank2_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank2_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank2_3": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank2_4": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  }
+			}
+		  }
+		}
+	  },
+	  "Troop_C": {
+		"name": "C连(装甲骑兵)",
+		"platoons": {
+		  "Platoon_C_HQ": {
+			"type": "standard",
+			"units": {
+			  "cfv_hq_1": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "cfv_hq_2": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_C_Scout1": {
+			"type": "standard",
+			"units": {
+			  "scout1_1": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "scout1_2": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "scout1_3": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "scout1_4": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_C_Scout2": {
+			"type": "standard",
+			"units": {
+			  "scout2_1": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "scout2_2": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "scout2_3": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "scout2_4": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_C_Tank1": {
+			"type": "standard",
+			"units": {
+			  "tank1_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank1_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank1_3": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank1_4": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_C_Tank2": {
+			"type": "standard",
+			"units": {
+			  "tank2_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank2_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank2_3": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank2_4": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  }
+			}
+		  }
+		}
+	  },
+	  "Company_D": {
+		"name": "D连(坦克)",
+		"platoons": {
+		  "Platoon_D_HQ": {
+			"type": "standard",
+			"units": {
+			  "tank_hq_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_hq_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_D1": {
+			"type": "standard",
+			"units": {
+			  "tank_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_3": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_4": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_D2": {
+			"type": "standard",
+			"units": {
+			  "tank_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_3": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_4": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_D3": {
+			"type": "standard",
+			"units": {
+			  "tank_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_3": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank_4": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  }
+			}
+		  }
+		}
+	  },
+	  "Battery_E": {
+		"name": "E连(榴弹炮)",
+		"platoons": {
+		  "Platoon_E1": {
+			"type": "standard",
+			"units": {
+			  "arty_1": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  },
+			  "arty_2": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  },
+			  "arty_3": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  }
+			}
+		  },
+		  "Platoon_E2": {
+			"type": "standard",
+			"units": {
+			  "arty_1": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  },
+			  "arty_2": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  },
+			  "arty_3": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
 			  }
 			}
 		  }
@@ -306,14 +1415,14 @@
 	"role": "support"
   },
   "us_aviation_battalion": {
-	"name": "美军航空营（阿帕奇）",
+	"name": "美军航空营(阿帕奇)",
 	"visuals": {
 	  "icon": "icon_heli_blue",
 	  "model_scale": 1.0
 	},
 	"companies": {
 	  "Company_A": {
-		"name": "A连（攻击直升机）",
+		"name": "A连(攻击直升机)",
 		"platoons": {
 		  "Platoon_A1": {
 			"type": "standard",
@@ -333,6 +1442,23 @@
 			}
 		  },
 		  "Platoon_A2": {
+			"type": "standard",
+			"units": {
+			  "heli_1": {
+				"unit_id": "us_ah64a_apache",
+				"max_hp": 6
+			  },
+			  "heli_2": {
+				"unit_id": "us_ah64a_apache",
+				"max_hp": 6
+			  },
+			  "heli_3": {
+				"unit_id": "us_ah64a_apache",
+				"max_hp": 6
+			  }
+			}
+		  },
+		  "Platoon_A3": {
 			"type": "standard",
 			"units": {
 			  "heli_1": {
@@ -354,7 +1480,7 @@
 	},
 	"role": "support",
 	"battalion_tags": [
-	  "Heli_Battalion"
+      "Heli_Battalion"
 	]
   },
   "us_airborne_battalion": {
@@ -365,20 +1491,20 @@
 	},
 	"companies": {
 	  "Company_A": {
-		"name": "A连（空降步兵）",
+		"name": "A连(空降步兵)",
 		"platoons": {
 		  "Platoon_A1": {
 			"type": "standard",
 			"units": {
-			  "squad_1": {
+			  "rifle_1": {
 				"unit_id": "us_aero_rifles",
 				"max_hp": 9
 			  },
-			  "squad_2": {
+			  "rifle_2": {
 				"unit_id": "us_aero_rifles",
 				"max_hp": 9
 			  },
-			  "squad_3": {
+			  "rifle_3": {
 				"unit_id": "us_aero_rifles",
 				"max_hp": 9
 			  }
@@ -387,15 +1513,15 @@
 		  "Platoon_A2": {
 			"type": "standard",
 			"units": {
-			  "squad_1": {
+			  "rifle_1": {
 				"unit_id": "us_aero_rifles",
 				"max_hp": 9
 			  },
-			  "squad_2": {
+			  "rifle_2": {
 				"unit_id": "us_aero_rifles",
 				"max_hp": 9
 			  },
-			  "squad_3": {
+			  "rifle_3": {
 				"unit_id": "us_aero_rifles",
 				"max_hp": 9
 			  }
@@ -404,11 +1530,15 @@
 		  "Platoon_A3": {
 			"type": "standard",
 			"units": {
-			  "squad_1": {
+			  "rifle_1": {
 				"unit_id": "us_aero_rifles",
 				"max_hp": 9
 			  },
-			  "squad_2": {
+			  "rifle_2": {
+				"unit_id": "us_aero_rifles",
+				"max_hp": 9
+			  },
+			  "rifle_3": {
 				"unit_id": "us_aero_rifles",
 				"max_hp": 9
 			  }
@@ -417,9 +1547,9 @@
 		}
 	  },
 	  "Company_Support": {
-		"name": "营部支援排",
+		"name": "营支援排",
 		"platoons": {
-		  "Platoon_Mortar": {
+		  "Platoon_AA": {
 			"type": "standard",
 			"units": {
 			  "stinger_1": {
@@ -431,13 +1561,406 @@
 				"max_hp": 2
 			  }
 			}
+		  },
+		  "Platoon_AT": {
+			"type": "standard",
+			"units": {
+			  "tow_1": {
+				"unit_id": "us_tow2",
+				"max_hp": 2
+			  },
+			  "tow_2": {
+				"unit_id": "us_tow2",
+				"max_hp": 2
+			  }
+			}
 		  }
 		}
 	  }
 	},
 	"role": "main",
 	"battalion_tags": [
-	  "Heli_Battalion"
+      "Heli_Battalion"
 	]
+  },
+  "us_div_arty_battalion": {
+	"name": "美军师属炮兵营(155mm)",
+	"visuals": {
+	  "icon": "icon_spa_arty_blue",
+	  "model_scale": 1.0
+	},
+	"companies": {
+	  "Battery_A": {
+		"name": "A连(炮兵)",
+		"platoons": {
+		  "Platoon_A_HQ": {
+			"type": "standard",
+			"units": {
+			  "arty_hq_1": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  },
+			  "arty_hq_2": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  }
+			}
+		  },
+		  "Platoon_A1": {
+			"type": "standard",
+			"units": {
+			  "arty_1": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  },
+			  "arty_2": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  },
+			  "arty_3": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  }
+			}
+		  },
+		  "Platoon_A2": {
+			"type": "standard",
+			"units": {
+			  "arty_1": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  },
+			  "arty_2": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  },
+			  "arty_3": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  }
+			}
+		  }
+		}
+	  },
+	  "Battery_B": {
+		"name": "B连(炮兵)",
+		"platoons": {
+		  "Platoon_B_HQ": {
+			"type": "standard",
+			"units": {
+			  "arty_hq_1": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  },
+			  "arty_hq_2": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  }
+			}
+		  },
+		  "Platoon_B1": {
+			"type": "standard",
+			"units": {
+			  "arty_1": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  },
+			  "arty_2": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  },
+			  "arty_3": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  }
+			}
+		  },
+		  "Platoon_B2": {
+			"type": "standard",
+			"units": {
+			  "arty_1": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  },
+			  "arty_2": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  },
+			  "arty_3": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  }
+			}
+		  }
+		}
+	  },
+	  "Battery_C": {
+		"name": "C连(炮兵)",
+		"platoons": {
+		  "Platoon_C_HQ": {
+			"type": "standard",
+			"units": {
+			  "arty_hq_1": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  },
+			  "arty_hq_2": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  }
+			}
+		  },
+		  "Platoon_C1": {
+			"type": "standard",
+			"units": {
+			  "arty_1": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  },
+			  "arty_2": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  },
+			  "arty_3": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  }
+			}
+		  },
+		  "Platoon_C2": {
+			"type": "standard",
+			"units": {
+			  "arty_1": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  },
+			  "arty_2": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  },
+			  "arty_3": {
+				"unit_id": "us_m109a2",
+				"max_hp": 4
+			  }
+			}
+		  }
+		}
+	  }
+	},
+	"role": "artillery"
+  },
+  "us_div_recon_squadron": {
+	"name": "美军师属侦察中队",
+	"visuals": {
+	  "icon": "icon_recon_blue",
+	  "model_scale": 1.0
+	},
+	"companies": {
+	  "Troop_A": {
+		"name": "A连(地面侦察)",
+		"platoons": {
+		  "Platoon_A_HQ": {
+			"type": "standard",
+			"units": {
+			  "cfv_hq_1": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "cfv_hq_2": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_A_Scout1": {
+			"type": "standard",
+			"units": {
+			  "scout1_1": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "scout1_2": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "scout1_3": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "scout1_4": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_A_Scout2": {
+			"type": "standard",
+			"units": {
+			  "scout2_1": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "scout2_2": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "scout2_3": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "scout2_4": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_A_Tank1": {
+			"type": "standard",
+			"units": {
+			  "tank1_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank1_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank1_3": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank1_4": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_A_Tank2": {
+			"type": "standard",
+			"units": {
+			  "tank2_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank2_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank2_3": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank2_4": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  }
+			}
+		  }
+		}
+	  },
+	  "Troop_B": {
+		"name": "B连(空中侦察)",
+		"platoons": {
+		  "Platoon_B_HQ": {
+			"type": "standard",
+			"units": {
+			  "cfv_hq_1": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "cfv_hq_2": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_B_Scout1": {
+			"type": "standard",
+			"units": {
+			  "scout1_1": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "scout1_2": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "scout1_3": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "scout1_4": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_B_Scout2": {
+			"type": "standard",
+			"units": {
+			  "scout2_1": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "scout2_2": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "scout2_3": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  },
+			  "scout2_4": {
+				"unit_id": "us_m1a1_acav",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_B_Tank1": {
+			"type": "standard",
+			"units": {
+			  "tank1_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank1_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank1_3": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank1_4": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  }
+			}
+		  },
+		  "Platoon_B_Tank2": {
+			"type": "standard",
+			"units": {
+			  "tank2_1": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank2_2": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank2_3": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  },
+			  "tank2_4": {
+				"unit_id": "us_m1a1_abrams",
+				"max_hp": 12
+			  }
+			}
+		  }
+		}
+	  }
+	},
+	"role": "support"
   }
 }
