@@ -324,12 +324,14 @@ namespace ColdWarWargame.Systems.Gameplay
                     _flow.ExitCombat();
                     _turnFlow.ResolveCombat();
                     _victoryTracker.RecordCombatResult(result, _turnMgr.CurrentFaction);
+                    GD.Print("=== COMBAT CALLBACK FIRED: VP Blue=" + _victoryTracker.BlueVP + " Red=" + _victoryTracker.RedVP + " ===");
                     _scenario.RemoveDeadBattalions();
                     RefreshOccupationFromEntryAndZoc();
                     RefreshFrontline();
                     ClearSelection();
                     RefreshPresentationByVision();
                     RefreshCampaignCasualtyPanel();
+_hud.UpdateVPPanel(_victoryTracker, _owner.GetViewport().GetVisibleRect().Size.X, _turnMgr.TurnNumber);
                 },
                 () =>
                 {
@@ -378,6 +380,7 @@ namespace ColdWarWargame.Systems.Gameplay
             _victoryTracker.ScoreControlVP();
 
             var assessment = _victoryTracker.Evaluate(_turnMgr.TurnNumber);
+            _hud.UpdateVPPanel(_victoryTracker, _owner.GetViewport().GetVisibleRect().Size.X, _turnMgr.TurnNumber);
             _hud.SetInfoText("VP Blue:" + assessment.BlueVP + " Red:" + assessment.RedVP + " 结果:" + assessment.BlueLevel.DisplayName());
         }
 

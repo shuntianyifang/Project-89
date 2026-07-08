@@ -1,6 +1,7 @@
 ﻿using Godot;
 using System;
 using ColdWarWargame.Models;
+using ColdWarWargame.Systems.Victory;
 
 namespace ColdWarWargame.Systems.Gameplay
 {
@@ -19,8 +20,11 @@ namespace ColdWarWargame.Systems.Gameplay
         private Panel _casualtyStatsPanel;
         private Label _casualtyStatsLabel;
         private Button _casualtyStatsCloseButton;
-
-        // battalion organization panel (lower-left)
+        private Panel _vpPanel;
+        private Label _vpNatoLabel;
+        private Label _vpSepLabel;
+        private Label _vpPactLabel;
+        private Label _vpTurnLabel;
         private Panel _orgPanel;
         private Label _orgLabel;
 
@@ -32,11 +36,6 @@ namespace ColdWarWargame.Systems.Gameplay
         }
 
         public CanvasLayer Canvas => _canvasLayer;
-        public Label InfoLabel => _infoLabel;
-        public Label StatusLabel => _statusLabel;
-        public Button EndTurnButton => _endTurnButton;
-        public Panel TooltipPanel => _tooltipPanel;
-        public Label TooltipLabel => _tooltipLabel;
 
         public void Initialize()
         {
@@ -66,13 +65,31 @@ namespace ColdWarWargame.Systems.Gameplay
             _casualtyStatsButton.FocusMode = Control.FocusModeEnum.None;
             _canvasLayer.AddChild(_casualtyStatsButton);
 
+            // VP panel
+            _vpPanel = new Panel();
+            var vpStyle = new StyleBoxFlat();
+            vpStyle.BgColor = new Color(0.04f, 0.06f, 0.10f, 0.90f);
+            vpStyle.SetCornerRadiusAll(6);
+            _vpPanel.AddThemeStyleboxOverride("panel", vpStyle);
+            _vpPanel.MouseFilter = Control.MouseFilterEnum.Ignore;
+            _vpPanel.Size = new Vector2(560, 38);
+            _vpPanel.Position = new Vector2(400, 4);
+            _canvasLayer.AddChild(_vpPanel);
+
+            _vpNatoLabel = MakeVPLabel("NATO  0 VP  (0 tiles)", new Color(0.36f, 0.61f, 0.84f), new Vector2(12, 8));
+            _vpPanel.AddChild(_vpNatoLabel);
+            _vpSepLabel = MakeVPLabel("|", new Color(0.5f, 0.5f, 0.5f), new Vector2(200, 8));
+            _vpPanel.AddChild(_vpSepLabel);
+            _vpPactLabel = MakeVPLabel("PACT  0 VP  (0 tiles)", new Color(0.88f, 0.44f, 0.38f), new Vector2(216, 8));
+            _vpPanel.AddChild(_vpPactLabel);
+            _vpTurnLabel = MakeVPLabel("T1  Stalemate (R=1.00)", new Color(0.7f, 0.7f, 0.7f), new Vector2(412, 8));
+            _vpPanel.AddChild(_vpTurnLabel);
+
+            // Casualty panel
             _casualtyStatsPanel = new Panel();
             var statsStyle = new StyleBoxFlat();
             statsStyle.BgColor = new Color(0.05f, 0.08f, 0.12f, 0.95f);
-            statsStyle.CornerRadiusTopLeft = 6;
-            statsStyle.CornerRadiusTopRight = 6;
-            statsStyle.CornerRadiusBottomLeft = 6;
-            statsStyle.CornerRadiusBottomRight = 6;
+            statsStyle.SetCornerRadiusAll(6);
             _casualtyStatsPanel.AddThemeStyleboxOverride("panel", statsStyle);
             _casualtyStatsPanel.Position = new Vector2(200, 10);
             _casualtyStatsPanel.Size = new Vector2(360, 180);
@@ -95,14 +112,11 @@ namespace ColdWarWargame.Systems.Gameplay
             _casualtyStatsCloseButton.FocusMode = Control.FocusModeEnum.None;
             _casualtyStatsPanel.AddChild(_casualtyStatsCloseButton);
 
-            // --- org panel in lower-left ---
+            // Org panel
             _orgPanel = new Panel();
             var orgStyle = new StyleBoxFlat();
             orgStyle.BgColor = new Color(0.05f, 0.08f, 0.12f, 0.92f);
-            orgStyle.CornerRadiusTopLeft = 6;
-            orgStyle.CornerRadiusTopRight = 6;
-            orgStyle.CornerRadiusBottomLeft = 6;
-            orgStyle.CornerRadiusBottomRight = 6;
+            orgStyle.SetCornerRadiusAll(6);
             _orgPanel.AddThemeStyleboxOverride("panel", orgStyle);
             _orgPanel.Visible = false;
             _orgPanel.MouseFilter = Control.MouseFilterEnum.Ignore;
@@ -115,13 +129,11 @@ namespace ColdWarWargame.Systems.Gameplay
             _orgLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
             _orgPanel.AddChild(_orgLabel);
 
+            // Tooltip
             _tooltipPanel = new Panel();
             var tipStyle = new StyleBoxFlat();
             tipStyle.BgColor = new Color(0, 0, 0, 0.85f);
-            tipStyle.CornerRadiusTopLeft = 4;
-            tipStyle.CornerRadiusTopRight = 4;
-            tipStyle.CornerRadiusBottomLeft = 4;
-            tipStyle.CornerRadiusBottomRight = 4;
+            tipStyle.SetCornerRadiusAll(4);
             _tooltipPanel.AddThemeStyleboxOverride("panel", tipStyle);
             _tooltipPanel.MouseFilter = Control.MouseFilterEnum.Ignore;
             _tooltipPanel.Visible = false;
@@ -137,6 +149,17 @@ namespace ColdWarWargame.Systems.Gameplay
             _tooltipPanel.AddChild(_tooltipLabel);
         }
 
+        private static Label MakeVPLabel(string text, Color color, Vector2 pos)
+        {
+            var l = new Label();
+            l.Text = text;
+            l.AddThemeFontSizeOverride("font_size", 14);
+            l.AddThemeColorOverride("font_color", color);
+            l.MouseFilter = Control.MouseFilterEnum.Ignore;
+            l.Position = pos;
+            return l;
+        }
+
         public void SetInfoText(string text) => _infoLabel.Text = text;
         public void SetStatusText(string text) => _statusLabel.Text = text;
         public void SetCampaignCasualtyText(string text) => _casualtyStatsLabel.Text = text;
@@ -149,7 +172,6 @@ namespace ColdWarWargame.Systems.Gameplay
             _tooltipLabel.Text = text;
             _tooltipLabel.Size = new Vector2(504, 24);
             _tooltipPanel.Size = new Vector2(520, 32);
-
             Vector2 tipPos = mouseScreenPos + new Vector2(20, 20);
             tipPos.X = Mathf.Clamp(tipPos.X, 0, viewportSize.X - _tooltipPanel.Size.X);
             tipPos.Y = Mathf.Clamp(tipPos.Y, 0, viewportSize.Y - _tooltipPanel.Size.Y);
@@ -157,22 +179,28 @@ namespace ColdWarWargame.Systems.Gameplay
             _tooltipPanel.Visible = true;
         }
 
-        /// <summary>Show battalion organization panel at lower-left</summary>
+        public void UpdateVPPanel(VictoryTracker vt, float viewportWidth, int turn)
+        {
+            if (vt == null) return;
+            var a = vt.Evaluate(turn);
+            _vpNatoLabel.Text = "NATO  " + a.BlueVP + " VP  (" + vt.BlueControlledCount + " tiles)";
+            _vpPactLabel.Text = "PACT  " + a.RedVP + " VP  (" + vt.RedControlledCount + " tiles)";
+            _vpTurnLabel.Text = "T" + turn + "  " + a.BlueLevel.DisplayName() + " (R=" + a.Ratio.ToString("F2") + ")";
+            float panelW = 560f;
+            float w = viewportWidth > 100f ? viewportWidth : (float)DisplayServer.WindowGetSize().X;
+            if (w < 100f) w = 1920f;
+            _vpPanel.Position = new Vector2((w - panelW) / 2f, 4);
+        }
+
         public void ShowOrgPanel(Battalion bat, float viewportHeight)
         {
             if (bat == null) { _orgPanel.Visible = false; return; }
             string text = BattalionOrgReporter.BuildOrganizationSummary(bat);
             if (string.IsNullOrEmpty(text)) { _orgPanel.Visible = false; return; }
-
             _orgLabel.Text = text;
-            // measure: count lines and max column width
             var lines = text.Split('\n');
             int maxW = 0;
-            foreach (var line in lines)
-            {
-                int w = line.Length; // approximate
-                if (w > maxW) maxW = w;
-            }
+            foreach (var line in lines) { int w = line.Length; if (w > maxW) maxW = w; }
             float panelW = Math.Max(maxW * 8 + 20, 100);
             float panelH = Math.Max(lines.Length * 18 + 16, 60);
             _orgPanel.Size = new Vector2(panelW, panelH);

@@ -1,4 +1,4 @@
-using Godot;
+﻿using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -123,6 +123,7 @@ namespace ColdWarWargame.Systems.Gameplay
 
                 _panel.RemoveContent();
                 _panel.ShowResult(result);
+                GD.Print("=== OnDefenderConfirmed: invoking onResolved callback ===");
                 onResolved?.Invoke(_attackerStored, _defenderStored, result);
             };
 
