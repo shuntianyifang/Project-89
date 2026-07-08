@@ -18,23 +18,14 @@ namespace ColdWarWargame.Systems.Gameplay
         private readonly TurnManager _turnMgr;
         private readonly Grid3DRenderer _renderer;
         private readonly GameHud _hud;
-        private readonly CombatDeploymentPresenter _combatPresenter;
+        private readonly CombatFlowController _combatFlow;
         private readonly CombatResolver _resolver = new();
+        private readonly GameFlowController _flow;
 
-        private bool _inCombat;
-        private bool _isMoving;
-        private SelectionState _sel;
-        private Dictionary<Vector2I, float> _currentReachable = new();
         private Vector2 _lastMouseScreenPos;
 
         private static readonly string[] TerrainNames = { "平原", "森林", "半城镇", "城镇" };
         private static readonly string[] InfraNames = { "", "支线公路", "高速公路" };
-
-        private sealed class SelectionState
-        {
-            public Battalion Unit;
-            public Vector2I Pos;
-        }
 
         public GameSessionController(
             global::GameManager owner,
@@ -48,7 +39,8 @@ namespace ColdWarWargame.Systems.Gameplay
             _turnMgr = turnMgr;
             _renderer = renderer;
             _hud = hud;
-            _combatPresenter = new CombatDeploymentPresenter(
+            _flow = new GameFlowController();
+            _combatFlow = new CombatFlowController(
                 hud.Canvas,
                 hud,
                 renderer,
@@ -62,23 +54,23 @@ namespace ColdWarWargame.Systems.Gameplay
 
         public void OnUnitClicked(int faction, Battalion bat, Vector2I pos)
         {
-            if (_inCombat) return;
+            if (!_flow.CanInteract) return;
             if (faction == _turnMgr.CurrentFaction)
             {
                 SelectUnit(bat, pos);
                 return;
             }
 
-            if (_sel == null) return;
-            if (_inCombat) return;
-            if (_sel.Unit.CurrentAP < 4f)
+            if (!_flow.HasSelection) return;
+            if (!_flow.CanInteract) return;
+            if (_flow.CurrentSelection.Unit.CurrentAP < 4f)
             {
                 _hud.SetInfoText("AP too low, need 4");
                 return;
             }
 
-            int dx = Math.Abs(_sel.Pos.X - pos.X);
-            int dy = Math.Abs(_sel.Pos.Y - pos.Y);
+            int dx = Math.Abs(_flow.CurrentSelection.Pos.X - pos.X);
+            int dy = Math.Abs(_flow.CurrentSelection.Pos.Y - pos.Y);
             if (Math.Max(dx, dy) > 2)
             {
                 _hud.SetInfoText("Target too far, max 2");
@@ -90,16 +82,16 @@ namespace ColdWarWargame.Systems.Gameplay
 
         public void OnTileClicked(Vector2I pos)
         {
-            if (_inCombat || _isMoving) return;
-            if (_sel != null && _currentReachable != null && _currentReachable.ContainsKey(pos))
+            if (!_flow.CanInteract) return;
+            if (_flow.HasSelection && _flow.ReachableTiles.ContainsKey(pos))
             {
-                float cost = _currentReachable[pos];
+                float cost = _flow.ReachableTiles[pos];
                 var enemyFaction = _turnMgr.CurrentFaction == 1 ? 2 : 1;
                 var enemyPositions = (enemyFaction == 1 ? _scenario.BlueBattalions : _scenario.RedBattalions).Select(u => u.Item2);
                 var enemyZOC = _scenario.ZOC.GetFactionZOC(enemyPositions);
                 bool isEnemyZOC(Vector2I t) => enemyZOC.Contains(t);
-                bool occ(Vector2I t) => _scenario.BlueBattalions.Concat(_scenario.RedBattalions).Any(u => u.Item2 == t && u.Item1 != _sel.Unit);
-                var path = _scenario.Movement.FindPath(_sel.Pos, pos, _sel.Unit.CurrentAP, isEnemyZOC, occ);
+                bool occ(Vector2I t) => _scenario.BlueBattalions.Concat(_scenario.RedBattalions).Any(u => u.Item2 == t && u.Item1 != _flow.CurrentSelection.Unit);
+                var path = _scenario.Movement.FindPath(_flow.CurrentSelection.Pos, pos, _flow.CurrentSelection.Unit.CurrentAP, isEnemyZOC, occ);
                 if (path == null || path.Count < 2)
                 {
                     ClearSelection();
@@ -107,20 +99,20 @@ namespace ColdWarWargame.Systems.Gameplay
                     return;
                 }
 
-                _isMoving = true;
+                _flow.BeginMovement();
                 _renderer.ClearPath();
-                _renderer.StartMoveAnimation(path, _sel.Unit);
+                _renderer.StartMoveAnimation(path, _flow.CurrentSelection.Unit);
 
                 _renderer.OnMoveFinished = () =>
                 {
-                    _sel.Unit.CurrentAP = Math.Max(0, _sel.Unit.CurrentAP - cost);
-                    _sel.Pos = pos;
+                    _flow.CurrentSelection.Unit.CurrentAP = Math.Max(0, _flow.CurrentSelection.Unit.CurrentAP - cost);
+                    _flow.CurrentSelection.Pos = pos;
                     for (int i = 0; i < _scenario.BlueBattalions.Count; i++)
-                        if (_scenario.BlueBattalions[i].bat == _sel.Unit)
-                            _scenario.BlueBattalions[i] = (_sel.Unit, pos);
+                        if (_scenario.BlueBattalions[i].bat == _flow.CurrentSelection.Unit)
+                            _scenario.BlueBattalions[i] = (_flow.CurrentSelection.Unit, pos);
                     for (int i = 0; i < _scenario.RedBattalions.Count; i++)
-                        if (_scenario.RedBattalions[i].bat == _sel.Unit)
-                            _scenario.RedBattalions[i] = (_sel.Unit, pos);
+                        if (_scenario.RedBattalions[i].bat == _flow.CurrentSelection.Unit)
+                            _scenario.RedBattalions[i] = (_flow.CurrentSelection.Unit, pos);
                     _renderer.SetBlueUnits(_scenario.BlueBattalions);
                     _renderer.SetRedUnits(_scenario.RedBattalions);
 
@@ -128,13 +120,14 @@ namespace ColdWarWargame.Systems.Gameplay
                     var enemyPositions3 = (enemyFaction3 == 1 ? _scenario.BlueBattalions : _scenario.RedBattalions).Select(u => u.Item2);
                     var enemyZOC3 = _scenario.ZOC.GetFactionZOC(enemyPositions3);
                     bool isEnemyZOC3(Vector2I t) => enemyZOC3.Contains(t);
-                    bool occ3(Vector2I t) => _scenario.BlueBattalions.Concat(_scenario.RedBattalions).Any(u => u.Item2 == t && u.Item1 != _sel.Unit);
-                    _currentReachable = _scenario.Movement.GetReachableTiles(pos, _sel.Unit.CurrentAP, isEnemyZOC3, occ3);
-                    _renderer.SetReachable(_currentReachable, _sel.Unit.CurrentAP);
+                    bool occ3(Vector2I t) => _scenario.BlueBattalions.Concat(_scenario.RedBattalions).Any(u => u.Item2 == t && u.Item1 != _flow.CurrentSelection.Unit);
+                    var reachable = _scenario.Movement.GetReachableTiles(pos, _flow.CurrentSelection.Unit.CurrentAP, isEnemyZOC3, occ3);
+                    _flow.SetSelection(_flow.CurrentSelection.Unit, pos, reachable);
+                    _renderer.SetReachable(reachable, _flow.CurrentSelection.Unit.CurrentAP);
                     _renderer.SetSel(pos);
-                    UpdateArtilleryOverlay(_sel.Unit, pos);
-                    _hud.SetInfoText("Moved to (" + pos.X + "," + pos.Y + ") AP=" + _sel.Unit.CurrentAP.ToString("0.0"));
-                    _isMoving = false;
+                    UpdateArtilleryOverlay(_flow.CurrentSelection.Unit, pos);
+                    _hud.SetInfoText("Moved to (" + pos.X + "," + pos.Y + ") AP=" + _flow.CurrentSelection.Unit.CurrentAP.ToString("0.0"));
+                    _flow.EndMovement();
                 };
             }
             else
@@ -146,7 +139,7 @@ namespace ColdWarWargame.Systems.Gameplay
 
         public void OnRightClick()
         {
-            if (_inCombat || _isMoving) return;
+            if (!_flow.CanInteract) return;
             ClearSelection();
             _hud.SetInfoText("Click to select");
         }
@@ -158,8 +151,8 @@ namespace ColdWarWargame.Systems.Gameplay
             if (pos == null)
             {
                 _hud.SetTooltipVisible(false);
-                if (_sel != null)
-                    _hud.SetInfoText("Selected: " + _sel.Unit.Name + " reachable " + _currentReachable.Count + " tiles");
+                if (_flow.HasSelection)
+                    _hud.SetInfoText("Selected: " + _flow.CurrentSelection.Unit.Name + " reachable " + _flow.ReachableTiles.Count + " tiles");
                 else
                     _hud.SetInfoText("Click to select");
                 return;
@@ -178,7 +171,7 @@ namespace ColdWarWargame.Systems.Gameplay
             if (!tile.IsPassable)
             {
                 info += " [不可通行]";
-                if (_sel != null) info += " | 到达剩余AP: 0";
+                if (_flow.HasSelection) info += " | 到达剩余AP: 0";
             }
             else
             {
@@ -186,13 +179,13 @@ namespace ColdWarWargame.Systems.Gameplay
                 if (!float.IsPositiveInfinity(moveCost))
                     info += " 消耗" + moveCost.ToString("0.0");
 
-                if (_sel != null)
+                if (_flow.HasSelection)
                 {
-                    if (p == _sel.Pos)
+                    if (p == _flow.CurrentSelection.Pos)
                         info += " | 当前所在";
-                    else if (_currentReachable.TryGetValue(p, out float totalCost))
+                    else if (_flow.ReachableTiles.TryGetValue(p, out float totalCost))
                     {
-                        float remaining = _sel.Unit.CurrentAP - totalCost;
+                        float remaining = _flow.CurrentSelection.Unit.CurrentAP - totalCost;
                         info += " | 到达剩余AP: " + remaining.ToString("0.0");
                     }
                     else
@@ -200,14 +193,14 @@ namespace ColdWarWargame.Systems.Gameplay
                 }
             }
 
-            if (_sel != null && _currentReachable.ContainsKey(p))
+            if (_flow.HasSelection && _flow.ReachableTiles.ContainsKey(p))
             {
                 var enemyFaction = _turnMgr.CurrentFaction == 1 ? 2 : 1;
                 var enemyPositions = (enemyFaction == 1 ? _scenario.BlueBattalions : _scenario.RedBattalions).Select(u => u.Item2);
                 var enemyZOC = _scenario.ZOC.GetFactionZOC(enemyPositions);
                 bool isEnemyZOC(Vector2I t) => enemyZOC.Contains(t);
-                bool occ(Vector2I t) => _scenario.BlueBattalions.Concat(_scenario.RedBattalions).Any(u => u.Item2 == t && u.Item1 != _sel.Unit);
-                var path = _scenario.Movement.FindPath(_sel.Pos, p, _sel.Unit.CurrentAP, isEnemyZOC, occ);
+                bool occ(Vector2I t) => _scenario.BlueBattalions.Concat(_scenario.RedBattalions).Any(u => u.Item2 == t && u.Item1 != _flow.CurrentSelection.Unit);
+                var path = _scenario.Movement.FindPath(_flow.CurrentSelection.Pos, p, _flow.CurrentSelection.Unit.CurrentAP, isEnemyZOC, occ);
                 if (path != null) _renderer.ShowPath(path);
             }
 
@@ -216,7 +209,7 @@ namespace ColdWarWargame.Systems.Gameplay
 
         public void OnEndTurn()
         {
-            if (_inCombat || _isMoving) return;
+            if (!_flow.CanInteract) return;
             ClearSelection();
             _turnMgr.EndStrategicTurn();
             _renderer.SetBlueUnits(_scenario.BlueBattalions);
@@ -229,80 +222,56 @@ namespace ColdWarWargame.Systems.Gameplay
 
         public void HandleKeyboard(InputEventKey key)
         {
-            if (key.Pressed && !key.Echo && key.Keycode == Key.Space && !_inCombat && !_isMoving)
+            if (key.Pressed && !key.Echo && key.Keycode == Key.Space && _flow.CanInteract)
                 OnEndTurn();
         }
 
         private void SelectUnit(Battalion bat, Vector2I pos)
         {
-            _sel = new SelectionState { Unit = bat, Pos = pos };
+            _flow.SetSelection(bat, pos, null);
             _renderer.SetSel(pos);
             var enemyFaction = _turnMgr.CurrentFaction == 1 ? 2 : 1;
             var enemyPositions = (enemyFaction == 1 ? _scenario.BlueBattalions : _scenario.RedBattalions).Select(u => u.Item2);
             var enemyZOC = _scenario.ZOC.GetFactionZOC(enemyPositions);
             bool isEnemyZOC(Vector2I p) => enemyZOC.Contains(p);
             bool occ(Vector2I p) => _scenario.BlueBattalions.Concat(_scenario.RedBattalions).Any(u => u.Item2 == p && u.Item1 != bat);
-            _currentReachable = _scenario.Movement.GetReachableTiles(pos, bat.CurrentAP, isEnemyZOC, occ);
-            _renderer.SetReachable(_currentReachable, bat.CurrentAP);
-            _hud.SetInfoText("Selected: " + bat.Name + " reachable " + _currentReachable.Count + " tiles");
+            var reachable = _scenario.Movement.GetReachableTiles(pos, bat.CurrentAP, isEnemyZOC, occ);
+            _flow.SetSelection(bat, pos, reachable);
+            _renderer.SetReachable(reachable, bat.CurrentAP);
+            _hud.SetInfoText("Selected: " + bat.Name + " reachable " + reachable.Count + " tiles");
             UpdateArtilleryOverlay(bat, pos);
         }
 
         private void StartCombat(Battalion defBat, Vector2I defPos)
         {
-            _inCombat = true;
+            _flow.BeginCombat();
 
-            var friendlyUnits = (_turnMgr.CurrentFaction == 1 ? _scenario.BlueBattalions : _scenario.RedBattalions)
-                .Where(u => u.Item1 != _sel.Unit)
-                .ToList();
-            var eligible = EngagementResolver.GetEligibleUnits(defPos, friendlyUnits, 2);
-            eligible = eligible.Where(u => u.bat.CurrentAP >= 4).ToList();
-            eligible.Insert(0, (_sel.Unit, _sel.Pos));
-
-            var artySupports = friendlyUnits
-                .Where(u => u.bat.GetArtilleryRange() > 0
-                    && (u.Item2.X - defPos.X) * (u.Item2.X - defPos.X) + (u.Item2.Y - defPos.Y) * (u.Item2.Y - defPos.Y) <= u.bat.GetArtilleryRange() * u.bat.GetArtilleryRange()
-                    && u.bat.CurrentAP >= 4
-                    && !eligible.Any(e => e.bat == u.bat))
-                .ToList();
-            eligible.InsertRange(0, artySupports);
-
-            float terrainBonus = _scenario.Map.GetTile(defPos).TerrainType switch { 1 => 0.1f, 2 => 0.3f, 3 => 0.4f, _ => 0f };
-            string[] terrainNames = { "Plains", "Forest", "Semi-Urban", "Urban" };
-            int terrainType = _scenario.Map.GetTile(defPos).TerrainType;
-            string tName = terrainType >= 0 && terrainType < terrainNames.Length ? terrainNames[terrainType] : "??";
-            int tBonus = (int)(terrainBonus * 10);
-
-            _combatPresenter.StartCombatFlow(
-                _sel.Unit,
+            _combatFlow.StartCombat(
+                _flow.CurrentSelection.Unit,
                 defBat,
                 defPos,
-                eligible,
-                terrainBonus,
-                tName,
                 (attackerForce, defenderForce, result) =>
                 {
-                    _inCombat = false;
+                    _flow.EndCombat();
                     ClearSelection();
                 },
                 () =>
                 {
                     ClearSelection();
-                    _inCombat = false;
+                    _flow.EndCombat();
                     _hud.SetInfoText("Combat cancelled");
                 },
                 () =>
                 {
-                    _inCombat = false;
+                    _flow.EndCombat();
                     _hud.SetInfoText("Click to select");
                 });
         }
 
         private void ClearSelection()
         {
-            _sel = null;
+            _flow.ClearSelection();
             _renderer.ClearSel();
-            _currentReachable.Clear();
         }
 
         private void UpdateArtilleryOverlay(Battalion unit, Vector2I pos)
