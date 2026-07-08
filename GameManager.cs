@@ -21,14 +21,11 @@ public partial class GameManager : Node
     private Grid3DRenderer _renderer;
     private GameCamera _camCtrl;
     private CanvasLayer _ui;
-    private Label _infoLabel;
-    private Label _statusLabel;
-    private Button _endTurnBtn;
     private FuldaGapScenario _scenario;
     private TurnManager _turnMgr;
     private GameSessionController _session;
-    private Panel _tooltipPanel;
-    private Label _tooltipLabel;
+    private GameHud _hud;
+    private GameSceneBootstrapper _sceneBootstrapper;
 
     public override void _Ready()
     {
@@ -55,76 +52,26 @@ public partial class GameManager : Node
 
     private void SetupScene3D()
     {
-        float gw = 30f, gh = 20f;
-        _camCtrl = new GameCamera();
-        _camCtrl.Target = new Vector3(gw / 2, 0, gh / 2);
-        AddChild(_camCtrl);
-
-        _renderer = new Grid3DRenderer();
-        _renderer.CellSize = 1.0f;
-        _renderer.SetGrid(_scenario.Map);
-        _renderer.SetBlueUnits(_scenario.BlueBattalions);
-        _renderer.SetRedUnits(_scenario.RedBattalions);
-        _renderer.OnUnitClicked = OnUnitClicked;
-        _renderer.OnTileClicked = OnTileClicked;
-        _renderer.OnRightClick = OnRightClick;
-        _renderer.OnHoverChanged = OnHoverChanged;
-        _renderer.SetCameraRef(_camCtrl.Cam);
-        AddChild(_renderer);
-
         _ui = new CanvasLayer();
         AddChild(_ui);
 
-        _infoLabel = new Label();
-        _infoLabel.Position = new Vector2(10, 10);
-        _infoLabel.AddThemeFontSizeOverride("font_size", 16);
-        _infoLabel.Text = "Fulda Gap 1985 - Click to select, reachable tile to move";
-        _ui.AddChild(_infoLabel);
-
-        _statusLabel = new Label();
-        _statusLabel.Position = new Vector2(10, 34);
-        _statusLabel.AddThemeFontSizeOverride("font_size", 14);
-        _statusLabel.Text = GetStatusText();
-        _ui.AddChild(_statusLabel);
-
-        _endTurnBtn = new Button();
-        _endTurnBtn.Position = new Vector2(10, 60);
-        _endTurnBtn.Text = "End Turn [Space]";
-        _endTurnBtn.Pressed += OnEndTurn;
-        _endTurnBtn.FocusMode = Control.FocusModeEnum.None;
-        _ui.AddChild(_endTurnBtn);
-
-        _tooltipPanel = new Panel();
-        var tipStyle = new StyleBoxFlat();
-        tipStyle.BgColor = new Color(0, 0, 0, 0.85f);
-        tipStyle.CornerRadiusTopLeft = 4; tipStyle.CornerRadiusTopRight = 4;
-        tipStyle.CornerRadiusBottomLeft = 4; tipStyle.CornerRadiusBottomRight = 4;
-        _tooltipPanel.AddThemeStyleboxOverride("panel", tipStyle);
-        _tooltipPanel.MouseFilter = Control.MouseFilterEnum.Ignore;
-        _tooltipPanel.Visible = false;
-        _tooltipPanel.Size = new Vector2(520, 32);
-        _ui.AddChild(_tooltipPanel);
-
-        _tooltipLabel = new Label();
-        _tooltipLabel.AddThemeFontSizeOverride("font_size", 14);
-        _tooltipLabel.AddThemeColorOverride("font_color", Colors.White);
-        _tooltipLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
-        _tooltipLabel.Position = new Vector2(8, 4);
-        _tooltipLabel.Size = new Vector2(504, 24);
-        _tooltipPanel.AddChild(_tooltipLabel);
-
-        _session = new GameSessionController(
+        _hud = new GameHud(_ui, OnEndTurn);
+        _sceneBootstrapper = new GameSceneBootstrapper(
             this,
             _scenario,
-            _turnMgr,
-            _renderer,
-            _infoLabel,
-            _statusLabel,
             _ui,
-            _tooltipPanel,
-            _tooltipLabel);
+            _hud,
+            OnUnitClicked,
+            OnTileClicked,
+            OnRightClick,
+            OnHoverChanged);
+        _sceneBootstrapper.Initialize();
 
-        _statusLabel.Text = GetStatusText();
+        _camCtrl = _sceneBootstrapper.Camera;
+        _renderer = _sceneBootstrapper.Renderer;
+
+        _session = new GameSessionController(this, _scenario, _turnMgr, _renderer, _hud);
+        _hud.SetStatusText(GetStatusText());
     }
 
     private string GetStatusText() => _session?.GetStatusText() ?? "Turn 1";

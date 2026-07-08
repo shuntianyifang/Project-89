@@ -18,11 +18,7 @@ namespace ColdWarWargame.Systems.Gameplay
         private readonly FuldaGapScenario _scenario;
         private readonly TurnManager _turnMgr;
         private readonly Grid3DRenderer _renderer;
-        private readonly Label _infoLabel;
-        private readonly Label _statusLabel;
-        private readonly CanvasLayer _ui;
-        private readonly Panel _tooltipPanel;
-        private readonly Label _tooltipLabel;
+        private readonly GameHud _hud;
         private readonly CombatResolver _resolver = new();
 
         private CombatDeploymentPanel _combatPanel;
@@ -48,21 +44,13 @@ namespace ColdWarWargame.Systems.Gameplay
             FuldaGapScenario scenario,
             TurnManager turnMgr,
             Grid3DRenderer renderer,
-            Label infoLabel,
-            Label statusLabel,
-            CanvasLayer ui,
-            Panel tooltipPanel,
-            Label tooltipLabel)
+            GameHud hud)
         {
             _owner = owner;
             _scenario = scenario;
             _turnMgr = turnMgr;
             _renderer = renderer;
-            _infoLabel = infoLabel;
-            _statusLabel = statusLabel;
-            _ui = ui;
-            _tooltipPanel = tooltipPanel;
-            _tooltipLabel = tooltipLabel;
+            _hud = hud;
         }
 
         public string GetStatusText() =>
@@ -81,7 +69,7 @@ namespace ColdWarWargame.Systems.Gameplay
             if (_inCombat) return;
             if (_sel.Unit.CurrentAP < 4f)
             {
-                _infoLabel.Text = "AP too low, need 4";
+                _hud.SetInfoText("AP too low, need 4");
                 return;
             }
 
@@ -89,7 +77,7 @@ namespace ColdWarWargame.Systems.Gameplay
             int dy = Math.Abs(_sel.Pos.Y - pos.Y);
             if (Math.Max(dx, dy) > 2)
             {
-                _infoLabel.Text = "Target too far, max 2";
+                _hud.SetInfoText("Target too far, max 2");
                 return;
             }
 
@@ -111,7 +99,7 @@ namespace ColdWarWargame.Systems.Gameplay
                 if (path == null || path.Count < 2)
                 {
                     ClearSelection();
-                    _infoLabel.Text = "Click to select";
+                    _hud.SetInfoText("Click to select");
                     return;
                 }
 
@@ -141,14 +129,14 @@ namespace ColdWarWargame.Systems.Gameplay
                     _renderer.SetReachable(_currentReachable, _sel.Unit.CurrentAP);
                     _renderer.SetSel(pos);
                     UpdateArtilleryOverlay(_sel.Unit, pos);
-                    _infoLabel.Text = "Moved to (" + pos.X + "," + pos.Y + ") AP=" + _sel.Unit.CurrentAP.ToString("0.0");
+                    _hud.SetInfoText("Moved to (" + pos.X + "," + pos.Y + ") AP=" + _sel.Unit.CurrentAP.ToString("0.0"));
                     _isMoving = false;
                 };
             }
             else
             {
                 ClearSelection();
-                _infoLabel.Text = "Click to select";
+                _hud.SetInfoText("Click to select");
             }
         }
 
@@ -156,7 +144,7 @@ namespace ColdWarWargame.Systems.Gameplay
         {
             if (_inCombat || _isMoving) return;
             ClearSelection();
-            _infoLabel.Text = "Click to select";
+            _hud.SetInfoText("Click to select");
         }
 
         public void OnHoverChanged(Vector2I? pos)
@@ -165,16 +153,16 @@ namespace ColdWarWargame.Systems.Gameplay
 
             if (pos == null)
             {
-                _tooltipPanel.Visible = false;
+                _hud.SetTooltipVisible(false);
                 if (_sel != null)
-                    _infoLabel.Text = "Selected: " + _sel.Unit.Name + " reachable " + _currentReachable.Count + " tiles";
+                    _hud.SetInfoText("Selected: " + _sel.Unit.Name + " reachable " + _currentReachable.Count + " tiles");
                 else
-                    _infoLabel.Text = "Click to select";
+                    _hud.SetInfoText("Click to select");
                 return;
             }
 
             var p = pos.Value;
-            _infoLabel.Text = "坐标: (" + p.X + ", " + p.Y + ")";
+            _hud.SetInfoText("坐标: (" + p.X + ", " + p.Y + ")");
 
             var tile = _scenario.Map.GetTile(p);
             string terrainName = TerrainNames[tile.TerrainType];
@@ -219,16 +207,7 @@ namespace ColdWarWargame.Systems.Gameplay
                 if (path != null) _renderer.ShowPath(path);
             }
 
-            _tooltipLabel.Text = info;
-            _tooltipLabel.Size = new Vector2(504, 24);
-            _tooltipPanel.Size = new Vector2(520, 32);
-
-            Vector2 tipPos = _lastMouseScreenPos + new Vector2(20, 20);
-            var vpSize = _owner.GetViewport().GetVisibleRect().Size;
-            tipPos.X = Mathf.Clamp(tipPos.X, 0, vpSize.X - _tooltipPanel.Size.X);
-            tipPos.Y = Mathf.Clamp(tipPos.Y, 0, vpSize.Y - _tooltipPanel.Size.Y);
-            _tooltipPanel.Position = tipPos;
-            _tooltipPanel.Visible = true;
+            _hud.SetTooltipText(info, _lastMouseScreenPos, _owner.GetViewport().GetVisibleRect().Size);
         }
 
         public void OnEndTurn()
@@ -238,8 +217,8 @@ namespace ColdWarWargame.Systems.Gameplay
             _turnMgr.EndStrategicTurn();
             _renderer.SetBlueUnits(_scenario.BlueBattalions);
             _renderer.SetRedUnits(_scenario.RedBattalions);
-            _statusLabel.Text = GetStatusText();
-            _infoLabel.Text = "Turn " + _turnMgr.TurnNumber + " - " + (_turnMgr.CurrentFaction == 1 ? "NATO" : "Warsaw Pact");
+            _hud.SetStatusText(GetStatusText());
+            _hud.SetInfoText("Turn " + _turnMgr.TurnNumber + " - " + (_turnMgr.CurrentFaction == 1 ? "NATO" : "Warsaw Pact"));
         }
 
         public void OnMouseMoved(Vector2 position) => _lastMouseScreenPos = position;
@@ -261,7 +240,7 @@ namespace ColdWarWargame.Systems.Gameplay
             bool occ(Vector2I p) => _scenario.BlueBattalions.Concat(_scenario.RedBattalions).Any(u => u.Item2 == p && u.Item1 != bat);
             _currentReachable = _scenario.Movement.GetReachableTiles(pos, bat.CurrentAP, isEnemyZOC, occ);
             _renderer.SetReachable(_currentReachable, bat.CurrentAP);
-            _infoLabel.Text = "Selected: " + bat.Name + " reachable " + _currentReachable.Count + " tiles";
+            _hud.SetInfoText("Selected: " + bat.Name + " reachable " + _currentReachable.Count + " tiles");
             UpdateArtilleryOverlay(bat, pos);
         }
 
@@ -291,7 +270,7 @@ namespace ColdWarWargame.Systems.Gameplay
             int tBonus = (int)(terrainBonus * 10);
 
             _combatPanel = new CombatDeploymentPanel();
-            _ui.AddChild(_combatPanel);
+            _hud.Canvas.AddChild(_combatPanel);
             _combatPanel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
 
             _combatPanel.OnAttackerConfirmed = (CombatForce attackerForce) =>
@@ -350,7 +329,7 @@ namespace ColdWarWargame.Systems.Gameplay
                 _inCombat = false;
                 _renderer.SetBlueUnits(_scenario.BlueBattalions);
                 _renderer.SetRedUnits(_scenario.RedBattalions);
-                _infoLabel.Text = "Click to select";
+                _hud.SetInfoText("Click to select");
             };
 
             _combatPanel.OnCancel = () =>
@@ -362,7 +341,7 @@ namespace ColdWarWargame.Systems.Gameplay
                 }
                 ClearSelection();
                 _inCombat = false;
-                _infoLabel.Text = "Combat cancelled";
+                _hud.SetInfoText("Combat cancelled");
             };
 
             _combatPanel.ShowAttackerPhase(_sel.Unit, defBat, eligible, tBonus, tName);
