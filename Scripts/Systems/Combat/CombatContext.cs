@@ -18,6 +18,11 @@ namespace ColdWarWargame.Systems.Combat
         public int AttackerOOSTurns { get; set; } = 0;
         public int DefenderOOSTurns { get; set; } = 0;
 
+        // Optional per-battalion OOS states for force combat resolution.
+        // Resolver falls back to AttackerOOSTurns/DefenderOOSTurns when lists are absent.
+        public List<int> AttackerBattalionOOSTurns { get; set; } = new();
+        public List<int> DefenderBattalionOOSTurns { get; set; } = new();
+
         public int RoundId { get; set; } = 0;
         public object Extra { get; set; }
     }

@@ -114,7 +114,7 @@ namespace ColdWarWargame.Systems.Turns
         {
             foreach (var b in _battalions)
                 if (b.Faction == faction)
-                    b.CurrentAP = 12f;
+                    b.CurrentAP = b.GetMaxAP();
         }
 
         // ---------- 便利方法 ----------

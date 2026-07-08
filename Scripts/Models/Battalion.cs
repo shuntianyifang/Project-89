@@ -7,6 +7,10 @@ namespace ColdWarWargame.Models
 {
     public class Battalion
     {
+        // Deliberately set higher than gameplay thresholds as a numeric safety buffer.
+        // Gameplay effects still collapse once Fatigue > 8.
+        public const int FatigueOverflowCap = 20;
+
         public string InstanceId { get; set; }
         public string Name { get; set; }
         public int Faction { get; set; } // 0: Neutral, 1: Blue, 2: Red

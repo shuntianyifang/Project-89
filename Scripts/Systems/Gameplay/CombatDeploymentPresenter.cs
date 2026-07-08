@@ -88,7 +88,9 @@ namespace ColdWarWargame.Systems.Gameplay
                 {
                     DefenderTerrainBonus = terrainBonus,
                     AttackerOOSTurns = attacker.TurnsOOS,
-                    DefenderOOSTurns = defender.TurnsOOS
+                    DefenderOOSTurns = defender.TurnsOOS,
+                    AttackerBattalionOOSTurns = _attackerStored.GetAllBattalions().Select(b => b.TurnsOOS).ToList(),
+                    DefenderBattalionOOSTurns = _defenderStored.GetAllBattalions().Select(b => b.TurnsOOS).ToList()
                 };
 
                 var result = _resolver.ResolveCombat(
@@ -98,12 +100,12 @@ namespace ColdWarWargame.Systems.Gameplay
 
                 foreach (var b in _attackerStored.GetAllBattalions())
                 {
-                    b.Fatigue = Math.Min(10, b.Fatigue + result.AttackerFatigueGained);
+                    b.Fatigue = Math.Min(Battalion.FatigueOverflowCap, b.Fatigue + result.AttackerFatigueGained);
                     b.CurrentAP = Math.Max(0, b.CurrentAP - 4);
                 }
                 foreach (var b in _defenderStored.GetAllBattalions())
                 {
-                    b.Fatigue = Math.Min(10, b.Fatigue + result.DefenderFatigueGained);
+                    b.Fatigue = Math.Min(Battalion.FatigueOverflowCap, b.Fatigue + result.DefenderFatigueGained);
                     b.CurrentAP = Math.Max(0, b.CurrentAP - 4);
                 }
 

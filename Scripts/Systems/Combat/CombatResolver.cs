@@ -20,7 +20,7 @@ namespace ColdWarWargame.Systems.Combat
             var leadD = defenderBattalions.FirstOrDefault();
             if (leadA == null || leadD == null)
                 return new CombatResolutionResult { Advantage = new AdvantageResult { Value = 0 } };
-            var advantage = ComputeAdvantage(leadA, leadD, ctx);
+            var advantage = ComputeAdvantage(attackerBattalions, defenderBattalions, ctx);
             float forceBonus = (attackerBattalions.Count - 1) * 0.15f -
                                (defenderBattalions.Count - 1) * 0.15f;
             advantage.Value = Math.Clamp(advantage.Value + forceBonus, -10f, 10f);
@@ -198,10 +198,13 @@ namespace ColdWarWargame.Systems.Combat
         {
             var res = new AdvantageResult();
 
-            float A_base = attacker?.GetActualAttack() ?? 0f;
-            float D_base = defender?.GetActualDefense() ?? 0f;
-            float A_org = attacker?.GetOrganizationalDebuff() ?? 1f;
-            float D_org = defender?.GetOrganizationalDebuff() ?? 1f;
+            float attackerOosScale = GetOosCombatPowerScale(ctx?.AttackerOOSTurns ?? 0);
+            float defenderOosScale = GetOosCombatPowerScale(ctx?.DefenderOOSTurns ?? 0);
+
+            float A_base = (attacker?.GetActualAttack() ?? 0f) * attackerOosScale;
+            float D_base = (defender?.GetActualDefense() ?? 0f) * defenderOosScale;
+            float A_org = 1f;
+            float D_org = 1f;
 
             float numer = A_base * A_org;
             float denom = D_base * D_org;
@@ -220,10 +223,6 @@ namespace ColdWarWargame.Systems.Combat
                 attackerMods.Add(new ModifierEntry { Source = "CommandNetworkMissing", Value = -2.0f, Reason = "No Command units", Target = "attacker" });
             if (!CombatUtils.HasCommandNetwork(defender))
                 defenderMods.Add(new ModifierEntry { Source = "CommandNetworkMissing", Value = -2.0f, Reason = "No Command units", Target = "defender" });
-
-            // OOS penalties
-            ApplyOosPenalty(ctx?.AttackerOOSTurns ?? 0, "attacker", attackerMods);
-            ApplyOosPenalty(ctx?.DefenderOOSTurns ?? 0, "defender", defenderMods);
 
             // Infantry
             if (!attacker.GetAllSubUnits().Any(u => CombatUtils.IsInfantry(u)))
@@ -272,6 +271,85 @@ namespace ColdWarWargame.Systems.Combat
             return res;
         }
 
+        AdvantageResult ComputeAdvantage(List<Battalion> attackerBattalions, List<Battalion> defenderBattalions, CombatContext ctx)
+        {
+            var res = new AdvantageResult();
+            var leadA = attackerBattalions.FirstOrDefault();
+            var leadD = defenderBattalions.FirstOrDefault();
+            if (leadA == null || leadD == null)
+            {
+                res.Value = 0f;
+                return res;
+            }
+
+            float A_base = 0f;
+            for (int i = 0; i < attackerBattalions.Count; i++)
+            {
+                var bat = attackerBattalions[i];
+                int oosTurns = GetPerBattalionOosTurns(ctx?.AttackerBattalionOOSTurns, i, ctx?.AttackerOOSTurns ?? 0);
+                A_base += bat.GetActualAttack() * GetOosCombatPowerScale(oosTurns);
+            }
+
+            float D_base = 0f;
+            for (int i = 0; i < defenderBattalions.Count; i++)
+            {
+                var bat = defenderBattalions[i];
+                int oosTurns = GetPerBattalionOosTurns(ctx?.DefenderBattalionOOSTurns, i, ctx?.DefenderOOSTurns ?? 0);
+                D_base += bat.GetActualDefense() * GetOosCombatPowerScale(oosTurns);
+            }
+
+            float numer = A_base;
+            float denom = D_base;
+            float baseRatio = denom > EPS ? numer / denom : (numer > EPS ? 10f : 1f);
+            float baseV = baseRatio - 1.0f;
+
+            var attackerMods = new List<ModifierEntry>();
+            var defenderMods = new List<ModifierEntry>();
+
+            EvaluateArmorRules(leadA, leadD, attackerMods, defenderMods);
+            EvaluateAntiTankVsHeavyArmor(leadA, leadD, attackerMods, defenderMods);
+
+            if (!CombatUtils.HasCommandNetwork(leadA))
+                attackerMods.Add(new ModifierEntry { Source = "CommandNetworkMissing", Value = -2.0f, Reason = "No Command units", Target = "attacker" });
+            if (!CombatUtils.HasCommandNetwork(leadD))
+                defenderMods.Add(new ModifierEntry { Source = "CommandNetworkMissing", Value = -2.0f, Reason = "No Command units", Target = "defender" });
+
+            if (!leadA.GetAllSubUnits().Any(u => CombatUtils.IsInfantry(u)))
+                attackerMods.Add(new ModifierEntry { Source = "NoInfantry", Value = -1.0f, Reason = "No infantry present", Target = "attacker" });
+            if (!leadD.GetAllSubUnits().Any(u => CombatUtils.IsInfantry(u)))
+                defenderMods.Add(new ModifierEntry { Source = "NoInfantry", Value = -1.0f, Reason = "No infantry present", Target = "defender" });
+
+            if (!CombatUtils.HasAnyCapability(leadA, "Recon"))
+                attackerMods.Add(new ModifierEntry { Source = "NoRecon", Value = -1.0f, Reason = "No Recon units", Target = "attacker" });
+            if (!CombatUtils.HasAnyCapability(leadD, "Recon"))
+                defenderMods.Add(new ModifierEntry { Source = "NoRecon", Value = -1.0f, Reason = "No Recon units", Target = "defender" });
+
+            bool aHasArt = leadA.GetAllSubUnits().Any(u => CombatUtils.IsArtillery(u));
+            bool dHasArt = leadD.GetAllSubUnits().Any(u => CombatUtils.IsArtillery(u));
+            if (aHasArt && !dHasArt) defenderMods.Add(new ModifierEntry { Source = "NoArtilleryAgainstArtillery", Value = -1.0f, Reason = "Opponent has artillery", Target = "defender" });
+            if (dHasArt && !aHasArt) attackerMods.Add(new ModifierEntry { Source = "NoArtilleryAgainstArtillery", Value = -1.0f, Reason = "Opponent has artillery", Target = "attacker" });
+
+            bool aHasHeli = CombatUtils.HasHeliDomain(leadA);
+            bool dHasHeli = CombatUtils.HasHeliDomain(leadD);
+            bool aHasAA = CombatUtils.HasAnyAA(leadA);
+            bool dHasAA = CombatUtils.HasAnyAA(leadD);
+            if (aHasHeli && !dHasAA) defenderMods.Add(new ModifierEntry { Source = "NoAAAgainstHeli", Value = -1.0f, Reason = "No AA vs Heli", Target = "defender" });
+            if (dHasHeli && !aHasAA) attackerMods.Add(new ModifierEntry { Source = "NoAAAgainstHeli", Value = -1.0f, Reason = "No AA vs Heli", Target = "attacker" });
+
+            if (ctx != null && ctx.DefenderTerrainBonus > 0f)
+            {
+                attackerMods.Add(new ModifierEntry { Source = "TerrainDefenderBonus", Value = -ctx.DefenderTerrainBonus, Reason = "Defender terrain +" + ctx.DefenderTerrainBonus, Target = "attacker" });
+            }
+
+            float attackerPenalty = attackerMods.Sum(m => m.Value);
+            float defenderPenalty = defenderMods.Sum(m => m.Value);
+
+            res.Value = Math.Clamp(baseV + attackerPenalty - defenderPenalty, -10f, 10f);
+            res.Modifiers.AddRange(attackerMods);
+            res.Modifiers.AddRange(defenderMods);
+            return res;
+        }
+
         void EvaluateArmorRules(Battalion a, Battalion b, List<ModifierEntry> aMods, List<ModifierEntry> bMods)
         {
             if (CombatUtils.HasAnyCapability(a, "HeavyArmor"))
@@ -316,11 +394,18 @@ namespace ColdWarWargame.Systems.Combat
             }
         }
 
-        void ApplyOosPenalty(int oosTurns, string target, List<ModifierEntry> mods)
+        float GetOosCombatPowerScale(int oosTurns)
         {
-            if (oosTurns <= 0) return;
-            if (oosTurns == 1) mods.Add(new ModifierEntry { Source = "OOS_Turn1", Value = -0.5f, Reason = "Out of supply turn 1", Target = target });
-            else mods.Add(new ModifierEntry { Source = "OOS_Turn2Plus", Value = -1.0f, Reason = "Out of supply >=2", Target = target });
+            if (oosTurns <= 0) return 1.0f;
+            if (oosTurns == 1) return 0.8f;
+            return 0.5f;
+        }
+
+        int GetPerBattalionOosTurns(List<int> turnsByBattalion, int index, int fallbackTurns)
+        {
+            if (turnsByBattalion != null && index >= 0 && index < turnsByBattalion.Count)
+                return turnsByBattalion[index];
+            return fallbackTurns;
         }
     }
 }

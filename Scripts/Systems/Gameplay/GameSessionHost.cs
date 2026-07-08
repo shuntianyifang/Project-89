@@ -4,11 +4,6 @@ using ColdWarWargame.Data.TOE;
 using ColdWarWargame.Rendering;
 using ColdWarWargame.Scenarios;
 using ColdWarWargame.Systems.Turns;
-using ColdWarWargame.Tests.Battlefield;
-using ColdWarWargame.Tests.Combat;
-using ColdWarWargame.Tests.Supply;
-using ColdWarWargame.Tests.Turns;
-using ColdWarWargame.Tests.Victory;
 
 namespace ColdWarWargame.Systems.Gameplay
 {
@@ -48,13 +43,6 @@ namespace ColdWarWargame.Systems.Gameplay
             UnitDatabase.Initialize("res://Scripts/Data/Units");
             TemplateDatabase.Initialize("res://Scripts/Data/Templates");
             GD.Print("System initialized.");
-            CombatResolverTests.RunAll();
-            GridTests.RunAll();
-            TurnManagerTests.RunAll();
-            SupplyManagerTests.RunAll();
-            VictoryTrackerTests.RunAll();
-            VisionTests.RunAll();
-            EngagementTests.RunAll();
 
             Scenario = new FuldaGapScenario();
             Scenario.LoadOOB("res://Scripts/Data/Scenarios/Fulda_Gap/oob_blue.json", "res://Scripts/Data/Scenarios/Fulda_Gap/oob_red.json");

@@ -82,6 +82,13 @@ namespace ColdWarWargame.Tests.Combat
 
         static Battalion MakeFatigueBat(float ap, int fatigue) => new Battalion { Name = "FatigueTest", Faction = 1, CurrentAP = ap, Fatigue = fatigue };
 
+        static Battalion MakeSimpleInfantryBat(string name)
+        {
+            var bat = MakeBatWithUnitIds("us_mech_rifles");
+            bat.Name = name;
+            return bat;
+        }
+
         static void Test_FatigueMultiplier()
         {
             var fresh = MakeFatigueBat(12f, 0);
@@ -90,6 +97,42 @@ namespace ColdWarWargame.Tests.Combat
             AssertFloat(fresh.GetFatigueCombatMultiplier(), 1.0f, "Fatigue 0: mult 1.0");
             AssertFloat(tired.GetFatigueCombatMultiplier(), 0.9f, "Fatigue 6: mult 0.9");
             AssertFloat(exhausted.GetFatigueCombatMultiplier(), 0.5f, "Fatigue 8: mult 0.5");
+        }
+
+        static void Test_ForceCombat_OosAppliedPerBattalionPower()
+        {
+            var resolver = new CombatResolver();
+
+            var atkLead = MakeSimpleInfantryBat("AtkLead");
+            var atkSupport = MakeSimpleInfantryBat("AtkSupport");
+            var defLead = MakeSimpleInfantryBat("DefLead");
+            var defSupport = MakeSimpleInfantryBat("DefSupport");
+
+            var attackers = new List<Battalion> { atkLead, atkSupport };
+            var defenders = new List<Battalion> { defLead, defSupport };
+
+            var ctxPlain = new CombatContext
+            {
+                DefenderTerrainBonus = 0f,
+                AttackerBattalionOOSTurns = new List<int> { 0, 0 },
+                DefenderBattalionOOSTurns = new List<int> { 0, 0 }
+            };
+
+            var ctxSupportOos = new CombatContext
+            {
+                DefenderTerrainBonus = 0f,
+                AttackerBattalionOOSTurns = new List<int> { 0, 2 },
+                DefenderBattalionOOSTurns = new List<int> { 0, 0 }
+            };
+
+            var plain = resolver.ResolveCombat(attackers, defenders, ctxPlain, 123ul);
+            var supportOos = resolver.ResolveCombat(attackers, defenders, ctxSupportOos, 123ul);
+
+            Assert(supportOos.Advantage.Value < plain.Advantage.Value,
+                "Force combat: non-lead battalion OOS lowers attacker advantage through power scaling");
+
+            Assert(!supportOos.Advantage.Modifiers.Exists(m => m.Source.StartsWith("OOS_")),
+                "Force combat: OOS no longer appears as advantage modifier entries");
         }
 
         public static void RunAll()
@@ -101,6 +144,7 @@ namespace ColdWarWargame.Tests.Combat
             Test_TerrainPlain();
             Test_TerrainUrban();
             Test_TerrainForest();
+            Test_ForceCombat_OosAppliedPerBattalionPower();
 
             // ---- Existing tests ----
             var defHeavy = MakeBatWithUnitIds("us_m1a1_abrams");

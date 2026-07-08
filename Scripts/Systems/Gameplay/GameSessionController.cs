@@ -7,7 +7,9 @@ using ColdWarWargame.Rendering;
 using ColdWarWargame.Scenarios;
 using ColdWarWargame.Systems.Battlefield;
 using ColdWarWargame.Systems.Combat;
+using ColdWarWargame.Systems.Supply;
 using ColdWarWargame.Systems.Turns;
+using ColdWarWargame.Systems.Victory;
 
 namespace ColdWarWargame.Systems.Gameplay
 {
@@ -24,6 +26,9 @@ namespace ColdWarWargame.Systems.Gameplay
         private readonly GameSessionRules _rules = new();
         private readonly GameplayEventHub _eventHub = new();
         private readonly TurnFlowController _turnFlow;
+        private readonly SupplyManager _supplyManager = new();
+        private readonly VictoryTracker _victoryTracker = new();
+        private readonly VisionResolver _visionResolver = new();
 
         private Vector2 _lastMouseScreenPos;
 
@@ -53,6 +58,7 @@ namespace ColdWarWargame.Systems.Gameplay
                 scenario,
                 turnMgr,
                 _resolver);
+            RefreshPresentationByVision();
         }
 
         public string GetStatusText() =>
@@ -112,7 +118,8 @@ namespace ColdWarWargame.Systems.Gameplay
 
                 _renderer.OnMoveFinished = () =>
                 {
-                    _flow.CurrentSelection.Unit.CurrentAP = Math.Max(0, _flow.CurrentSelection.Unit.CurrentAP - cost);
+                    float remainingAp = _flow.CurrentSelection.Unit.CurrentAP - cost;
+                    _flow.CurrentSelection.Unit.CurrentAP = Math.Max(0f, (float)Math.Round(remainingAp, 1));
                     _flow.CurrentSelection.Pos = pos;
                     for (int i = 0; i < _scenario.BlueBattalions.Count; i++)
                         if (_scenario.BlueBattalions[i].bat == _flow.CurrentSelection.Unit)
@@ -120,8 +127,7 @@ namespace ColdWarWargame.Systems.Gameplay
                     for (int i = 0; i < _scenario.RedBattalions.Count; i++)
                         if (_scenario.RedBattalions[i].bat == _flow.CurrentSelection.Unit)
                             _scenario.RedBattalions[i] = (_flow.CurrentSelection.Unit, pos);
-                    _renderer.SetBlueUnits(_scenario.BlueBattalions);
-                    _renderer.SetRedUnits(_scenario.RedBattalions);
+                    RefreshPresentationByVision();
 
                     var enemyFaction3 = _turnMgr.CurrentFaction == 1 ? 2 : 1;
                     var enemyPositions3 = (enemyFaction3 == 1 ? _scenario.BlueBattalions : _scenario.RedBattalions).Select(u => u.Item2);
@@ -218,12 +224,13 @@ namespace ColdWarWargame.Systems.Gameplay
         public void OnEndTurn()
         {
             if (!_rules.IsActionAllowed(_flow.CurrentState, GameAction.EndTurn)) return;
+            int endingFaction = _turnMgr.CurrentFaction;
             ClearSelection();
             _flow.EndTurn();
             _turnFlow.EndTurn();
+            ExecuteEndTurnSettlement(endingFaction);
             _turnMgr.EndStrategicTurn();
-            _renderer.SetBlueUnits(_scenario.BlueBattalions);
-            _renderer.SetRedUnits(_scenario.RedBattalions);
+            RefreshPresentationByVision();
             _hud.SetStatusText(GetStatusText());
             _hud.SetInfoText("Turn " + _turnMgr.TurnNumber + " - " + (_turnMgr.CurrentFaction == 1 ? "NATO" : "Warsaw Pact"));
         }
@@ -267,7 +274,9 @@ namespace ColdWarWargame.Systems.Gameplay
                 {
                     _flow.ExitCombat();
                     _turnFlow.ResolveCombat();
+                    _victoryTracker.RecordCombatResult(result, _turnMgr.CurrentFaction);
                     ClearSelection();
+                    RefreshPresentationByVision();
                 },
                 () =>
                 {
@@ -280,8 +289,57 @@ namespace ColdWarWargame.Systems.Gameplay
                 {
                     _flow.ExitCombat();
                     _turnFlow.FinishPhase();
+                    RefreshPresentationByVision();
                     _hud.SetInfoText("Click to select");
                 });
+        }
+
+        private void ExecuteEndTurnSettlement(int endingFaction)
+        {
+            var enemyPositions = GetFactionUnits(endingFaction == 1 ? 2 : 1).Select(u => u.pos);
+            var enemyOccupied = new HashSet<Vector2I>(enemyPositions);
+            var enemyZoc = _scenario.ZOC.GetFactionZOC(enemyPositions);
+
+            _supplyManager.UpdateFactionEndTurn(
+                endingFaction,
+                _scenario.Map,
+                GetAllUnits(),
+                enemyOccupied,
+                enemyZoc);
+
+            var bluePositions = new HashSet<Vector2I>(_scenario.BlueBattalions.Select(u => u.pos));
+            var redPositions = new HashSet<Vector2I>(_scenario.RedBattalions.Select(u => u.pos));
+            _victoryTracker.UpdateControl(_scenario.Map, bluePositions, redPositions, _scenario.ZOC);
+            _victoryTracker.ScoreControlVP();
+
+            var assessment = _victoryTracker.Evaluate(_turnMgr.TurnNumber);
+            _hud.SetInfoText("VP Blue:" + assessment.BlueVP + " Red:" + assessment.RedVP + " 结果:" + assessment.BlueLevel.DisplayName());
+        }
+
+        private void RefreshPresentationByVision()
+        {
+            var visible = _visionResolver.UpdateGlobalVision(_turnMgr.CurrentFaction, GetAllUnits());
+
+            var blueVisible = _turnMgr.CurrentFaction == 1
+                ? _scenario.BlueBattalions
+                : _scenario.BlueBattalions.Where(u => visible.Contains(u.pos)).ToList();
+
+            var redVisible = _turnMgr.CurrentFaction == 2
+                ? _scenario.RedBattalions
+                : _scenario.RedBattalions.Where(u => visible.Contains(u.pos)).ToList();
+
+            _renderer.SetBlueUnits(blueVisible);
+            _renderer.SetRedUnits(redVisible);
+        }
+
+        private IEnumerable<(Battalion bat, Vector2I pos)> GetAllUnits()
+        {
+            return _scenario.BlueBattalions.Concat(_scenario.RedBattalions);
+        }
+
+        private IEnumerable<(Battalion bat, Vector2I pos)> GetFactionUnits(int faction)
+        {
+            return faction == 1 ? _scenario.BlueBattalions : _scenario.RedBattalions;
         }
 
         private void ClearSelection()

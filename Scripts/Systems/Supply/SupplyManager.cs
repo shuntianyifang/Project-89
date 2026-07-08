@@ -26,9 +26,9 @@ namespace ColdWarWargame.Systems.Supply
                 {
                     bat.TurnsOOS++;
                     if (bat.TurnsOOS == 1)
-                        bat.Fatigue = Math.Min(bat.Fatigue + 1, 10);
+                        bat.Fatigue = Math.Min(bat.Fatigue + 1, Battalion.FatigueOverflowCap);
                     else
-                        bat.Fatigue = Math.Min(bat.Fatigue + 2, 10);
+                        bat.Fatigue = Math.Min(bat.Fatigue + 2, Battalion.FatigueOverflowCap);
                 }
                 else
                 {
@@ -38,7 +38,7 @@ namespace ColdWarWargame.Systems.Supply
                     else if (bat.CurrentAP >= 4f)
                         bat.Fatigue = Math.Max(0, bat.Fatigue - 1);
                 }
-                bat.Fatigue = Math.Clamp(bat.Fatigue, 0, 10);
+                bat.Fatigue = Math.Clamp(bat.Fatigue, 0, Battalion.FatigueOverflowCap);
             }
         }
 
