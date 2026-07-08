@@ -57,7 +57,6 @@ namespace ColdWarWargame.UI
         private Label[] _slotLabels = new Label[4];
         private Button _confirmBtn;
         private Button _cancelBtn;
-        private Button _nextBtn;
         private Control _contentRoot;
         private Control _resultRoot;
         private Battalion _draggedUnit;
@@ -253,8 +252,6 @@ namespace ColdWarWargame.UI
             _confirmBtn = MakeActionButton(isDefenderPhase ? "Confirm Defense" : "Confirm Attack", new Color(0.2f, 0.6f, 0.3f));
             _confirmBtn.Pressed += OnConfirmPressed;
             btnRow.AddChild(_confirmBtn);
-
-            _nextBtn = null;
 
             EnsureDragPreview();
             HideDragPreview();
@@ -605,68 +602,6 @@ namespace ColdWarWargame.UI
         }
 
         // ===== 防御方展示 =====
-        public void ShowDefenderPreview(CombatForce defenderForce)
-        {
-            _defenderForce = defenderForce;
-            RemoveContent();
-
-            var outer = new Panel();
-            var style = new StyleBoxFlat();
-            style.BgColor = new Color(0.08f, 0.08f, 0.12f);
-            style.CornerRadiusTopLeft = 8; style.CornerRadiusTopRight = 8;
-            style.CornerRadiusBottomLeft = 8; style.CornerRadiusBottomRight = 8;
-            outer.AddThemeStyleboxOverride("panel", style);
-            outer.Size = new Vector2(600, 400);
-            var vpSize = GetViewport().GetVisibleRect().Size;
-            outer.Position = new Vector2((vpSize.X - 600) / 2, (vpSize.Y - 400) / 2);
-
-            AddChild(outer);
-            var vbox = new VBoxContainer();
-            vbox.Position = new Vector2(20, 20);
-            vbox.AddThemeConstantOverride("separation", 10);
-            outer.AddChild(vbox);
-
-            var header = new Label();
-            header.Text = "Defender Deployment (Auto-Filled)";
-            header.AddThemeFontSizeOverride("font_size", 18);
-            header.AddThemeColorOverride("font_color", new Color(1, 0.85f, 0.4f));
-            header.HorizontalAlignment = HorizontalAlignment.Center;
-            vbox.AddChild(header);
-
-            string defFaction = _leadDefender?.Faction == 1 ? "NATO" : "WP";
-            var defLabel = new Label();
-            defLabel.Text = "[" + defFaction + "] " + (_leadDefender?.Name ?? "???");
-            defLabel.AddThemeFontSizeOverride("font_size", 15);
-            defLabel.AddThemeColorOverride("font_color", new Color(1.0f, 0.4f, 0.4f));
-            defLabel.HorizontalAlignment = HorizontalAlignment.Center;
-            vbox.AddChild(defLabel);
-
-            // Show defender slots
-            string[] defSlotNames = { "MAIN 1", "MAIN 2", "SUPPORT", "ARTILLERY" };
-            Battalion[] defSlots = { defenderForce.LeadBattalion, defenderForce.MainSlot2,
-                                     defenderForce.SupportSlot, defenderForce.ArtillerySlot };
-
-            for (int i = 0; i < 4; i++)
-            {
-                var slot = defSlots[i];
-                if (slot == null) continue;
-                string atkS = slot.GetActualAttack().ToString("0.0");
-                string defS = slot.GetActualDefense().ToString("0.0");
-                var sl = new Label();
-                sl.Text = "  " + defSlotNames[i] + ": " + slot.Name + "  (ATK " + atkS + "  DEF " + defS + ")";
-                sl.AddThemeFontSizeOverride("font_size", 13);
-                sl.AddThemeColorOverride("font_color", Colors.White);
-                vbox.AddChild(sl);
-            }
-
-            vbox.AddChild(new Control { Size = new Vector2(0, 10) });
-
-            var resolveBtn = MakeActionButton("Resolve Combat", new Color(0.8f, 0.3f, 0.2f));
-            resolveBtn.Pressed += () => OnResolvePressed?.Invoke();
-            vbox.AddChild(resolveBtn);
-            _nextBtn = resolveBtn;
-        }
-
         public Action OnResolvePressed;
 
         public void ShowDeploymentPreview(CombatResolutionResult preview, bool isDefenderPhase)
