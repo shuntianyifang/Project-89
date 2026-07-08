@@ -1,5 +1,6 @@
-using Godot;
+﻿using Godot;
 using System;
+using ColdWarWargame.Models;
 
 namespace ColdWarWargame.Systems.Gameplay
 {
@@ -18,6 +19,10 @@ namespace ColdWarWargame.Systems.Gameplay
         private Panel _casualtyStatsPanel;
         private Label _casualtyStatsLabel;
         private Button _casualtyStatsCloseButton;
+
+        // battalion organization panel (lower-left)
+        private Panel _orgPanel;
+        private Label _orgLabel;
 
         public GameHud(CanvasLayer canvasLayer, Action onEndTurnPressed, Action onCasualtyStatsPressed)
         {
@@ -90,6 +95,26 @@ namespace ColdWarWargame.Systems.Gameplay
             _casualtyStatsCloseButton.FocusMode = Control.FocusModeEnum.None;
             _casualtyStatsPanel.AddChild(_casualtyStatsCloseButton);
 
+            // --- org panel in lower-left ---
+            _orgPanel = new Panel();
+            var orgStyle = new StyleBoxFlat();
+            orgStyle.BgColor = new Color(0.05f, 0.08f, 0.12f, 0.92f);
+            orgStyle.CornerRadiusTopLeft = 6;
+            orgStyle.CornerRadiusTopRight = 6;
+            orgStyle.CornerRadiusBottomLeft = 6;
+            orgStyle.CornerRadiusBottomRight = 6;
+            _orgPanel.AddThemeStyleboxOverride("panel", orgStyle);
+            _orgPanel.Visible = false;
+            _orgPanel.MouseFilter = Control.MouseFilterEnum.Ignore;
+            _canvasLayer.AddChild(_orgPanel);
+
+            _orgLabel = new Label();
+            _orgLabel.Position = new Vector2(10, 8);
+            _orgLabel.AddThemeFontSizeOverride("font_size", 13);
+            _orgLabel.AddThemeColorOverride("font_color", new Color(0.9f, 0.9f, 0.9f, 1f));
+            _orgLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
+            _orgPanel.AddChild(_orgLabel);
+
             _tooltipPanel = new Panel();
             var tipStyle = new StyleBoxFlat();
             tipStyle.BgColor = new Color(0, 0, 0, 0.85f);
@@ -113,15 +138,10 @@ namespace ColdWarWargame.Systems.Gameplay
         }
 
         public void SetInfoText(string text) => _infoLabel.Text = text;
-
         public void SetStatusText(string text) => _statusLabel.Text = text;
-
         public void SetCampaignCasualtyText(string text) => _casualtyStatsLabel.Text = text;
-
         public void SetCampaignCasualtyPanelVisible(bool visible) => _casualtyStatsPanel.Visible = visible;
-
         public bool IsCampaignCasualtyPanelVisible => _casualtyStatsPanel?.Visible ?? false;
-
         public void SetTooltipVisible(bool visible) => _tooltipPanel.Visible = visible;
 
         public void SetTooltipText(string text, Vector2 mouseScreenPos, Vector2 viewportSize)
@@ -136,5 +156,30 @@ namespace ColdWarWargame.Systems.Gameplay
             _tooltipPanel.Position = tipPos;
             _tooltipPanel.Visible = true;
         }
+
+        /// <summary>Show battalion organization panel at lower-left</summary>
+        public void ShowOrgPanel(Battalion bat, float viewportHeight)
+        {
+            if (bat == null) { _orgPanel.Visible = false; return; }
+            string text = BattalionOrgReporter.BuildOrganizationSummary(bat);
+            if (string.IsNullOrEmpty(text)) { _orgPanel.Visible = false; return; }
+
+            _orgLabel.Text = text;
+            // measure: count lines and max column width
+            var lines = text.Split('\n');
+            int maxW = 0;
+            foreach (var line in lines)
+            {
+                int w = line.Length; // approximate
+                if (w > maxW) maxW = w;
+            }
+            float panelW = Math.Max(maxW * 8 + 20, 100);
+            float panelH = Math.Max(lines.Length * 18 + 16, 60);
+            _orgPanel.Size = new Vector2(panelW, panelH);
+            _orgPanel.Position = new Vector2(10, viewportHeight - panelH - 10);
+            _orgPanel.Visible = true;
+        }
+
+        public void HideOrgPanel() => _orgPanel.Visible = false;
     }
 }

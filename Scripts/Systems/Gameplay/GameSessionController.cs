@@ -1,4 +1,4 @@
-using Godot;
+﻿using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -298,6 +298,7 @@ namespace ColdWarWargame.Systems.Gameplay
             _eventHub.Publish(new GameplayEvent(GameplayEventType.UnitSelected, new SelectionEventData(bat, pos, reachable)));
             _renderer.SetReachable(reachable, bat.CurrentAP);
             _hud.SetInfoText(BuildSelectedUnitInfo(bat, reachable.Count));
+            _hud.ShowOrgPanel(bat, _owner.GetViewport().GetVisibleRect().Size.Y);
             UpdateArtilleryOverlay(bat, pos);
         }
 
@@ -335,7 +336,8 @@ namespace ColdWarWargame.Systems.Gameplay
                     ClearSelection();
                     _flow.ExitCombat();
                     _turnFlow.CancelCombat();
-                    _hud.SetInfoText("Combat cancelled");
+                    _hud.HideOrgPanel();
+            _hud.SetInfoText("Combat cancelled");
                 },
                 () =>
                 {
@@ -505,6 +507,7 @@ namespace ColdWarWargame.Systems.Gameplay
         private void ClearSelection()
         {
             _flow.ClearSelection();
+            _hud.HideOrgPanel();
             _renderer.ClearSel();
             _eventHub.Publish(new GameplayEvent(GameplayEventType.UnitDeselected));
         }
