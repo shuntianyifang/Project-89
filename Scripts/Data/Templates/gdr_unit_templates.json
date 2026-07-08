@@ -84,7 +84,8 @@
           }
         }
       }
-    }
+    },
+    "role": "main"
   },
   "gdr_motorifle_battalion": {
     "name": "东德摩步营",
@@ -156,6 +157,7 @@
           }
         }
       }
-    }
+    },
+    "role": "main"
   }
 }

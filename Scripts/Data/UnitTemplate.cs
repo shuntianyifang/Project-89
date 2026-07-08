@@ -21,6 +21,8 @@ namespace ColdWarWargame.Data
         // 部分防空单位特有属性，如 Gepard1A1 和 爱国者导弹，使用可空类型
         [JsonPropertyName("aa_area")]
         public int? AaArea { get; init; }
+        [JsonPropertyName("arty_area")]
+        public int? ArtyArea { get; init; }
 
         [JsonPropertyName("system_vars")]
         public SystemVarsData SystemVars { get; init; }

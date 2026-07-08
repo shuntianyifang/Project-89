@@ -7,6 +7,8 @@ namespace ColdWarWargame.Data.TOE
     {
         [JsonPropertyName("name")]
         public string Name { get; init; }
+        [JsonPropertyName("role")]
+        public string Role { get; init; }
         
         [JsonPropertyName("companies")]
         public Dictionary<string, CompanyTemplate> Companies { get; init; }

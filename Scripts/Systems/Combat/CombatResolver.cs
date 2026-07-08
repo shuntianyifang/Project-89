@@ -9,6 +9,83 @@ namespace ColdWarWargame.Systems.Combat
     {
         const float EPS = 1e-6f;
 
+        /// <summary>多营战斗结算：合并各营所有子单位进行统一结算（PRD 搂2.3插槽系统）</summary>
+        public CombatResolutionResult ResolveCombat(
+            List<Battalion> attackerBattalions,
+            List<Battalion> defenderBattalions,
+            CombatContext ctx,
+            ulong? randomSeed = null)
+        {
+            var leadA = attackerBattalions.FirstOrDefault();
+            var leadD = defenderBattalions.FirstOrDefault();
+            if (leadA == null || leadD == null)
+                return new CombatResolutionResult { Advantage = new AdvantageResult { Value = 0 } };
+            var advantage = ComputeAdvantage(leadA, leadD, ctx);
+            float forceBonus = (attackerBattalions.Count - 1) * 0.15f -
+                               (defenderBattalions.Count - 1) * 0.15f;
+            advantage.Value = Math.Clamp(advantage.Value + forceBonus, -10f, 10f);
+            var (atkRate, defRate, atkFat, defFat) = GetCasualtyRates(advantage.Value);
+            int atkTotalHp = attackerBattalions.Sum(b => b.GetTotalCurrentHp());
+            int defTotalHp = defenderBattalions.Sum(b => b.GetTotalCurrentHp());
+            int atkDmgPool = (int)Math.Round(atkTotalHp * atkRate);
+            int defDmgPool = (int)Math.Round(defTotalHp * defRate);
+            var atkAllUnits = attackerBattalions.SelectMany(b => b.GetAllSubUnits()).ToList();
+            var defAllUnits = defenderBattalions.SelectMany(b => b.GetAllSubUnits()).ToList();
+            var rng = CreateRandom(randomSeed);
+            var atkCas = ApplyDamageToUnits(atkAllUnits, atkDmgPool, rng);
+            var defCas = ApplyDamageToUnits(defAllUnits, defDmgPool, rng);
+            return new CombatResolutionResult
+            {
+                Advantage = advantage,
+                AttackerDamagePool = atkDmgPool,
+                DefenderDamagePool = defDmgPool,
+                AttackerHpLost = atkCas.Sum(c => c.HpLost),
+                DefenderHpLost = defCas.Sum(c => c.HpLost),
+                AttackerCasualties = atkCas,
+                DefenderCasualties = defCas,
+                AttackerFatigueGained = atkFat,
+                DefenderFatigueGained = defFat
+            };
+        }
+
+        /// <summary>在任意子单位列表上执行权重随机伤亡分摊</summary>
+        List<CasualtyRecord> ApplyDamageToUnits(List<SubUnitInstance> allUnits, int damagePool, System.Random rng)
+        {
+            var casualties = new List<CasualtyRecord>();
+            if (damagePool <= 0 || !allUnits.Any()) return casualties;
+            var recordByUnit = new Dictionary<SubUnitInstance, CasualtyRecord>();
+            while (damagePool > 0)
+            {
+                var alive = allUnits.Where(u => u.SurvivalState == 1).ToList();
+                if (!alive.Any()) break;
+                float totalW = alive.Sum(u => Math.Max(1, u.BaseWeight));
+                double pick = rng.NextDouble() * totalW;
+                float acc = 0f;
+                SubUnitInstance target = alive.Last();
+                foreach (var u in alive)
+                {
+                    acc += Math.Max(1, u.BaseWeight);
+                    if (pick <= acc) { target = u; break; }
+                }
+                int beforeHp = target.CurrentHp;
+                target.CurrentHp = Math.Max(0, target.CurrentHp - 1);
+                int lost = beforeHp - target.CurrentHp;
+                if (lost <= 0) break;
+                if (!recordByUnit.TryGetValue(target, out var entry))
+                {
+                    entry = new CasualtyRecord { Unit = target, HpLost = 0, IsDestroyed = false, RemainingHp = target.CurrentHp };
+                    recordByUnit[target] = entry;
+                    casualties.Add(entry);
+                }
+                entry.HpLost += lost;
+                entry.IsDestroyed = target.CurrentHp == 0;
+                entry.RemainingHp = target.CurrentHp;
+                damagePool--;
+            }
+            return casualties;
+        }
+
+
         public CombatResolutionResult ResolveCombat(Battalion attacker, Battalion defender, CombatContext ctx, ulong? randomSeed = null)
         {
             var advantage = ComputeAdvantage(attacker, defender, ctx);

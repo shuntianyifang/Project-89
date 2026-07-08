@@ -16,6 +16,9 @@ using ColdWarWargame.Tests.Battlefield;
 using ColdWarWargame.Tests.Supply;
 using ColdWarWargame.Tests.Turns;
 using ColdWarWargame.Tests.Victory;
+using ColdWarWargame.UI;
+
+using ColdWarWargame.Systems.Battlefield;
 
 public partial class GameManager : Node
 {
@@ -30,6 +33,9 @@ public partial class GameManager : Node
     private class SelState { public Battalion Unit; public Vector2I Pos; }
     private SelState _sel;
     private CombatResolver _resolver = new();
+    private CombatDeploymentPanel _combatPanel;
+    private CombatForce _attackerStored;
+    private CombatForce _defenderStored;
     private bool _inCombat = false;
     private bool _isMoving = false;
     private Dictionary<Vector2I, float> _currentReachable = new();
@@ -133,17 +139,126 @@ public partial class GameManager : Node
             _currentReachable = _scenario.Movement.GetReachableTiles(pos, bat.CurrentAP, isEnemyZOC, occ);
             _renderer.SetReachable(_currentReachable, bat.CurrentAP);
             _infoLabel.Text = "Selected: " + bat.Name + " reachable " + _currentReachable.Count + " tiles";
+            int artyRange = bat.GetArtilleryRange();
+            if (artyRange > 0)
+            {
+                var tiles = new System.Collections.Generic.HashSet<Vector2I>();
+                int r2 = artyRange * artyRange;
+                int inner2 = (artyRange - 1) * (artyRange - 1);
+                for (int dx = -artyRange; dx <= artyRange; dx++)
+                    for (int dy = -artyRange; dy <= artyRange; dy++)
+                    {
+                        int d2 = dx * dx + dy * dy;
+                        if (d2 <= r2 && d2 >= inner2)
+                        {
+                            var p = new Vector2I(pos.X + dx, pos.Y + dy);
+                            if (_scenario.Map.IsInBounds(p)) tiles.Add(p);
+                        }
+                    }
+                _renderer.SetArtilleryRange(tiles);
+            }
+            else _renderer.ClearArtilleryRange();
         }
         else if (_sel != null)
         {
+            if (_inCombat) return;
+            if (_sel.Unit.CurrentAP < 4f) { _infoLabel.Text = "AP too low, need 4"; return; }
+            int dx = Math.Abs(_sel.Pos.X - pos.X);
+            int dy = Math.Abs(_sel.Pos.Y - pos.Y);
+            if (Math.Max(dx, dy) > 2) { _infoLabel.Text = "Target too far, max 2"; return; }
             _inCombat = true;
-            var ctx = new CombatContext { DefenderTerrainBonus = _scenario.Map.GetTile(pos).TerrainType switch { 1 => 0.1f, 2 => 0.3f, 3 => 0.4f, _ => 0f } };
-            _turnMgr.InitiateCombat(_sel.Unit, bat, ctx);
-            _turnMgr.FinishAttackerDeployment();
-            var result = _turnMgr.FinishDefenderDeployment(_resolver);
-            _infoLabel.Text = "Combat: " + _sel.Unit.Name + " -> " + bat.Name + " V=" + result.Advantage.Value.ToString("0.00");
-            _sel = null; _renderer.ClearSel(); _currentReachable.Clear();
-            _inCombat = false;
+
+            var friendlyUnits = (_turnMgr.CurrentFaction == 1 ? _scenario.BlueBattalions : _scenario.RedBattalions)
+                .Where(u => u.Item1 != _sel.Unit)
+                .ToList();
+            var eligible = EngagementResolver.GetEligibleUnits(pos, friendlyUnits, 2);
+            eligible = eligible.Where(u => u.bat.CurrentAP >= 4).ToList();
+            eligible.Insert(0, (_sel.Unit, _sel.Pos));
+            // 把火炮支援范围内的炮兵营也加入候选
+            var artySupports = friendlyUnits
+                .Where(u => u.bat.GetArtilleryRange() > 0
+                    && (u.Item2.X - pos.X) * (u.Item2.X - pos.X) + (u.Item2.Y - pos.Y) * (u.Item2.Y - pos.Y) <= u.bat.GetArtilleryRange() * u.bat.GetArtilleryRange()
+                    && u.bat.CurrentAP >= 4
+                    && !eligible.Any(e => e.bat == u.bat))
+                .ToList();
+            eligible.InsertRange(0, artySupports);
+
+            float terrainBonus = _scenario.Map.GetTile(pos).TerrainType switch { 1 => 0.1f, 2 => 0.3f, 3 => 0.4f, _ => 0f };
+            string[] terrainNames = { "Plains", "Forest", "Semi-Urban", "Urban" };
+            int terrainType = _scenario.Map.GetTile(pos).TerrainType;
+            string tName = terrainType >= 0 && terrainType < terrainNames.Length ? terrainNames[terrainType] : "??";
+            int tBonus = (int)(terrainBonus * 10);
+
+            _combatPanel = new CombatDeploymentPanel();
+            _ui.AddChild(_combatPanel); _combatPanel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+
+            Battalion defBat = bat;
+            Vector2I defPos = pos;
+
+            _combatPanel.OnAttackerConfirmed = (CombatForce attackerForce) =>
+            {
+                _attackerStored = attackerForce;
+                var defEligible = (_turnMgr.CurrentFaction == 1 ? _scenario.RedBattalions : _scenario.BlueBattalions)
+                    .Where(u => u.Item1 != defBat)
+                    .ToList();
+                defEligible = defEligible.Where(u => Math.Max(Math.Abs(u.Item2.X - defPos.X), Math.Abs(u.Item2.Y - defPos.Y)) <= 2 && u.Item1.CurrentAP >= 4).ToList();
+                var defArtySupports = (_turnMgr.CurrentFaction == 1 ? _scenario.RedBattalions : _scenario.BlueBattalions)
+                    .Where(u => u.Item1 != defBat && u.Item1.GetArtilleryRange() > 0
+                        && (u.Item2.X - defPos.X) * (u.Item2.X - defPos.X) + (u.Item2.Y - defPos.Y) * (u.Item2.Y - defPos.Y) <= u.Item1.GetArtilleryRange() * u.Item1.GetArtilleryRange()
+                        && u.Item1.CurrentAP >= 4
+                        && !defEligible.Any(e => e.Item1 == u.Item1))
+                    .ToList();
+                defEligible.AddRange(defArtySupports);
+                _defenderStored = CombatAutoDeployer.AutoFillForce(defEligible, defBat);
+                _combatPanel.RemoveContent();
+                _combatPanel.ShowDefenderPreview(_defenderStored);
+            };
+            _combatPanel.OnResolvePressed = () =>
+            {
+                var ctx = new CombatContext
+                {
+                    DefenderTerrainBonus = terrainBonus,
+                    AttackerOOSTurns = _sel.Unit.TurnsOOS,
+                    DefenderOOSTurns = defBat.TurnsOOS
+                };
+                var result = _resolver.ResolveCombat(
+                    _attackerStored.GetAllBattalions(),
+                    _defenderStored.GetAllBattalions(),
+                    ctx);
+                foreach (var b in _attackerStored.GetAllBattalions())
+                {
+                    b.Fatigue = Math.Min(10, b.Fatigue + result.AttackerFatigueGained);
+                    b.CurrentAP = Math.Max(0, b.CurrentAP - 4);
+                }
+                foreach (var b in _defenderStored.GetAllBattalions())
+                {
+                    b.Fatigue = Math.Min(10, b.Fatigue + result.DefenderFatigueGained);
+                    b.CurrentAP = Math.Max(0, b.CurrentAP - 4);
+                }
+                _combatPanel.RemoveContent();
+                _combatPanel.ShowResult(result);
+                _sel = null; _renderer.ClearSel(); _currentReachable.Clear();
+            };
+
+
+            _combatPanel.OnResultDismissed = () =>
+            {
+                if (_combatPanel != null) { _combatPanel.Dismiss(); _combatPanel = null; }
+                _inCombat = false;
+                _renderer.SetBlueUnits(_scenario.BlueBattalions);
+                _renderer.SetRedUnits(_scenario.RedBattalions);
+                _infoLabel.Text = "Click to select";
+            };
+
+            _combatPanel.OnCancel = () =>
+            {
+                if (_combatPanel != null) { _combatPanel.Dismiss(); _combatPanel = null; }
+                _sel = null; _renderer.ClearSel(); _currentReachable.Clear();
+                _inCombat = false;
+                _infoLabel.Text = "Combat cancelled";
+            };
+
+            _combatPanel.ShowAttackerPhase(_sel.Unit, defBat, eligible, tBonus, tName);
         }
     }
 
@@ -186,6 +301,25 @@ public partial class GameManager : Node
                 _currentReachable = _scenario.Movement.GetReachableTiles(pos, _sel.Unit.CurrentAP, isEZ3, oc3);
                 _renderer.SetReachable(_currentReachable, _sel.Unit.CurrentAP);
                 _renderer.SetSel(pos);
+                int artyRange2 = _sel.Unit.GetArtilleryRange();
+                if (artyRange2 > 0)
+                {
+                    var tiles2 = new System.Collections.Generic.HashSet<Vector2I>();
+                    int r2 = artyRange2 * artyRange2;
+                    int inner2 = (artyRange2 - 1) * (artyRange2 - 1);
+                    for (int dx = -artyRange2; dx <= artyRange2; dx++)
+                        for (int dy = -artyRange2; dy <= artyRange2; dy++)
+                        {
+                            int d2 = dx * dx + dy * dy;
+                            if (d2 <= r2 && d2 >= inner2)
+                            {
+                                var pp = new Vector2I(pos.X + dx, pos.Y + dy);
+                                if (_scenario.Map.IsInBounds(pp)) tiles2.Add(pp);
+                            }
+                        }
+                    _renderer.SetArtilleryRange(tiles2);
+                }
+                else _renderer.ClearArtilleryRange();
                 _infoLabel.Text = "Moved to (" + pos.X + "," + pos.Y + ") AP=" + _sel.Unit.CurrentAP.ToString("0.0");
                 _isMoving = false;
             };

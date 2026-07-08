@@ -84,7 +84,8 @@
           }
         }
       }
-    }
+    },
+    "role": "main"
   },
   "frg_panzergrenadier_battalion": {
     "name": "西德装甲掷弹兵营",
@@ -200,6 +201,7 @@
           }
         }
       }
-    }
+    },
+    "role": "main"
   }
 }

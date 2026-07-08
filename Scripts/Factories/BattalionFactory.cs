@@ -17,7 +17,8 @@ namespace ColdWarWargame.Factories
                 Name = template.Name,
                 Faction = faction,
                 CurrentAP = 12.0f,
-                Fatigue = 0
+                Fatigue = 0,
+                TemplateRole = template.Role ?? "main"
             };
             foreach (var compKvp in template.Companies)
             {

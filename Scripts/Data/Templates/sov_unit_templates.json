@@ -126,7 +126,8 @@
           }
         }
       }
-    }
+    },
+    "role": "main"
   },
   "sov_heavy_tank_battalion": {
     "name": "苏军重型坦克营",
@@ -188,7 +189,8 @@
           }
         }
       }
-    }
+    },
+    "role": "main"
   },
   "sov_recon_battalion": {
     "name": "苏军侦察营",
@@ -236,7 +238,8 @@
           }
         }
       }
-    }
+    },
+    "role": "support"
   },
   "sov_arty_group": {
     "name": "苏军炮兵团（2S1）",
@@ -297,7 +300,8 @@
           }
         }
       }
-    }
+    },
+    "role": "artillery"
   },
   "sov_aviation_battalion": {
     "name": "苏军航空营（雌鹿）",
@@ -345,6 +349,7 @@
           }
         }
       }
-    }
+    },
+    "role": "support"
   }
 }

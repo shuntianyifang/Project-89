@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ColdWarWargame.Systems.Combat;
 
 namespace ColdWarWargame.Models
 {
@@ -15,6 +16,8 @@ namespace ColdWarWargame.Models
         public int Fatigue { get; set; }
         /// <summary>断联回合数（PRD §2.5.3）</summary>
         public int TurnsOOS { get; set; } = 0;
+        /// <summary>编制模板中写死的营种类: main/support/artillery</summary>
+        public string TemplateRole { get; set; } = "main";
 
         public List<Company> Companies { get; set; } = new List<Company>();
 
@@ -98,5 +101,24 @@ namespace ColdWarWargame.Models
             return 6; 
         }
 
+        /// <summary>获取营内所有炮兵单位的最大支援半径。无炮兵则返回0。</summary>
+        public int GetArtilleryRange()
+        {
+            return GetAllSubUnits()
+                .Where(u => u.SurvivalState == 1)
+                .Select(u => u.Template.ArtyArea ?? 0)
+                .DefaultIfEmpty(0)
+                .Max();
+        }
+        /// <summary>营战斗角色：主力(可填主战插槽)、辅助、炮兵</summary>
+        public enum BattalionRole { Main, Support, Artillery }
+        public BattalionRole GetRole()
+        {
+            return TemplateRole switch { "support" => BattalionRole.Support, "artillery" => BattalionRole.Artillery, _ => BattalionRole.Main };
+        }
+
+        public bool CanFillMain() => GetRole() == BattalionRole.Main;
+        public bool CanFillSupport() => GetRole() == BattalionRole.Support;
+        public bool CanFillArtillery() => GetRole() == BattalionRole.Artillery;
     }
 }

@@ -147,6 +147,7 @@
 	  "attack": 2.0,
 	  "defense": 2.0
 	},
+	"arty_area": 8,
 	"system_vars": {
 	  "cost": 210,
 	  "base_weight": 4

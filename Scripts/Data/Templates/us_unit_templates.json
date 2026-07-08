@@ -152,7 +152,8 @@
 		  }
 		}
 	  }
-	}
+	},
+	"role": "main"
   },
   "us_armor_battalion": {
 	"name": "美军装甲营",
@@ -222,7 +223,8 @@
 		  }
 		}
 	  }
-	}
+	},
+	"role": "main"
   },
   "us_cav_squadron": {
 	"name": "美军骑兵中队",
@@ -300,7 +302,8 @@
 		  }
 		}
 	  }
-	}
+	},
+	"role": "support"
   },
   "us_aviation_battalion": {
 	"name": "美军航空营（阿帕奇）",
@@ -348,7 +351,8 @@
 		  }
 		}
 	  }
-	}
+	},
+	"role": "support"
   },
   "us_airborne_battalion": {
 	"name": "美军空降步兵营",
@@ -427,6 +431,7 @@
 		  }
 		}
 	  }
-	}
+	},
+	"role": "main"
   }
 }

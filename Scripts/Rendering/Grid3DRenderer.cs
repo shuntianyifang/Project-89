@@ -16,6 +16,7 @@ namespace ColdWarWargame.Rendering
         private List<(Battalion bat, Vector2I pos)> _blueUnits = new();
         private List<(Battalion bat, Vector2I pos)> _redUnits = new();
         private Dictionary<Vector2I, float> _reachableTiles = new();
+        private HashSet<Vector2I> _artilleryRangeTiles = new();
         private Vector2I? _selectedPos = null;
         private List<MeshInstance3D> _highlightMeshes = new();
         private Node3D _unitRoot;
@@ -55,7 +56,9 @@ namespace ColdWarWargame.Rendering
         public void SetBlueUnits(List<(Battalion bat, Vector2I pos)> u) { _blueUnits = u; BuildUnits(); }
         public void SetRedUnits(List<(Battalion bat, Vector2I pos)> u) { _redUnits = u; BuildUnits(); }
         public void SetReachable(Dictionary<Vector2I, float> r, float uap = 0f) { _reachableTiles = r; _selectedUnitAP = uap; UpdateHighlights(); }
-        public void ClearSel() { _selectedPos = null; _reachableTiles.Clear(); foreach (var uv in _unitVisuals) if (uv.InPanelName != null) uv.InPanelName.Visible = false; UpdateHighlights(); }
+        public void ClearSel() { _selectedPos = null; _reachableTiles.Clear(); _artilleryRangeTiles.Clear(); foreach (var uv in _unitVisuals) if (uv.InPanelName != null) uv.InPanelName.Visible = false; UpdateHighlights(); }
+        public void SetArtilleryRange(HashSet<Vector2I> tiles) { _artilleryRangeTiles = tiles ?? new(); UpdateHighlights(); }
+        public void ClearArtilleryRange() { _artilleryRangeTiles.Clear(); UpdateHighlights(); }
         public void SetSel(Vector2I p) { _selectedPos = p; foreach (var uv in _unitVisuals) if (uv.InPanelName != null) uv.InPanelName.Visible = (uv.GridPos == p); UpdateHighlights(); }
 
         void BuildTerrain()
@@ -273,6 +276,11 @@ namespace ColdWarWargame.Rendering
                 float rem = _selectedUnitAP - kv.Value;
                 var m = MakeHighlight(kv.Key, rem >= 4f ? brightMat : darkMat, 0.02f);
                 _highlightRoot.AddChild(m);
+            }
+            var artyMat = new StandardMaterial3D { AlbedoColor = new Color(1f, 0.5f, 0f, 0.15f), ShadingMode = StandardMaterial3D.ShadingModeEnum.Unshaded, Transparency = BaseMaterial3D.TransparencyEnum.Alpha };
+            foreach (var p in _artilleryRangeTiles)
+            {
+                _highlightRoot.AddChild(MakeHighlight(p, artyMat, 0.04f));
             }
 
             if (_selectedPos != null)
