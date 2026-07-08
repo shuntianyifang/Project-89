@@ -94,6 +94,36 @@ namespace ColdWarWargame.Tests.Turns
             Assert(result != null, "Combat result exists");
         }
 
+        static void Test_CombatManualCompleteFlow()
+        {
+            var tm = new TurnManager();
+            var atk = MakeFullBat("BlueMech", 1, "us_mech_rifles");
+            var def = MakeFullBat("RedInf", 2, "sov_motostrelkovy");
+            var ctx = new CombatContext { DefenderTerrainBonus = 0.1f };
+
+            tm.InitiateCombat(atk, def, ctx);
+            tm.FinishAttackerDeployment();
+            Assert(tm.CurrentPhase == TurnManager.GamePhase.CombatDeployment_Defender, "Manual flow: in defender deployment");
+            Assert(tm.CurrentFaction == 2, "Manual flow: current faction switched to defender");
+
+            tm.CompleteCombatResolution();
+            Assert(tm.CurrentPhase == TurnManager.GamePhase.StrategicMovement, "Manual flow complete -> StrategicMovement");
+            Assert(tm.CurrentFaction == 1, "Manual flow complete -> back to attacker faction");
+        }
+
+        static void Test_CombatCancelFlow()
+        {
+            var tm = new TurnManager();
+            var atk = MakeFullBat("BlueMech", 1, "us_mech_rifles");
+            var def = MakeFullBat("RedInf", 2, "sov_motostrelkovy");
+
+            tm.InitiateCombat(atk, def, new CombatContext());
+            tm.CancelCombat();
+
+            Assert(tm.CurrentPhase == TurnManager.GamePhase.StrategicMovement, "Cancel flow -> StrategicMovement");
+            Assert(tm.CurrentFaction == 1, "Cancel flow -> attacker faction restored");
+        }
+
         static void Test_MultipleTurns()
         {
             var tm = new TurnManager();
@@ -112,6 +142,8 @@ namespace ColdWarWargame.Tests.Turns
             Test_EndStrategicTurn_SwitchesFaction();
             Test_InvalidTransitionsThrow();
             Test_CombatFullFlow();
+            Test_CombatManualCompleteFlow();
+            Test_CombatCancelFlow();
             Test_MultipleTurns();
             if (_fails == 0) GD.Print("All TurnManagerTests passed");
             else GD.PrintErr(_fails + " TurnManagerTests FAILED");

@@ -67,6 +67,15 @@ namespace ColdWarWargame.Systems.Gameplay
             int terrainType = _scenario.Map.GetTile(defenderPos).TerrainType;
             string terrainName = terrainType >= 0 && terrainType < terrainNames.Length ? terrainNames[terrainType] : "??";
 
+            _turnMgr.InitiateCombat(attacker, defender, new CombatContext
+            {
+                DefenderTerrainBonus = terrainBonus,
+                AttackerFaction = attacker.Faction,
+                DefenderFaction = defender.Faction,
+                AttackerOOSTurns = attacker.TurnsOOS,
+                DefenderOOSTurns = defender.TurnsOOS
+            });
+
             _presenter.StartCombatFlow(
                 attacker,
                 defender,

@@ -59,31 +59,37 @@ namespace ColdWarWargame.Systems.Gameplay
             _canvasLayer.AddChild(_panel);
             _panel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
 
+            var defenderAutoEligible = (_turnMgr.CurrentFaction == 1 ? _scenario.RedBattalions : _scenario.BlueBattalions)
+                .Where(u => u.Item1 != defender)
+                .Where(u => Math.Max(Math.Abs(u.Item2.X - defenderPos.X), Math.Abs(u.Item2.Y - defenderPos.Y)) <= 2 && u.Item1.CurrentAP >= 4)
+                .ToList();
+            var defenderArtySupportsForAuto = (_turnMgr.CurrentFaction == 1 ? _scenario.RedBattalions : _scenario.BlueBattalions)
+                .Where(u => u.Item1 != defender && u.Item1.GetArtilleryRange() > 0
+                    && (u.Item2.X - defenderPos.X) * (u.Item2.X - defenderPos.X) + (u.Item2.Y - defenderPos.Y) * (u.Item2.Y - defenderPos.Y) <= u.Item1.GetArtilleryRange() * u.Item1.GetArtilleryRange()
+                    && u.Item1.CurrentAP >= 4
+                    && !defenderAutoEligible.Any(e => e.Item1 == u.Item1))
+                .ToList();
+            defenderAutoEligible.AddRange(defenderArtySupportsForAuto);
+
             _panel.OnAttackerConfirmed = (CombatForce attackerForce) =>
             {
-                _attackerStored = attackerForce;
-                var defEligible = (_turnMgr.CurrentFaction == 1 ? _scenario.RedBattalions : _scenario.BlueBattalions)
-                    .Where(u => u.Item1 != defender)
-                    .ToList();
-                defEligible = defEligible
-                    .Where(u => Math.Max(Math.Abs(u.Item2.X - defenderPos.X), Math.Abs(u.Item2.Y - defenderPos.Y)) <= 2 && u.Item1.CurrentAP >= 4)
-                    .ToList();
+                _attackerStored = CloneForce(attackerForce);
 
-                var defArtySupports = (_turnMgr.CurrentFaction == 1 ? _scenario.RedBattalions : _scenario.BlueBattalions)
-                    .Where(u => u.Item1 != defender && u.Item1.GetArtilleryRange() > 0
-                        && (u.Item2.X - defenderPos.X) * (u.Item2.X - defenderPos.X) + (u.Item2.Y - defenderPos.Y) * (u.Item2.Y - defenderPos.Y) <= u.Item1.GetArtilleryRange() * u.Item1.GetArtilleryRange()
-                        && u.Item1.CurrentAP >= 4
-                        && !defEligible.Any(e => e.Item1 == u.Item1))
-                    .ToList();
-                defEligible.AddRange(defArtySupports);
-
-                _defenderStored = CombatAutoDeployer.AutoFillForce(defEligible, defender);
-                _panel.RemoveContent();
-                _panel.ShowDefenderPreview(_defenderStored);
+                _turnMgr.FinishAttackerDeployment();
+                _panel.ShowDefenderPhase(
+                    _attackerStored,
+                    attacker,
+                    defender,
+                    defenderAutoEligible,
+                    (int)(terrainBonus * 10),
+                    terrainName);
             };
 
-            _panel.OnResolvePressed = () =>
+            _panel.OnDefenderConfirmed = (CombatForce defenderForce) =>
             {
+                _defenderStored = CloneForce(defenderForce);
+                _turnMgr.CompleteCombatResolution();
+
                 var ctx = new CombatContext
                 {
                     DefenderTerrainBonus = terrainBonus,
@@ -103,6 +109,7 @@ namespace ColdWarWargame.Systems.Gameplay
                     b.Fatigue = Math.Min(Battalion.FatigueOverflowCap, b.Fatigue + result.AttackerFatigueGained);
                     b.CurrentAP = Math.Max(0, b.CurrentAP - 4);
                 }
+
                 foreach (var b in _defenderStored.GetAllBattalions())
                 {
                     b.Fatigue = Math.Min(Battalion.FatigueOverflowCap, b.Fatigue + result.DefenderFatigueGained);
@@ -114,6 +121,41 @@ namespace ColdWarWargame.Systems.Gameplay
                 onResolved?.Invoke(_attackerStored, _defenderStored, result);
             };
 
+            _panel.OnPreviewChanged = (atkForce, defForce, isDefenderPhase) =>
+            {
+                if (atkForce == null || atkForce.GetAllBattalions().Count == 0)
+                    return;
+
+                CombatForce effectiveDefForce = defForce;
+                if (!isDefenderPhase)
+                {
+                    effectiveDefForce = CombatAutoDeployer.AutoFillForce(defenderAutoEligible, defender);
+                    _panel.ShowOpponentPreview("对方自动填充（预估）：\n" + string.Join("\n", FormatForceLines(effectiveDefForce)));
+                }
+                else
+                {
+                    _panel.ShowOpponentPreview("对方锁定部署（真实）：\n" + string.Join("\n", FormatForceLines(_attackerStored)));
+                }
+
+                if (effectiveDefForce == null || effectiveDefForce.GetAllBattalions().Count == 0)
+                    return;
+
+                var ctx = new CombatContext
+                {
+                    DefenderTerrainBonus = terrainBonus,
+                    AttackerOOSTurns = attacker.TurnsOOS,
+                    DefenderOOSTurns = defender.TurnsOOS,
+                    AttackerBattalionOOSTurns = atkForce.GetAllBattalions().Select(b => b.TurnsOOS).ToList(),
+                    DefenderBattalionOOSTurns = effectiveDefForce.GetAllBattalions().Select(b => b.TurnsOOS).ToList()
+                };
+
+                var preview = _resolver.PreviewCombat(
+                    atkForce.GetAllBattalions(),
+                    effectiveDefForce.GetAllBattalions(),
+                    ctx);
+                _panel.ShowDeploymentPreview(preview, isDefenderPhase);
+            };
+
             _panel.OnResultDismissed = () =>
             {
                 Dismiss();
@@ -122,11 +164,31 @@ namespace ColdWarWargame.Systems.Gameplay
 
             _panel.OnCancel = () =>
             {
+                _turnMgr.CancelCombat();
                 Dismiss();
                 onCancelled?.Invoke();
             };
 
             _panel.ShowAttackerPhase(attacker, defender, eligibleUnits, (int)(terrainBonus * 10), terrainName);
+        }
+
+        private static CombatForce CloneForce(CombatForce src)
+        {
+            return new CombatForce
+            {
+                LeadBattalion = src?.LeadBattalion,
+                MainSlot2 = src?.MainSlot2,
+                SupportSlot = src?.SupportSlot,
+                ArtillerySlot = src?.ArtillerySlot
+            };
+        }
+
+        private static IEnumerable<string> FormatForceLines(CombatForce force)
+        {
+            yield return "MAIN 1: " + (force?.LeadBattalion?.Name ?? "(empty)");
+            yield return "MAIN 2: " + (force?.MainSlot2?.Name ?? "(empty)");
+            yield return "SUPPORT: " + (force?.SupportSlot?.Name ?? "(empty)");
+            yield return "ARTILLERY: " + (force?.ArtillerySlot?.Name ?? "(empty)");
         }
 
         public void Dismiss()

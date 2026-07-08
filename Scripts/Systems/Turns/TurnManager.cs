@@ -109,6 +109,38 @@ namespace ColdWarWargame.Systems.Turns
             return result;
         }
 
+        /// <summary>
+        /// 双阶段部署由外部系统自行结算后，调用此方法切回发起方战略阶段。
+        /// </summary>
+        public void CompleteCombatResolution()
+        {
+            if (CurrentPhase != GamePhase.CombatDeployment_Defender && CurrentPhase != GamePhase.CombatResolution)
+                throw new InvalidOperationException("必须在 DefenderDeployment/CombatResolution 阶段调用");
+
+            CurrentFaction = _combatStartFaction;
+            CurrentPhase = GamePhase.StrategicMovement;
+
+            _combatAttacker = null;
+            _combatDefender = null;
+            _combatCtx = null;
+        }
+
+        /// <summary>
+        /// 取消当前战斗部署流程，恢复到发起方战略阶段。
+        /// </summary>
+        public void CancelCombat()
+        {
+            if (CurrentPhase == GamePhase.StrategicMovement)
+                return;
+
+            CurrentFaction = _combatStartFaction;
+            CurrentPhase = GamePhase.StrategicMovement;
+
+            _combatAttacker = null;
+            _combatDefender = null;
+            _combatCtx = null;
+        }
+
         /// <summary>为指定阵营所有单位重置 AP</summary>
         private void ResetAP(int faction)
         {

@@ -14,6 +14,12 @@ namespace ColdWarWargame.UI
     public partial class CombatDeploymentPanel : Control
     {
         public CombatDeploymentPanel() { }
+
+        enum DeploymentSide
+        {
+            Attacker,
+            Defender
+        }
         // ===== 槽位定义 =====
         private static readonly (string label, string desc, Color color)[] SlotDefs = new[]
         {
@@ -24,9 +30,11 @@ namespace ColdWarWargame.UI
         };
 
         // ===== 回调 =====
-        public Action<CombatForce> OnAttackerConfirmed;           // 玩家确认部署
+        public Action<CombatForce> OnAttackerConfirmed;           // 攻击方确认部署
+        public Action<CombatForce> OnDefenderConfirmed;           // 防御方确认部署
         public Action OnCancel;                                   // 玩家取消
         public Action OnResultDismissed;                         // 关闭结果面板
+        public Action<CombatForce, CombatForce, bool> OnPreviewChanged; // (attacker,defender,isDefenderPhase)
 
         // ===== 状态 =====
         private Battalion _leadAttacker;
@@ -35,6 +43,9 @@ namespace ColdWarWargame.UI
         private string _terrainName;
         private CombatForce _attackerForce = new();
         private CombatForce _defenderForce = new();
+        private DeploymentSide _currentSide = DeploymentSide.Attacker;
+        private CombatForce _lockedAttackerForce;
+        private List<(Battalion bat, Vector2I pos)> _defenderEligibleUnits = new();
         private List<(Battalion bat, Vector2I pos)> _eligibleUnits;
         private Battalion _selectedUnit;
         private Button[] _slotButtons = new Button[4];
@@ -44,6 +55,11 @@ namespace ColdWarWargame.UI
         private Button _nextBtn;
         private Control _contentRoot;
         private Control _resultRoot;
+
+        bool IsLeadSlotLocked()
+        {
+            return _currentSide == DeploymentSide.Defender && _leadDefender != null;
+        }
 
 
         // ===== 展示攻击阶段 =====
@@ -60,7 +76,10 @@ namespace ColdWarWargame.UI
             _terrainBonus = terrainBonus;
             _terrainName = terrainName;
             _attackerForce = new CombatForce();
-            // _attackerForce.LeadBattalion = _leadAttacker;  // 改为手动分配
+            _defenderForce = new CombatForce();
+            _lockedAttackerForce = null;
+            _currentSide = DeploymentSide.Attacker;
+            _defenderEligibleUnits = new List<(Battalion bat, Vector2I pos)>();
             _selectedUnit = null;
 
             BuildUI(isResult: false);
@@ -101,8 +120,11 @@ namespace ColdWarWargame.UI
             outer.AddChild(vbox);
 
             // ---- Header ----
+            bool isDefenderPhase = _currentSide == DeploymentSide.Defender;
+            string phaseText = isDefenderPhase ? "DEFENDER DEPLOYMENT" : "ATTACKER DEPLOYMENT";
+
             var header = new Label();
-            header.Text = "BATTLE ENGAGEMENT  —  Terrain: " + _terrainName + " (+" + _terrainBonus + " def)";
+            header.Text = "BATTLE ENGAGEMENT — " + phaseText + " — Terrain: " + _terrainName + " (+" + _terrainBonus + " def)";
             header.AddThemeFontSizeOverride("font_size", 20);
             header.AddThemeColorOverride("font_color", new Color(1, 0.85f, 0.4f));
             header.HorizontalAlignment = HorizontalAlignment.Center;
@@ -138,7 +160,7 @@ namespace ColdWarWargame.UI
 
             // ---- 可用单位列表 ----
             var availLabel = new Label();
-            availLabel.Text = "Available Forces  —  click a battalion, then click a slot to assign";
+            availLabel.Text = "Available Forces — click a battalion, then click a slot to assign";
             availLabel.AddThemeFontSizeOverride("font_size", 13);
             availLabel.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.7f));
             vbox.AddChild(availLabel);
@@ -149,15 +171,34 @@ namespace ColdWarWargame.UI
             vbox.AddChild(availScroll);
             var availFlow = availScroll;
 
-            foreach (var (bat, pos) in _eligibleUnits)
+            var activeEligible = isDefenderPhase ? _defenderEligibleUnits : _eligibleUnits;
+            foreach (var (bat, pos) in activeEligible)
             {
-                var card = MakeUnitCard(bat, pos, isAvailable: true, isSelected: false, isAttackerSide: true);
+                var card = MakeUnitCard(bat, pos, isAvailable: true, isSelected: false, isAttackerSide: !isDefenderPhase);
                 if (card != null) availFlow.AddChild(card);
+            }
+
+            if (isDefenderPhase && _lockedAttackerForce != null)
+            {
+                var lockedLabel = new Label();
+                lockedLabel.Text = "Locked Attacker Deployment";
+                lockedLabel.AddThemeFontSizeOverride("font_size", 13);
+                lockedLabel.AddThemeColorOverride("font_color", new Color(0.4f, 0.8f, 1.0f));
+                vbox.AddChild(lockedLabel);
+
+                foreach (var line in FormatForceLines(_lockedAttackerForce))
+                {
+                    var l = new Label();
+                    l.Text = "  " + line;
+                    l.AddThemeFontSizeOverride("font_size", 12);
+                    l.AddThemeColorOverride("font_color", new Color(0.85f, 0.9f, 1.0f));
+                    vbox.AddChild(l);
+                }
             }
 
             // ---- 插槽行 ----
             var slotLabel = new Label();
-            slotLabel.Text = "Your Deployment  —  click a filled slot to remove unit";
+            slotLabel.Text = "Your Deployment — click a filled slot to remove unit";
             slotLabel.AddThemeFontSizeOverride("font_size", 13);
             slotLabel.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.7f));
             vbox.AddChild(slotLabel);
@@ -175,6 +216,21 @@ namespace ColdWarWargame.UI
                 slotRow.AddChild(slotBtn);
             }
 
+            var previewLabel = new Label();
+            previewLabel.Name = "PreviewLabel";
+            previewLabel.Text = "";
+            previewLabel.AddThemeFontSizeOverride("font_size", 13);
+            previewLabel.AddThemeColorOverride("font_color", new Color(1f, 1f, 0.85f));
+            vbox.AddChild(previewLabel);
+
+            var opponentPreviewLabel = new Label();
+            opponentPreviewLabel.Name = "OpponentPreviewLabel";
+            opponentPreviewLabel.Text = "";
+            opponentPreviewLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+            opponentPreviewLabel.AddThemeFontSizeOverride("font_size", 12);
+            opponentPreviewLabel.AddThemeColorOverride("font_color", new Color(0.8f, 0.9f, 1f));
+            vbox.AddChild(opponentPreviewLabel);
+
             // ---- 预测和按钮 ----
             vbox.AddChild(new Control { Size = new Vector2(0, 8) }); // spacer
 
@@ -186,7 +242,7 @@ namespace ColdWarWargame.UI
             _cancelBtn.Pressed += () => { _selectedUnit = null; OnCancel?.Invoke(); };
             btnRow.AddChild(_cancelBtn);
 
-            _confirmBtn = MakeActionButton("Confirm Attack", new Color(0.2f, 0.6f, 0.3f));
+            _confirmBtn = MakeActionButton(isDefenderPhase ? "Confirm Defense" : "Confirm Attack", new Color(0.2f, 0.6f, 0.3f));
             _confirmBtn.Pressed += OnConfirmPressed;
             btnRow.AddChild(_confirmBtn);
 
@@ -260,12 +316,18 @@ namespace ColdWarWargame.UI
 
         void OnSlotClicked(int slotIndex)
         {
-            var slotForce = GetSlotBattalion(slotIndex);
+            if (slotIndex == 0 && IsLeadSlotLocked())
+            {
+                _selectedUnit = null;
+                return;
+            }
+
+            var slotForce = GetCurrentForceSlotBattalion(slotIndex);
 
             if (slotForce != null && _selectedUnit == null)
             {
                 // 空点已填充的插槽 → 移除
-                SetSlotBattalion(slotIndex, null);
+                    SetCurrentForceSlotBattalion(slotIndex, null);
                 RebuildAvailable();
                 return;
             }
@@ -282,7 +344,7 @@ namespace ColdWarWargame.UI
                 }
                 bool ok = slotIndex switch { 0 => _selectedUnit.CanFillMain(), 1 => _selectedUnit.CanFillMain(), 2 => _selectedUnit.CanFillSupport(), 3 => _selectedUnit.CanFillArtillery(), _ => false };
                 if (!ok) return;
-                SetSlotBattalion(slotIndex, _selectedUnit);
+                SetCurrentForceSlotBattalion(slotIndex, _selectedUnit);
                 _selectedUnit = null;
                 UpdateSlots();
                 EnableConfirm();
@@ -297,7 +359,7 @@ namespace ColdWarWargame.UI
                 {
                     bool ok = slotIndex switch { 0 => _selectedUnit.CanFillMain(), 1 => _selectedUnit.CanFillMain(), 2 => _selectedUnit.CanFillSupport(), 3 => _selectedUnit.CanFillArtillery(), _ => false };
                     if (!ok) return;
-                    SetSlotBattalion(slotIndex, _selectedUnit);
+                    SetCurrentForceSlotBattalion(slotIndex, _selectedUnit);
                     _selectedUnit = null;
                     UpdateSlots();
                     EnableConfirm();
@@ -306,49 +368,56 @@ namespace ColdWarWargame.UI
             }
         }
 
-        Battalion GetSlotBattalion(int idx)
+        CombatForce GetCurrentEditableForce() => _currentSide == DeploymentSide.Attacker ? _attackerForce : _defenderForce;
+
+        Battalion GetCurrentForceSlotBattalion(int idx)
         {
+            var force = GetCurrentEditableForce();
             return idx switch
             {
-                0 => _attackerForce.LeadBattalion,
-                1 => _attackerForce.MainSlot2,
-                2 => _attackerForce.SupportSlot,
-                3 => _attackerForce.ArtillerySlot,
+                0 => force.LeadBattalion,
+                1 => force.MainSlot2,
+                2 => force.SupportSlot,
+                3 => force.ArtillerySlot,
                 _ => null
             };
         }
 
-        void SetSlotBattalion(int idx, Battalion bat)
+        void SetCurrentForceSlotBattalion(int idx, Battalion bat)
         {
+            var force = GetCurrentEditableForce();
             switch (idx)
             {
-                case 0: _attackerForce.LeadBattalion = bat; break;
-                case 1: _attackerForce.MainSlot2 = bat; break;
-                case 2: _attackerForce.SupportSlot = bat; break;
-                case 3: _attackerForce.ArtillerySlot = bat; break;
+                case 0: force.LeadBattalion = bat; break;
+                case 1: force.MainSlot2 = bat; break;
+                case 2: force.SupportSlot = bat; break;
+                case 3: force.ArtillerySlot = bat; break;
             }
+            NotifyPreviewChanged();
         }
 
         bool IsUnitAssigned(Battalion bat)
         {
-            return _attackerForce.LeadBattalion == bat ||
-                   _attackerForce.MainSlot2 == bat ||
-                   _attackerForce.SupportSlot == bat ||
-                   _attackerForce.ArtillerySlot == bat;
+            var force = GetCurrentEditableForce();
+            return force.LeadBattalion == bat ||
+                   force.MainSlot2 == bat ||
+                   force.SupportSlot == bat ||
+                   force.ArtillerySlot == bat;
         }
 
         void UpdateSlots()
         {
             for (int i = 0; i < 4; i++)
             {
-                var bat = GetSlotBattalion(i);
+                var bat = GetCurrentForceSlotBattalion(i);
                 var (label, desc, color) = SlotDefs[i];
 
                 if (bat != null)
                 {
                     string atkStr = bat.GetActualAttack().ToString("0.0");
                     string defStr = bat.GetActualDefense().ToString("0.0");
-                    _slotButtons[i].Text = label + "\n" + bat.Name + "\nATK " + atkStr + "  DEF " + defStr;
+                    string lockTag = (i == 0 && IsLeadSlotLocked()) ? " [LOCKED]" : "";
+                    _slotButtons[i].Text = label + lockTag + "\n" + bat.Name + "\nATK " + atkStr + "  DEF " + defStr;
                     _slotButtons[i].AddThemeColorOverride("font_color", Colors.White);
                 }
                 else
@@ -361,7 +430,8 @@ namespace ColdWarWargame.UI
 
         void EnableConfirm()
         {
-            _confirmBtn.Disabled = _attackerForce.LeadBattalion == null && _attackerForce.MainSlot2 == null;
+            var force = GetCurrentEditableForce();
+            _confirmBtn.Disabled = force.LeadBattalion == null && force.MainSlot2 == null;
         }
 
         void RebuildAvailable()
@@ -370,12 +440,47 @@ namespace ColdWarWargame.UI
             BuildUI(isResult: false);
             EnableConfirm();
             UpdateSlots();
+            NotifyPreviewChanged();
         }
 
         void OnConfirmPressed()
         {
-            if (_attackerForce.LeadBattalion == null && _attackerForce.MainSlot2 == null) return;
-            OnAttackerConfirmed?.Invoke(_attackerForce);
+            var force = GetCurrentEditableForce();
+            if (force.LeadBattalion == null && force.MainSlot2 == null) return;
+
+            if (_currentSide == DeploymentSide.Attacker)
+            {
+                OnAttackerConfirmed?.Invoke(force);
+            }
+            else
+            {
+                OnDefenderConfirmed?.Invoke(force);
+            }
+        }
+
+        public void ShowDefenderPhase(
+            CombatForce lockedAttackerForce,
+            Battalion leadAttacker,
+            Battalion leadDefender,
+            List<(Battalion bat, Vector2I pos)> defenderEligibleUnits,
+            int terrainBonus,
+            string terrainName)
+        {
+            _lockedAttackerForce = CloneForce(lockedAttackerForce);
+            _leadAttacker = leadAttacker;
+            _leadDefender = leadDefender;
+            _defenderEligibleUnits = defenderEligibleUnits ?? new List<(Battalion bat, Vector2I pos)>();
+            _terrainBonus = terrainBonus;
+            _terrainName = terrainName;
+            _defenderForce = new CombatForce();
+            _defenderForce.LeadBattalion = _leadDefender;
+            _selectedUnit = null;
+            _currentSide = DeploymentSide.Defender;
+
+            BuildUI(isResult: false);
+            UpdateSlots();
+            EnableConfirm();
+            NotifyPreviewChanged();
         }
 
         // ===== 防御方展示 =====
@@ -442,6 +547,58 @@ namespace ColdWarWargame.UI
         }
 
         public Action OnResolvePressed;
+
+        public void ShowDeploymentPreview(CombatResolutionResult preview, bool isDefenderPhase)
+        {
+            if (_contentRoot == null) return;
+            var previewLabel = _contentRoot.FindChild("PreviewLabel", true, false) as Label;
+            if (previewLabel == null) return;
+
+            string sideText = isDefenderPhase ? "B" : "A";
+            previewLabel.Text = "Preview (" + sideText + " view): V=" + preview.Advantage.Value.ToString("+0.00;-0.00") +
+                                " | A损失 " + preview.AttackerHpLost +
+                                " | B损失 " + preview.DefenderHpLost;
+        }
+
+        public void ShowOpponentPreview(string text)
+        {
+            if (_contentRoot == null) return;
+            var label = _contentRoot.FindChild("OpponentPreviewLabel", true, false) as Label;
+            if (label == null) return;
+            label.Text = text ?? "";
+        }
+
+        private void NotifyPreviewChanged()
+        {
+            if (_currentSide == DeploymentSide.Defender)
+            {
+                OnPreviewChanged?.Invoke(_lockedAttackerForce, _defenderForce, true);
+            }
+            else
+            {
+                OnPreviewChanged?.Invoke(_attackerForce, _defenderForce, false);
+            }
+        }
+
+        private static CombatForce CloneForce(CombatForce src)
+        {
+            if (src == null) return new CombatForce();
+            return new CombatForce
+            {
+                LeadBattalion = src.LeadBattalion,
+                MainSlot2 = src.MainSlot2,
+                SupportSlot = src.SupportSlot,
+                ArtillerySlot = src.ArtillerySlot
+            };
+        }
+
+        private static IEnumerable<string> FormatForceLines(CombatForce force)
+        {
+            yield return "MAIN 1: " + (force.LeadBattalion?.Name ?? "(empty)");
+            yield return "MAIN 2: " + (force.MainSlot2?.Name ?? "(empty)");
+            yield return "SUPPORT: " + (force.SupportSlot?.Name ?? "(empty)");
+            yield return "ARTILLERY: " + (force.ArtillerySlot?.Name ?? "(empty)");
+        }
 
         // ===== 结算结果展示 =====
         public void ShowResult(CombatResolutionResult result)

@@ -9,6 +9,45 @@ namespace ColdWarWargame.Systems.Combat
     {
         const float EPS = 1e-6f;
 
+        /// <summary>
+        /// 非破坏性预览：用于部署阶段实时估算战果，不会修改任何单位 HP。
+        /// </summary>
+        public CombatResolutionResult PreviewCombat(
+            List<Battalion> attackerBattalions,
+            List<Battalion> defenderBattalions,
+            CombatContext ctx)
+        {
+            var leadA = attackerBattalions.FirstOrDefault();
+            var leadD = defenderBattalions.FirstOrDefault();
+            if (leadA == null || leadD == null)
+                return new CombatResolutionResult { Advantage = new AdvantageResult { Value = 0 } };
+
+            var advantage = ComputeAdvantage(attackerBattalions, defenderBattalions, ctx);
+            float forceBonus = (attackerBattalions.Count - 1) * 0.15f -
+                               (defenderBattalions.Count - 1) * 0.15f;
+            advantage.Value = Math.Clamp(advantage.Value + forceBonus, -10f, 10f);
+
+            var (atkRate, defRate, atkFat, defFat) = GetCasualtyRates(advantage.Value);
+            int atkTotalHp = attackerBattalions.Sum(b => b.GetTotalCurrentHp());
+            int defTotalHp = defenderBattalions.Sum(b => b.GetTotalCurrentHp());
+
+            int atkHpLost = (int)Math.Round(atkTotalHp * atkRate);
+            int defHpLost = (int)Math.Round(defTotalHp * defRate);
+
+            return new CombatResolutionResult
+            {
+                Advantage = advantage,
+                AttackerDamagePool = atkHpLost,
+                DefenderDamagePool = defHpLost,
+                AttackerHpLost = atkHpLost,
+                DefenderHpLost = defHpLost,
+                AttackerCasualties = new List<CasualtyRecord>(),
+                DefenderCasualties = new List<CasualtyRecord>(),
+                AttackerFatigueGained = atkFat,
+                DefenderFatigueGained = defFat
+            };
+        }
+
         /// <summary>多营战斗结算：合并各营所有子单位进行统一结算（PRD 搂2.3插槽系统）</summary>
         public CombatResolutionResult ResolveCombat(
             List<Battalion> attackerBattalions,
