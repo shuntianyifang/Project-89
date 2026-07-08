@@ -1,13 +1,14 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ColdWarWargame.Systems.Battlefield;
 using ColdWarWargame.Models;
 using GridMap = ColdWarWargame.Systems.Battlefield.GridMap;
 
 namespace ColdWarWargame.Rendering
 {
-    public partial class Grid3DRenderer : Node3D
+        public partial class Grid3DRenderer : Node3D
     {
         [Export] public float CellSize { get; set; } = 1.0f;
 
@@ -19,12 +20,20 @@ namespace ColdWarWargame.Rendering
         private List<MeshInstance3D> _highlightMeshes = new();
         private Node3D _unitRoot;
         private Node3D _highlightRoot;
+        private Node3D _linesRoot;
+        private float _flashTimer = 0f;
+        private bool _flashOn = true;
+        private float _selectionAlpha = 0.6f;
+        private float _selectedUnitAP = 0f;
+
+        private class UnitVis { public MeshInstance3D Body; public Node3D Root; public Label InPanelName; public Vector2I GridPos; }
+        private List<UnitVis> _unitVisuals = new();
 
         static readonly Color[] TerrainColors = new[] {
-            new Color(0.63f, 0.82f, 0.50f), // 0 Plain
-            new Color(0.18f, 0.42f, 0.13f), // 1 Forest
-            new Color(0.75f, 0.66f, 0.44f), // 2 SemiUrban
-            new Color(0.55f, 0.45f, 0.33f), // 3 Urban
+            new Color(0.63f, 0.82f, 0.50f),
+            new Color(0.18f, 0.42f, 0.13f),
+            new Color(0.5f, 0.5f, 0.5f),
+            new Color(0.1f, 0.1f, 0.1f),
         };
 
         public Action<int, Battalion, Vector2I> OnUnitClicked;
@@ -34,15 +43,14 @@ namespace ColdWarWargame.Rendering
         public void SetGrid(GridMap map) { _map = map; BuildTerrain(); }
         public void SetBlueUnits(List<(Battalion bat, Vector2I pos)> u) { _blueUnits = u; BuildUnits(); }
         public void SetRedUnits(List<(Battalion bat, Vector2I pos)> u) { _redUnits = u; BuildUnits(); }
-        public void SetReachable(Dictionary<Vector2I, float> r) { _reachableTiles = r; UpdateHighlights(); }
-        public void ClearSel() { _selectedPos = null; _reachableTiles.Clear(); UpdateHighlights(); }
-        public void SetSel(Vector2I p) { _selectedPos = p; UpdateHighlights(); }
+        public void SetReachable(Dictionary<Vector2I, float> r, float uap = 0f) { _reachableTiles = r; _selectedUnitAP = uap; UpdateHighlights(); }
+        public void ClearSel() { _selectedPos = null; _reachableTiles.Clear(); foreach (var uv in _unitVisuals) if (uv.InPanelName != null) uv.InPanelName.Visible = false; UpdateHighlights(); }
+        public void SetSel(Vector2I p) { _selectedPos = p; foreach (var uv in _unitVisuals) if (uv.InPanelName != null) uv.InPanelName.Visible = (uv.GridPos == p); UpdateHighlights(); }
 
         void BuildTerrain()
         {
             if (_map == null) return;
             int w = _map.Width, h = _map.Height;
-
             var img = Image.CreateEmpty(w, h, false, Image.Format.Rgba8);
             for (int x = 0; x < w; x++)
                 for (int y = 0; y < h; y++)
@@ -53,102 +61,241 @@ namespace ColdWarWargame.Rendering
                     else if (tile.InfraType == 1) col = col.Lerp(new Color(0.8f, 0.7f, 0.5f), 0.3f);
                     img.SetPixel(x, y, col);
                 }
-
             var tex = ImageTexture.CreateFromImage(img);
             var mat = new StandardMaterial3D();
             mat.AlbedoTexture = tex;
-            
-
+            mat.TextureFilter = BaseMaterial3D.TextureFilterEnum.Nearest;
             float gw = w * CellSize, gh = h * CellSize;
-            var quad = new QuadMesh { Size = new Vector2(gw, gh) };
-
-            var mi = new MeshInstance3D(); mi.Mesh = quad; mi.MaterialOverride = mat; mi.RotateX(-Mathf.Pi / 2);
+            var mi = new MeshInstance3D();
+            mi.Mesh = new QuadMesh { Size = new Vector2(gw, gh) };
+            mi.MaterialOverride = mat;
+            mi.RotateX(-Mathf.Pi / 2);
             mi.Position = new Vector3(gw / 2, 0, gh / 2);
             AddChild(mi);
 
-            // Grid border
-            var borderMat = new StandardMaterial3D();
-            borderMat.AlbedoColor = new Color(0.2f, 0.2f, 0.2f);
-            borderMat.ShadingMode = StandardMaterial3D.ShadingModeEnum.Unshaded;
-            var border = new MeshInstance3D(); border.Mesh = new QuadMesh { Size = new Vector2(gw + 0.1f, gh + 0.1f) }; border.MaterialOverride = borderMat;
-            border.RotateX(-Mathf.Pi / 2);
-            border.Position = new Vector3(gw / 2, -0.01f, gh / 2);
-            AddChild(border);
+            if (_linesRoot != null) { RemoveChild(_linesRoot); _linesRoot.QueueFree(); }
+            _linesRoot = new Node3D(); AddChild(_linesRoot);
+            var lm = new StandardMaterial3D { AlbedoColor = Colors.Black, ShadingMode = StandardMaterial3D.ShadingModeEnum.Unshaded };
+            float lw = 0.03f;
+            for (int x = 0; x <= w; x++) { var l = new MeshInstance3D(); l.Mesh = new BoxMesh { Size = new Vector3(lw, 0.02f, gh + 0.1f) }; l.MaterialOverride = lm; l.Position = new Vector3(x, 0.005f, gh / 2); _linesRoot.AddChild(l); }
+            for (int y = 0; y <= h; y++) { var l = new MeshInstance3D(); l.Mesh = new BoxMesh { Size = new Vector3(gw + 0.1f, 0.02f, lw) }; l.MaterialOverride = lm; l.Position = new Vector3(gw / 2, 0.005f, y); _linesRoot.AddChild(l); }
         }
 
         void BuildUnits()
         {
             if (_unitRoot != null) { RemoveChild(_unitRoot); _unitRoot.QueueFree(); }
-            _unitRoot = new Node3D(); AddChild(_unitRoot);
-
-            foreach (var (bat, pos) in _blueUnits) CreateUnitMesh(pos, Colors.DodgerBlue);
-            foreach (var (bat, pos) in _redUnits) CreateUnitMesh(pos, Colors.IndianRed);
+            _unitRoot = new Node3D(); AddChild(_unitRoot); _unitVisuals.Clear();
+            foreach (var u in _blueUnits) CreateUnitVis(u.pos, new Color(0.27f, 0.53f, 1.0f), new Color(0.5f, 0.7f, 1.0f), u.bat);
+            foreach (var u in _redUnits) CreateUnitVis(u.pos, new Color(1.0f, 0.27f, 0.27f), new Color(1.0f, 0.6f, 0.6f), u.bat);
         }
 
-        void CreateUnitMesh(Vector2I pos, Color color)
+        void CreateUnitVis(Vector2I pos, Color bodyCol, Color topCol, Battalion bat)
         {
-            float cx = pos.X * CellSize + CellSize / 2;
-            float cz = pos.Y * CellSize + CellSize / 2;
-            var mat = new StandardMaterial3D { AlbedoColor = color, ShadingMode = StandardMaterial3D.ShadingModeEnum.Unshaded };
-            var mesh = new MeshInstance3D();
-            mesh.Mesh = new CylinderMesh { TopRadius = 0.35f, BottomRadius = 0.35f, Height = 0.25f, Material = mat };
-            mesh.Position = new Vector3(cx, 0.15f, cz);
-            mesh.RotateX(Mathf.Pi / 2);
-            _unitRoot.AddChild(mesh);
+            float cx = pos.X * CellSize + CellSize / 2, cz = pos.Y * CellSize + CellSize / 2;
+            var root = new Node3D(); root.Position = new Vector3(cx, 0, cz);
+            _unitRoot.AddChild(root);
+
+            var bm = new StandardMaterial3D { AlbedoColor = bodyCol, ShadingMode = StandardMaterial3D.ShadingModeEnum.Unshaded };
+            var body = new MeshInstance3D();
+            body.Mesh = new BoxMesh { Size = new Vector3(0.7f, 0.2f, 0.7f) };
+            body.MaterialOverride = bm; body.Position = new Vector3(0, 0.1f, 0);
+            root.AddChild(body);
+
+            var labelRoot = BuildLabel(bat, topCol);
+            labelRoot.Position = new Vector3(0, 1.5f, 0);
+            root.AddChild(labelRoot);
+
+
+        var pnlF = labelRoot.GetChild<SubViewport>(0).GetChild<Control>(0); var nameLbl = pnlF.GetChild<Label>(pnlF.GetChildCount() - 1); _unitVisuals.Add(new UnitVis { Body = body, Root = root, GridPos = pos, InPanelName = nameLbl }); }
+
+        Node3D BuildLabel(Battalion bat, Color topColor)
+        {
+            var root = new Node3D();
+            int wL = 600, hL = 600;
+            var vp = new SubViewport();
+            vp.Size = new Vector2I(wL, hL);
+            vp.TransparentBg = true; vp.Disable3D = true;
+            vp.Set("update_mode", 2); vp.Set("render_target_update_mode", 2);
+            root.AddChild(vp);
+
+            var style = new StyleBoxFlat();
+            style.BgColor = new Color(0, 0, 0, 0.85f);
+            style.CornerRadiusTopLeft = 6; style.CornerRadiusTopRight = 6;
+            style.CornerRadiusBottomLeft = 6; style.CornerRadiusBottomRight = 6;
+            var panel = new Panel();
+            panel.Size = new Vector2I(wL, hL);
+            panel.MouseFilter = Control.MouseFilterEnum.Ignore;
+            panel.AddThemeStyleboxOverride("panel", style);
+            vp.AddChild(panel);
+
+            // Top 1/8 bar
+            var topBar = new ColorRect();
+            topBar.Color = topColor;
+            topBar.Size = new Vector2I(wL, 75);
+            topBar.Position = new Vector2I(0, 0);
+            panel.AddChild(topBar);
+
+            // Fatigue blocks
+            bool disorganized = bat.Fatigue > 8;
+            if (!disorganized)
+            {
+                for (int f = 0; f < Math.Min(bat.Fatigue, 8); f++)
+                {
+                    Color fc = f < 2 ? new Color(1f, 1f, 0.3f) : f < 4 ? new Color(1f, 1f, 0f) : f < 6 ? new Color(1f, 0.65f, 0f) : new Color(1f, 0f, 0f);
+                    var blk = new ColorRect();
+                    blk.Color = fc;
+                    blk.Size = new Vector2I(30, 40);
+                    blk.Position = new Vector2I(12 + f * 36, 17);
+                    panel.AddChild(blk);
+                    var dot = new ColorRect();
+                    dot.Color = new Color(0.5f, 0.3f, 0.1f);
+                    dot.Size = new Vector2I(8, 14);
+                    dot.Position = new Vector2I(12 + f * 36 + 11, 30);
+                    panel.AddChild(dot);
+                }
+            }
+
+            // AP and disorganized text on top bar
+            if (disorganized)
+            {
+                var od = new Label();
+                od.Text = "ORGANIZATION COLLAPSE";
+                od.Size = new Vector2I(400, 75);
+                od.Position = new Vector2I(10, 0);
+                od.VerticalAlignment = VerticalAlignment.Center;
+                od.AddThemeFontSizeOverride("font_size", 28);
+                od.AddThemeColorOverride("font_color", Colors.Red);
+                panel.AddChild(od);
+            }
+
+            var ap = new Label();
+            ap.Text = bat.CurrentAP.ToString("0");
+            ap.Size = new Vector2I(100, 75);
+            ap.Position = new Vector2I(wL - 120, 0);
+            ap.HorizontalAlignment = HorizontalAlignment.Right;
+            ap.VerticalAlignment = VerticalAlignment.Center;
+            ap.AddThemeFontSizeOverride("font_size", 36);
+            ap.AddThemeColorOverride("font_color", Colors.White);
+            panel.AddChild(ap);
+
+            // Icon placeholder
+            var ib = new ColorRect();
+            ib.Color = topColor.Lerp(new Color(1, 1, 1), 0.3f);
+            ib.Size = new Vector2I(220, 220);
+            ib.Position = new Vector2I(wL / 2 - 110, 155);
+            panel.AddChild(ib);
+            var it = new Label();
+            it.Text = "TYPE";
+            it.Size = new Vector2I(220, 220);
+            it.Position = new Vector2I(wL / 2 - 110, 155);
+            it.HorizontalAlignment = HorizontalAlignment.Center;
+            it.VerticalAlignment = VerticalAlignment.Center;
+            it.AddThemeFontSizeOverride("font_size", 24);
+            it.AddThemeColorOverride("font_color", Colors.White);
+            panel.AddChild(it);
+
+            // ATK/DEF boxes at bottom, numbers only
+            float atk = bat.GetActualAttack(), def = bat.GetActualDefense();
+
+            var ab = new ColorRect();
+            ab.Color = new Color(0, 0, 0);
+            ab.Size = new Vector2I(180, 70);
+            ab.Position = new Vector2I(20, 520);
+            panel.AddChild(ab);
+            var at = new Label();
+            at.Text = atk.ToString("0.0");
+            at.Size = new Vector2I(180, 70);
+            at.Position = new Vector2I(20, 520);
+            at.HorizontalAlignment = HorizontalAlignment.Center;
+            at.VerticalAlignment = VerticalAlignment.Center;
+            at.AddThemeFontSizeOverride("font_size", 32);
+            at.AddThemeColorOverride("font_color", Colors.White);
+            panel.AddChild(at);
+
+            var db = new ColorRect();
+            db.Color = new Color(1, 1, 1);
+            db.Size = new Vector2I(180, 70);
+            db.Position = new Vector2I(wL - 200, 520);
+            panel.AddChild(db);
+            var dt = new Label();
+            dt.Text = def.ToString("0.0");
+            dt.Size = new Vector2I(180, 70);
+            dt.Position = new Vector2I(wL - 200, 520);
+            dt.HorizontalAlignment = HorizontalAlignment.Center;
+            dt.VerticalAlignment = VerticalAlignment.Center;
+            dt.AddThemeFontSizeOverride("font_size", 32);
+            dt.AddThemeColorOverride("font_color", Colors.Black);
+            panel.AddChild(dt);
+
+            // Unit name inside panel (bottom, hidden, shown on selection)
+            var nameInPanel = new Label();
+            nameInPanel.Text = bat.Name.Length > 20 ? bat.Name[..20] : bat.Name;
+            nameInPanel.Size = new Vector2I(wL, 60);
+            nameInPanel.Position = new Vector2I(0, hL - 60);
+            nameInPanel.HorizontalAlignment = HorizontalAlignment.Center;
+            nameInPanel.VerticalAlignment = VerticalAlignment.Center;
+            nameInPanel.AddThemeFontSizeOverride("font_size", 40);
+            nameInPanel.AddThemeColorOverride("font_color", Colors.White);
+            nameInPanel.Visible = false;
+            panel.AddChild(nameInPanel);
+
+            // Sprite3D to display
+            var sprite = new Sprite3D();
+            sprite.Texture = vp.GetTexture();
+            sprite.PixelSize = 0.002f;
+            sprite.Centered = true;
+            sprite.Billboard = BaseMaterial3D.BillboardModeEnum.Enabled;
+            root.AddChild(sprite);
+            return root;
         }
 
         void UpdateHighlights()
         {
-            foreach (var m in _highlightMeshes) { m.QueueFree(); }
-            _highlightMeshes.Clear();
-            if (_highlightRoot == null) { _highlightRoot = new Node3D(); AddChild(_highlightRoot); }
+            if (_highlightRoot != null) { RemoveChild(_highlightRoot); _highlightRoot.QueueFree(); }
+            _highlightRoot = new Node3D(); AddChild(_highlightRoot);
 
-            // Reachable tiles
-            var reachableMat = new StandardMaterial3D { AlbedoColor = new Color(0, 0.8f, 0, 0.3f), ShadingMode = StandardMaterial3D.ShadingModeEnum.Unshaded };
+            var brightMat = new StandardMaterial3D(); brightMat.AlbedoColor = new Color(0, 0.7f, 1.0f, 0.12f); brightMat.ShadingMode = StandardMaterial3D.ShadingModeEnum.Unshaded; brightMat.Transparency = BaseMaterial3D.TransparencyEnum.Alpha;
+            var darkMat = new StandardMaterial3D(); darkMat.AlbedoColor = new Color(0, 0.3f, 0.5f, 0.12f); darkMat.ShadingMode = StandardMaterial3D.ShadingModeEnum.Unshaded; darkMat.Transparency = BaseMaterial3D.TransparencyEnum.Alpha;
             foreach (var kv in _reachableTiles)
             {
-                var m = MakeHighlight(kv.Key, reachableMat, 0.02f);
-                _highlightMeshes.Add(m); _highlightRoot.AddChild(m);
+                float rem = _selectedUnitAP - kv.Value;
+                var m = MakeHighlight(kv.Key, rem >= 4f ? brightMat : darkMat, 0.02f);
+                _highlightRoot.AddChild(m);
             }
 
-            // Selection
             if (_selectedPos != null)
             {
-                var selMat = new StandardMaterial3D { AlbedoColor = new Color(1, 1, 0, 0.5f), ShadingMode = StandardMaterial3D.ShadingModeEnum.Unshaded };
-                var m = MakeHighlight(_selectedPos.Value, selMat, 0.04f);
-                _highlightMeshes.Add(m); _highlightRoot.AddChild(m);
+                var selMat = new StandardMaterial3D { AlbedoColor = new Color(1, 1, 1, _selectionAlpha), ShadingMode = StandardMaterial3D.ShadingModeEnum.Unshaded };
+                var m = MakeHighlight(_selectedPos.Value, selMat, 0.06f);
+                _highlightRoot.AddChild(m);
             }
         }
 
         MeshInstance3D MakeHighlight(Vector2I pos, Material mat, float height)
         {
-            float cx = pos.X * CellSize + CellSize / 2;
-            float cz = pos.Y * CellSize + CellSize / 2;
-            return new MeshInstance3D
-            {
-                Mesh = new BoxMesh { Size = new Vector3(CellSize * 0.95f, height, CellSize * 0.95f), Material = mat },
-                Position = new Vector3(cx, height / 2 + 0.001f, cz)
-            };
+            float cx = pos.X * CellSize + CellSize / 2, cz = pos.Y * CellSize + CellSize / 2;
+            return new MeshInstance3D { Mesh = new BoxMesh { Size = new Vector3(CellSize * 0.95f, height, CellSize * 0.95f), Material = mat }, Position = new Vector3(cx, height / 2 + 0.001f, cz) };
         }
 
-        // ===== Mouse interaction =====
         public void SetCameraRef(Camera3D cam) { _camRef = cam; }
 
-        Vector2I? ScreenToGrid(Vector2 screenPos)
+        public override void _Process(double delta)
+        {
+            _flashTimer += (float)delta;
+            if (_flashTimer > 0.35f) { _flashTimer = 0f; _flashOn = !_flashOn; _selectionAlpha = _flashOn ? 0.6f : 0.15f; if (_selectedPos != null) UpdateHighlights(); }
+        }
+
+        Vector2I? ScreenToGrid(Vector2 sp)
         {
             var cam = _camRef ?? GetViewport()?.GetCamera3D();
             if (cam == null) return null;
-
-            var origin = cam.ProjectRayOrigin(screenPos);
-            var dir = cam.ProjectRayNormal(screenPos);
+            var origin = cam.ProjectRayOrigin(sp);
+            var dir = cam.ProjectRayNormal(sp);
             if (dir.Y >= 0) return null;
-
             float t = -origin.Y / dir.Y;
             if (t < 0) return null;
             var point = origin + t * dir;
-
-            int gx = (int)(point.X / CellSize);
-            int gy = (int)(point.Z / CellSize);
+            int gx = (int)(point.X / CellSize), gy = (int)(point.Z / CellSize);
             if (_map == null || !_map.IsInBounds(new Vector2I(gx, gy))) return null;
             return new Vector2I(gx, gy);
         }
@@ -157,14 +304,14 @@ namespace ColdWarWargame.Rendering
         {
             if (@event is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
             {
-                var gridPos = ScreenToGrid(mb.Position);
-                if (gridPos == null) return;
-                var gp = gridPos.Value;
-
-                foreach (var (bat, pos) in _blueUnits) { if (pos == gp) { OnUnitClicked?.Invoke(1, bat, pos); return; } }
-                foreach (var (bat, pos) in _redUnits) { if (pos == gp) { OnUnitClicked?.Invoke(2, bat, pos); return; } }
-                OnTileClicked?.Invoke(gp);
+                var gp = ScreenToGrid(mb.Position);
+                if (gp == null) return;
+                var p = gp.Value;
+                foreach (var (bat, pos) in _blueUnits) { if (pos == p) { OnUnitClicked?.Invoke(1, bat, pos); return; } }
+                foreach (var (bat, pos) in _redUnits) { if (pos == p) { OnUnitClicked?.Invoke(2, bat, pos); return; } }
+                OnTileClicked?.Invoke(p);
             }
         }
     }
 }
+

@@ -102,7 +102,7 @@ public partial class GameManager : Node
             bool noZOC(Vector2I p) => false;
             bool occ(Vector2I p) => _scenario.BlueBattalions.Concat(_scenario.RedBattalions).Any(u => u.Item2 == p && u.Item1 != bat);
             _currentReachable = _scenario.Movement.GetReachableTiles(pos, bat.CurrentAP, noZOC, occ);
-            _renderer.SetReachable(_currentReachable);
+            _renderer.SetReachable(_currentReachable, bat.CurrentAP);
             _infoLabel.Text = "Selected: " + bat.Name + " reachable " + _currentReachable.Count + " tiles";
         }
         else if (_sel != null)
@@ -134,9 +134,14 @@ public partial class GameManager : Node
                     _scenario.RedBattalions[i] = (_sel.Unit, pos);
             _renderer.SetBlueUnits(_scenario.BlueBattalions);
             _renderer.SetRedUnits(_scenario.RedBattalions);
-            _infoLabel.Text = "Moved to (" + pos.X + "," + pos.Y + ") AP=" + _sel.Unit.CurrentAP.ToString("0.0");
-            _renderer.ClearSel(); _sel = null; _currentReachable.Clear();
-        }
+        // Recompute reachable for new position and keep selected
+        bool noZ(Vector2I p) => false;
+        bool oc(Vector2I p) => _scenario.BlueBattalions.Concat(_scenario.RedBattalions).Any(u => u.Item2 == p && u.Item1 != _sel.Unit);
+        _currentReachable = _scenario.Movement.GetReachableTiles(pos, _sel.Unit.CurrentAP, noZ, oc);
+        _renderer.SetReachable(_currentReachable, _sel.Unit.CurrentAP);
+        _renderer.SetSel(pos);
+        _infoLabel.Text = "Moved to (" + pos.X + "," + pos.Y + ") AP=" + _sel.Unit.CurrentAP.ToString("0.0");
+    }
         else { _sel = null; _renderer.ClearSel(); _currentReachable.Clear(); _infoLabel.Text = "Click to select"; }
     }
 
