@@ -43,7 +43,7 @@ $$ V = \frac{A_{base} \cdot M_{atk\_org}}{D_{base} \cdot M_{def\_org}} + M_{attr
 
 ## 三、 单位类型 × 地形交互
 
-> TODO: 本节内容尚未实现，保留为扩展预留。
+> 本节采用状态标注：`已实现` / `预留`。仅标注 `已实现` 的规则进入当前战斗结算。
 
 ### 3.1 重装甲在城镇的劣势（预留）
 
@@ -55,7 +55,7 @@ _待设计：Infantry 标签在城镇/半城镇的额外加成_
 
 ### 3.3 工程兵地形攻坚（已实现）
 
-当进攻方营内存活有携带 `Engineer` 标签的工程单位时，防御方地形修正 $T_{def}$ 减半：
+当进攻方参战营包含营级标签 `Engineer` 时，防御方地形修正 $T_{def}$ 减半：
 
 $$ T_{def\_effective} = \frac{T_{def}}{2} $$
 
@@ -78,7 +78,7 @@ $$ T_{def\_effective} = \frac{T_{def}}{2} $$
 **调用方（TurnManager / 战斗 UI）负责：**
 1. 查询防御方每个参战营所在网格的 `TileData.TerrainType`
 2. 根据地形代码查找上表的 $T_{def}$ 值
-3. 如果有存活工程单位，将 $T_{def}$ 减半
+3. 如果进攻方参战营有 `Engineer` 营级标签，将 $T_{def}$ 减半
 4. 填入 `CombatContext.DefenderTerrainBonus`
 
 ---

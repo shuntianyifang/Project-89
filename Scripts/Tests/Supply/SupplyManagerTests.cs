@@ -318,6 +318,22 @@ namespace ColdWarWargame.Tests.Supply
             Assert(unit1.CurrentHp == 5, "OOS: no HP recovery should happen");
         }
 
+        static void Test_DisorganizedInSupply_ForcedToFatigue8NextTurn()
+        {
+            var map = new ColdWarWargame.Systems.Battlefield.GridMap(5, 5);
+            var mgr = new SupplyManager();
+            var bat = MakeSupplyBatWithTestUnits("DisorganizedReset", 1);
+            bat.Fatigue = 12;
+            bat.CurrentAP = 0f; // 即使 AP 低，也应触发强制回落到 8
+            bat.TurnsOOS = 3;
+
+            var units = new List<(Battalion, Vector2I)> { (bat, new Vector2I(2, 2)) };
+            mgr.UpdateFactionEndTurn(1, map, units, new HashSet<Vector2I>(), new HashSet<Vector2I>());
+
+            Assert(bat.TurnsOOS == 0, "Disorganized+in supply: TurnsOOS reset to 0");
+            Assert(bat.Fatigue == 8, "Disorganized+in supply: fatigue forced to 8 for next turn");
+        }
+
         public static void RunAll()
         {
             _fails = 0;
@@ -333,6 +349,7 @@ namespace ColdWarWargame.Tests.Supply
             Test_HpRecovery_LinkedToFatigueRecover2();
             Test_HpRecovery_LinkedToFatigueRecover1();
             Test_HpRecovery_NoRecoveryWhenOOS();
+            Test_DisorganizedInSupply_ForcedToFatigue8NextTurn();
 
             if (_fails == 0)
                 GD.Print("All SupplyManagerTests passed");

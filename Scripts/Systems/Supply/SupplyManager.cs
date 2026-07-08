@@ -55,10 +55,19 @@ namespace ColdWarWargame.Systems.Supply
                 else
                 {
                     bat.TurnsOOS = 0;
-                    if (bat.CurrentAP >= 8f)
-                        bat.Fatigue = Math.Max(0, bat.Fatigue - 2);
-                    else if (bat.CurrentAP >= 4f)
-                        bat.Fatigue = Math.Max(0, bat.Fatigue - 1);
+                    // 组织涣散单位在补给范围内：下一回合强制回到疲劳 8。
+                    // 该规则优先于常规 AP 驱动疲劳恢复档位。
+                    if (fatigueBefore > 8)
+                    {
+                        bat.Fatigue = 8;
+                    }
+                    else
+                    {
+                        if (bat.CurrentAP >= 8f)
+                            bat.Fatigue = Math.Max(0, bat.Fatigue - 2);
+                        else if (bat.CurrentAP >= 4f)
+                            bat.Fatigue = Math.Max(0, bat.Fatigue - 1);
+                    }
 
                     int fatigueRecovered = Math.Max(0, fatigueBefore - bat.Fatigue);
                     RecoverHpFromFatigue(bat, fatigueRecovered);

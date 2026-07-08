@@ -1,5 +1,7 @@
 # PRD-代码对齐清单（2026-07-09）
 
+> 说明：本文件是 2026-07-09 的阶段性快照，已包含部分“待修复项”历史记录。当前口径请以 PRD 主文档与规则参考文档中的“实现状态”标注为准。
+
 ## 范围
 本轮仅核对以下4类阈值与边界：
 - AP 阈值
@@ -22,7 +24,7 @@
 | A4 | 高亮阈值 | AP>=4 可执行关键操作 | [Grid3DRenderer.cs](Scripts/Rendering/Grid3DRenderer.cs#L277) | 对齐 | 保持不变 | 低 |
 | F1 | 疲劳分段（战斗系数） | 0-4:1.0, 5-6:0.9, 7-8:0.5 | [Battalion.cs](Scripts/Models/Battalion.cs#L81) | 对齐 | 保持不变 | 低 |
 | F2 | 疲劳分段（最大AP） | 5-6 -20%，7-8 -50%，>8 崩溃 | [Battalion.cs](Scripts/Models/Battalion.cs#L82), [Battalion.cs](Scripts/Models/Battalion.cs#L85) | 基本对齐 | 保持不变 | 低 |
-| F3 | 疲劳取值范围 | 文档写 0-8；>8 组织涣散 | [SupplyManager.cs](Scripts/Systems/Supply/SupplyManager.cs#L33), [SupplyManager.cs](Scripts/Systems/Supply/SupplyManager.cs#L41), [Grid3DRenderer.cs](Scripts/Rendering/Grid3DRenderer.cs#L153) | 部分偏差 | 代码当前允许到10；建议文档改为 0-10（9-10=崩溃）或代码改上限8（二选一） | 中 |
+| F3 | 疲劳取值范围 | 文档写 0-8；>8 组织涣散 | [SupplyManager.cs](Scripts/Systems/Supply/SupplyManager.cs#L33), [SupplyManager.cs](Scripts/Systems/Supply/SupplyManager.cs#L41), [Grid3DRenderer.cs](Scripts/Rendering/Grid3DRenderer.cs#L153) | 部分偏差 | 代码实现安全上限为20（规则阈值仍为>8崩溃）；建议在文档中采用“双口径”描述 | 中 |
 | F4 | OOS流转阈值 | Turn1 +1，Turn2+ +2 | [SupplyManager.cs](Scripts/Systems/Supply/SupplyManager.cs#L27), [SupplyManager.cs](Scripts/Systems/Supply/SupplyManager.cs#L28) | 对齐 | 保持不变 | 低 |
 | F5 | 补给内疲劳恢复 | AP>=8 恢复2；4<=AP<8 恢复1 | [SupplyManager.cs](Scripts/Systems/Supply/SupplyManager.cs#L36), [SupplyManager.cs](Scripts/Systems/Supply/SupplyManager.cs#L38) | 对齐 | 保持不变 | 低 |
 | C1 | 战斗发起 AP 门槛 | 最低消耗阈值 4 AP | [Cold_War_Wargame_PRD_TDD.md](Cold_War_Wargame_PRD_TDD.md#L61), [GameSessionController.cs](Scripts/Systems/Gameplay/GameSessionController.cs#L78), [CombatFlowController.cs](Scripts/Systems/Gameplay/CombatFlowController.cs#L54) | 对齐 | 保持不变 | 低 |
@@ -47,12 +49,12 @@
 - 位置：[GameSessionController.cs](Scripts/Systems/Gameplay/GameSessionController.cs#L115)
 
 ### 3) 疲劳上限文档与代码口径不一致（中风险）
-- 现状：文档写 0-8，代码允许到10并以 >8 表示崩溃。
+- 现状：文档写 0-8，代码实现安全上限为20并以 >8 表示崩溃。
 - 影响：设计沟通和调参时会产生误解。
 - 位置：[Cold_War_Wargame_PRD_TDD.md](Cold_War_Wargame_PRD_TDD.md#L194), [SupplyManager.cs](Scripts/Systems/Supply/SupplyManager.cs#L41)
 
 ## 建议的最小修正顺序
 1. 修正回合 AP 重置：12f -> GetMaxAP()。
 2. 修正移动后 AP 后处理：统一 Round(1) + Clamp>=0。
-3. 统一疲劳上限口径：文档改 0-10 或代码改 0-8（二选一）。
+3. 统一疲劳上限口径：文档采用“规则阈值 0-8 + 实现安全上限 0-20”的双口径描述。
 4. 再做一次 PRD-代码复核（只看阈值项），确认无回归。
