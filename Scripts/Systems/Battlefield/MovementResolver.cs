@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
@@ -12,7 +12,7 @@ namespace ColdWarWargame.Systems.Battlefield
     /// </summary>
     public class MovementResolver
     {
-        const float EPSILON = 0.0025f;
+        const float EPSILON = 0.05f;
         const float ORTH_COST = 1.0f;
         const float DIAG_COST = 1.4f;
 
@@ -98,10 +98,17 @@ namespace ColdWarWargame.Systems.Battlefield
             // 简单的贪心队列（可按性能需求换为优先队列）
             var frontier = new List<Vector2I> { start };
 
-            while (frontier.Count > 0)
-            {
-                var current = frontier[0];
-                frontier.RemoveAt(0);
+           while (frontier.Count > 0)
+           {
+                int minIdx = 0;
+                float minCost = costSoFar[frontier[0]];
+                for (int i = 1; i < frontier.Count; i++)
+                {
+                    float c = costSoFar[frontier[i]];
+                    if (c < minCost) { minCost = c; minIdx = i; }
+                }
+                var current = frontier[minIdx];
+                frontier.RemoveAt(minIdx);
                 float currentCost = costSoFar[current];
 
                 foreach (var neighbor in _map.GetAllNeighbors(current))
@@ -146,12 +153,19 @@ namespace ColdWarWargame.Systems.Battlefield
             var cameFrom = new Dictionary<Vector2I, Vector2I>();
             costSoFar[start] = 0f;
 
-            var frontier = new List<Vector2I> { start };
+           var frontier = new List<Vector2I> { start };
 
-            while (frontier.Count > 0)
-            {
-                var current = frontier[0];
-                frontier.RemoveAt(0);
+           while (frontier.Count > 0)
+           {
+                int minIdx = 0;
+                float minCost = costSoFar[frontier[0]];
+                for (int i = 1; i < frontier.Count; i++)
+                {
+                    float c = costSoFar[frontier[i]];
+                    if (c < minCost) { minCost = c; minIdx = i; }
+                }
+                var current = frontier[minIdx];
+                frontier.RemoveAt(minIdx);
                 float currentCost = costSoFar[current];
 
                 if (current == target)
@@ -177,5 +191,62 @@ namespace ColdWarWargame.Systems.Battlefield
 
             return float.PositiveInfinity; // 不可达
         }
-    }
+    
+
+        /// <summary>找到从 start 到 target 的最短路径，返回路径中的格子列表</summary>
+        public System.Collections.Generic.List<Vector2I> FindPath(
+            Vector2I start,
+            Vector2I target,
+            float maxAP,
+            System.Func<Vector2I, bool> isEnemyZOC,
+            System.Func<Vector2I, bool> isOccupied)
+        {
+            var costSoFar = new System.Collections.Generic.Dictionary<Vector2I, float>();
+            var cameFrom = new System.Collections.Generic.Dictionary<Vector2I, Vector2I>();
+            costSoFar[start] = 0f;
+            var frontier = new System.Collections.Generic.List<Vector2I> { start };
+            while (frontier.Count > 0)
+            {
+                int minIdx = 0;
+                float minCost = costSoFar[frontier[0]];
+                for (int i = 1; i < frontier.Count; i++)
+                {
+                    float cc = costSoFar[frontier[i]];
+                    if (cc < minCost) { minCost = cc; minIdx = i; }
+                }
+                var current = frontier[minIdx];
+                frontier.RemoveAt(minIdx);
+                float currentCost = costSoFar[current];
+                if (current == target)
+                {
+                    var path = new System.Collections.Generic.List<Vector2I>();
+                    var node = target;
+                    while (node != start)
+                    {
+                        path.Add(node);
+                        node = cameFrom[node];
+                    }
+                    path.Add(start);
+                    path.Reverse();
+                    return path;
+                }
+                foreach (var neighbor in _map.GetAllNeighbors(current))
+                {
+                    if (isEnemyZOC(neighbor)) continue;
+                    if (isOccupied(neighbor)) continue;
+                    if (!_map.IsPassable(neighbor)) continue;
+                    float moveCost = GetMoveCost(current, neighbor,
+                        p => isEnemyZOC(p) || isOccupied(p) || !_map.IsPassable(p));
+                    if (float.IsPositiveInfinity(moveCost)) continue;
+                    float newCost = currentCost + moveCost;
+                    if (!CanAfford(maxAP, newCost)) continue;
+                    if (costSoFar.TryGetValue(neighbor, out var existingCost) && existingCost <= newCost + EPSILON)
+                        continue;
+                    costSoFar[neighbor] = newCost;
+                    cameFrom[neighbor] = current;
+                    frontier.Add(neighbor);
+                }
+            }
+            return null;
+        }}
 }

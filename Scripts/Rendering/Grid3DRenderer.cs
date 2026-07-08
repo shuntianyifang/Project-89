@@ -1,4 +1,4 @@
-using Godot;
+﻿using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,10 +26,16 @@ namespace ColdWarWargame.Rendering
         private float _selectionAlpha = 0.6f;
         private float _selectedUnitAP = 0f;
 
-       private class UnitVis { public MeshInstance3D Body; public Node3D Root; public Label InPanelName; public Vector2I GridPos; }
-       private List<UnitVis> _unitVisuals = new();
-        private Vector2? _rightClickStart = null;
-        private Vector2I? _hoveredPos = null;
+      private class UnitVis { public MeshInstance3D Body; public Node3D Root; public Label InPanelName; public Vector2I GridPos; }
+      private List<UnitVis> _unitVisuals = new();
+       private Vector2? _rightClickStart = null;
+       private Vector2I? _hoveredPos = null;
+        private Node3D _pathRoot;
+        private bool _isAnimating;
+        private System.Collections.Generic.List<Vector2I> _animPath;
+        private int _animIndex;
+        private float _animTimer;
+        private UnitVis _animUnit;
 
         static readonly Color[] TerrainColors = new[] {
             new Color(0.63f, 0.82f, 0.50f),
@@ -41,7 +47,8 @@ namespace ColdWarWargame.Rendering
         public Action<int, Battalion, Vector2I> OnUnitClicked;
         public Action<Vector2I> OnTileClicked;
         public Action OnRightClick;
-        public Action<Vector2I?> OnHoverChanged;
+       public Action<Vector2I?> OnHoverChanged;
+        public System.Action OnMoveFinished;
         private Camera3D _camRef;
 
         public void SetGrid(GridMap map) { _map = map; BuildTerrain(); }
@@ -173,7 +180,7 @@ namespace ColdWarWargame.Rendering
             }
 
             var ap = new Label();
-            ap.Text = bat.CurrentAP.ToString("0");
+            ap.Text = bat.CurrentAP.ToString("0.0");
             ap.Size = new Vector2I(100, 75);
             ap.Position = new Vector2I(wL - 120, 0);
             ap.HorizontalAlignment = HorizontalAlignment.Right;
@@ -284,13 +291,36 @@ namespace ColdWarWargame.Rendering
 
         public void SetCameraRef(Camera3D cam) { _camRef = cam; }
 
-        public override void _Process(double delta)
-        {
-            _flashTimer += (float)delta;
-            if (_flashTimer > 0.35f) { _flashTimer = 0f; _flashOn = !_flashOn; _selectionAlpha = _flashOn ? 0.6f : 0.15f; if (_selectedPos != null) UpdateHighlights(); }
-        }
+       public override void _Process(double delta)
+       {
+           _flashTimer += (float)delta;
+           if (_flashTimer > 0.35f) { _flashTimer = 0f; _flashOn = !_flashOn; _selectionAlpha = _flashOn ? 0.6f : 0.15f; if (_selectedPos != null) UpdateHighlights(); }
 
-        Vector2I? ScreenToGrid(Vector2 sp)
+            if (_isAnimating)
+            {
+                float stepTime = 0.12f;
+                _animTimer += (float)delta;
+                if (_animTimer >= stepTime)
+                {
+                    _animTimer -= stepTime;
+                    _animIndex++;
+                    if (_animIndex >= _animPath.Count)
+                    {
+                        _isAnimating = false;
+                        _animUnit = null;
+                        OnMoveFinished?.Invoke();
+                        return;
+                    }
+                    var pos = _animPath[_animIndex];
+                    float cx = pos.X * CellSize + CellSize / 2;
+                    float cz = pos.Y * CellSize + CellSize / 2;
+                    _animUnit.Root.Position = new Vector3(cx, 0, cz);
+                    _animUnit.GridPos = pos;
+                }
+            }
+       }
+
+       Vector2I? ScreenToGrid(Vector2 sp)
         {
             var cam = _camRef ?? GetViewport()?.GetCamera3D();
             if (cam == null) return null;
@@ -346,6 +376,43 @@ namespace ColdWarWargame.Rendering
                 }
             }
         }
-    }
-}
+    
 
+        // 路径显示
+        public void ShowPath(System.Collections.Generic.List<Vector2I> path)
+        {
+            ClearPath();
+            _pathRoot = new Node3D();
+            AddChild(_pathRoot);
+            var pm = new StandardMaterial3D();
+            pm.AlbedoColor = new Color(1f, 1f, 0f, 0.25f);
+            pm.ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded;
+            pm.Transparency = BaseMaterial3D.TransparencyEnum.Alpha;
+            foreach (var p in path)
+            {
+                float cx = p.X * CellSize + CellSize / 2;
+                float cz = p.Y * CellSize + CellSize / 2;
+                var m = new MeshInstance3D();
+                m.Mesh = new BoxMesh { Size = new Vector3(CellSize * 0.9f, 0.03f, CellSize * 0.9f), Material = pm };
+                m.Position = new Vector3(cx, 0.015f, cz);
+                _pathRoot.AddChild(m);
+            }
+        }
+
+        public void ClearPath()
+        {
+            if (_pathRoot != null) { RemoveChild(_pathRoot); _pathRoot.QueueFree(); _pathRoot = null; }
+        }
+
+        internal void StartMoveAnimation(System.Collections.Generic.List<Vector2I> path, Battalion bat)
+        {
+            _animUnit = null;
+            foreach (var uv in _unitVisuals)
+                if (uv.GridPos == path[0]) { _animUnit = uv; break; }
+            if (_animUnit == null) { OnMoveFinished?.Invoke(); return; }
+            _isAnimating = true;
+            _animPath = path;
+            _animIndex = 0;
+            _animTimer = 0f;
+        }}
+}
