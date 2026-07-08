@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 using Godot;
-using ColdWarWargame.Battlefield;
-using ColdWarWargame.Core.Entities;
-using ColdWarWargame.Core.Factories;
-using ColdWarWargame.Core.Combat;
+using ColdWarWargame.Systems.Battlefield;
+using ColdWarWargame.Models;
+using ColdWarWargame.Factories;
+using ColdWarWargame.Systems.Combat;
 using ColdWarWargame.Scenarios;
 
 namespace ColdWarWargame.Scenarios
@@ -66,7 +66,7 @@ namespace ColdWarWargame.Scenarios
             "000000000000020000000000000000",
         };
 
-        public Battlefield.GridMap Map { get; private set; }
+        public Systems.Battlefield.GridMap Map { get; private set; }
         public MovementResolver Movement { get; private set; }
         public ZOCManager ZOC { get; private set; }
 
@@ -96,7 +96,7 @@ namespace ColdWarWargame.Scenarios
                 }
             }
 
-            Map = Battlefield.GridMap.FromLayers(terrain, infra);
+            Map = Systems.Battlefield.GridMap.FromLayers(terrain, infra);
         }
 
         public void LoadOOB(string bluePath, string redPath)
