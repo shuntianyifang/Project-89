@@ -34,12 +34,26 @@ namespace ColdWarWargame.Systems.Gameplay
 
         public void StartNewGame()
         {
+            if (_sessionHost != null)
+                _sessionHost.Shutdown();
+
             _sessionHost = new GameSessionHost(_root, _owner);
-            _sessionHost.Initialize();
+            _sessionHost.Start();
             IsInitialized = true;
         }
 
         public void RestartCurrentGame() => StartNewGame();
+
+        public void Shutdown()
+        {
+            if (_sessionHost != null)
+            {
+                _sessionHost.Shutdown();
+                _sessionHost = null;
+            }
+
+            IsInitialized = false;
+        }
 
         public string GetStatusText() => _sessionHost?.GetStatusText() ?? "Turn 1";
 

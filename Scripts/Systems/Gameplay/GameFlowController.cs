@@ -8,48 +8,95 @@ namespace ColdWarWargame.Systems.Gameplay
     {
         private readonly Dictionary<Vector2I, float> _reachableTiles = new();
 
-        public bool InCombat { get; private set; }
-        public bool IsMoving { get; private set; }
+        public GameState CurrentState { get; private set; } = GameState.Idle;
+        public bool InCombat => CurrentState == GameState.Combat;
+        public bool IsMoving => CurrentState == GameState.Moving;
         public SelectionState CurrentSelection { get; private set; }
         public bool HasSelection => CurrentSelection != null;
-        public bool CanInteract => !InCombat && !IsMoving;
+        public bool CanInteract => CurrentState is GameState.Idle or GameState.Selecting;
         public IReadOnlyDictionary<Vector2I, float> ReachableTiles => _reachableTiles;
 
-        public void BeginCombat()
+        public void StartTurn()
         {
-            InCombat = true;
+            TransitionTo(GameState.Idle);
+            CurrentSelection = null;
+            _reachableTiles.Clear();
         }
 
-        public void EndCombat()
+        public void EnterSelection(Battalion unit, Vector2I pos, Dictionary<Vector2I, float> reachable)
         {
-            InCombat = false;
+            CurrentSelection = new SelectionState(unit, pos);
+            _reachableTiles.Clear();
+            if (reachable != null)
+            {
+                foreach (var entry in reachable)
+                    _reachableTiles[entry.Key] = entry.Value;
+            }
+
+            TransitionTo(GameState.Selecting);
+        }
+
+        public void EnterCombat()
+        {
+            if (CurrentState == GameState.Selecting)
+                TransitionTo(GameState.Combat);
+        }
+
+        public void ExitCombat()
+        {
+            if (CurrentState == GameState.Combat)
+                TransitionTo(HasSelection ? GameState.Selecting : GameState.Idle);
         }
 
         public void BeginMovement()
         {
-            IsMoving = true;
+            if (CurrentState == GameState.Selecting)
+                TransitionTo(GameState.Moving);
         }
 
-        public void EndMovement()
+        public void CompleteMovement()
         {
-            IsMoving = false;
+            if (CurrentState == GameState.Moving)
+                TransitionTo(HasSelection ? GameState.Selecting : GameState.Idle);
         }
 
-        public void SetSelection(Battalion unit, Vector2I pos, Dictionary<Vector2I, float> reachable)
+        public void EndTurn()
         {
-            CurrentSelection = new SelectionState(unit, pos);
+            CurrentSelection = null;
             _reachableTiles.Clear();
-            if (reachable == null)
-                return;
-
-            foreach (var entry in reachable)
-                _reachableTiles[entry.Key] = entry.Value;
+            TransitionTo(GameState.Idle);
         }
 
         public void ClearSelection()
         {
             CurrentSelection = null;
             _reachableTiles.Clear();
+            TransitionTo(GameState.Idle);
+        }
+
+        private void TransitionTo(GameState nextState)
+        {
+            CurrentState = (CurrentState, nextState) switch
+            {
+                (GameState.Idle, GameState.Selecting) => GameState.Selecting,
+                (GameState.Selecting, GameState.Moving) => GameState.Moving,
+                (GameState.Moving, GameState.Selecting) => GameState.Selecting,
+                (GameState.Selecting, GameState.Combat) => GameState.Combat,
+                (GameState.Combat, GameState.Selecting) => GameState.Selecting,
+                (GameState.Combat, GameState.Idle) => GameState.Idle,
+                (GameState.Selecting, GameState.Idle) => GameState.Idle,
+                (GameState.Moving, GameState.Idle) => GameState.Idle,
+                (GameState.Idle, GameState.Idle) => GameState.Idle,
+                _ => CurrentState
+            };
+        }
+
+        public enum GameState
+        {
+            Idle,
+            Selecting,
+            Moving,
+            Combat
         }
 
         public sealed class SelectionState

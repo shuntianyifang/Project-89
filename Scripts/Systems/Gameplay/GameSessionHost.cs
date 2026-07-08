@@ -16,19 +16,14 @@ namespace ColdWarWargame.Systems.Gameplay
     {
         private readonly Node _root;
         private readonly GameManager _owner;
-        private readonly CanvasLayer _canvasLayer;
-        private readonly GameHud _hud;
-        private readonly GameSceneBootstrapper _bootstrapper;
+        private CanvasLayer _canvasLayer;
+        private GameHud _hud;
+        private GameSceneBootstrapper _bootstrapper;
 
         public GameSessionHost(Node root, GameManager owner)
         {
             _root = root;
             _owner = owner;
-            _canvasLayer = new CanvasLayer();
-            _root.AddChild(_canvasLayer);
-
-            _hud = new GameHud(_canvasLayer, () => Session?.OnEndTurn());
-            _bootstrapper = new GameSceneBootstrapper(root, Scenario, _canvasLayer, _hud, HandleUnitClicked, HandleTileClicked, HandleRightClick, HandleHoverChanged);
         }
 
         public FuldaGapScenario Scenario { get; private set; }
@@ -37,9 +32,19 @@ namespace ColdWarWargame.Systems.Gameplay
         public GameCamera Camera { get; private set; }
         public GameHud Hud => _hud;
         public GameSessionController Session { get; private set; }
+        public bool IsStarted { get; private set; }
 
-        public void Initialize()
+        public void Initialize() => Start();
+
+        public void Start()
         {
+            if (IsStarted)
+                return;
+
+            _canvasLayer = new CanvasLayer();
+            _root.AddChild(_canvasLayer);
+            _hud = new GameHud(_canvasLayer, () => Session?.OnEndTurn());
+
             UnitDatabase.Initialize("res://Scripts/Data/Units");
             TemplateDatabase.Initialize("res://Scripts/Data/Templates");
             GD.Print("System initialized.");
@@ -59,13 +64,50 @@ namespace ColdWarWargame.Systems.Gameplay
             foreach (var u in Scenario.BlueBattalions) TurnManager.RegisterBattalion(u.Item1);
             foreach (var u in Scenario.RedBattalions) TurnManager.RegisterBattalion(u.Item1);
 
+            _bootstrapper = new GameSceneBootstrapper(_root, Scenario, _canvasLayer, _hud, HandleUnitClicked, HandleTileClicked, HandleRightClick, HandleHoverChanged);
             _bootstrapper.Initialize();
             Renderer = _bootstrapper.Renderer;
             Camera = _bootstrapper.Camera;
             Session = new GameSessionController(_owner, Scenario, TurnManager, Renderer, _hud);
             _hud.SetStatusText(GetStatusText());
+            IsStarted = true;
             GD.Print("3D scene ready.");
         }
+
+        public void Shutdown()
+        {
+            if (!IsStarted)
+                return;
+
+            Session = null;
+            Renderer = null;
+            Camera = null;
+            TurnManager = null;
+            Scenario = null;
+
+            if (_bootstrapper != null)
+            {
+                _bootstrapper.Cleanup();
+                _bootstrapper = null;
+            }
+
+            if (_hud != null)
+            {
+                _hud = null;
+            }
+
+            if (_canvasLayer != null && GodotObject.IsInstanceValid(_canvasLayer))
+            {
+                if (_canvasLayer.GetParent() != null)
+                    _root.RemoveChild(_canvasLayer);
+                _canvasLayer.QueueFree();
+            }
+
+            _canvasLayer = null;
+            IsStarted = false;
+        }
+
+        public void Restart() => Shutdown();
 
         public string GetStatusText() => Session?.GetStatusText() ?? "Turn 1";
 

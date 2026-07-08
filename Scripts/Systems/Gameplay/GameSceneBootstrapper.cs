@@ -60,5 +60,25 @@ namespace ColdWarWargame.Systems.Gameplay
 
             _hud.Initialize();
         }
+
+        public void Cleanup()
+        {
+            if (Renderer != null && GodotObject.IsInstanceValid(Renderer))
+            {
+                if (Renderer.GetParent() != null)
+                    _root.RemoveChild(Renderer);
+                Renderer.QueueFree();
+            }
+
+            if (Camera != null && GodotObject.IsInstanceValid(Camera))
+            {
+                if (Camera.GetParent() != null)
+                    _root.RemoveChild(Camera);
+                Camera.QueueFree();
+            }
+
+            Renderer = null;
+            Camera = null;
+        }
     }
 }
