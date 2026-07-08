@@ -93,6 +93,7 @@ public partial class GameManager : Node
         _endTurnBtn.Position = new Vector2(10, 60);
         _endTurnBtn.Text = "End Turn [Space]";
        _endTurnBtn.Pressed += OnEndTurn;
+        _endTurnBtn.FocusMode = Control.FocusModeEnum.None;
        _ui.AddChild(_endTurnBtn);
         // Tooltip near cursor
         _tooltipPanel = new Panel();
