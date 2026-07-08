@@ -81,6 +81,15 @@ namespace ColdWarWargame.Tests.OOB
             Assert(veh1.CurrentHp == 0, "state_overrides should update current_hp for existing unit");
         }
 
+          static void Test_BattalionTags_LoadedFromTemplate()
+          {
+            var usAviation = BattalionFactory.CreateFullBattalion("tag_us_avi", "us_aviation_battalion", 1);
+            Assert(usAviation.HasBattalionTag("Heli_Battalion"), "Template battalion_tags should load: us_aviation_battalion has Heli_Battalion");
+
+            var sovAviation = BattalionFactory.CreateFullBattalion("tag_sov_avi", "sov_aviation_battalion", 2);
+            Assert(sovAviation.HasBattalionTag("Heli_Battalion"), "Template battalion_tags should load: sov_aviation_battalion has Heli_Battalion");
+          }
+
         static void Test_ScenarioLoadWithOverrides_EndToEnd()
         {
             string bluePath = "user://oob_blue_override_test.json";
@@ -165,6 +174,7 @@ namespace ColdWarWargame.Tests.OOB
 
             Test_RemoveAndAddNode();
             Test_StateOverrides();
+            Test_BattalionTags_LoadedFromTemplate();
             Test_ScenarioLoadWithOverrides_EndToEnd();
 
             if (_fails == 0) GD.Print("All OobOverridesTests passed");

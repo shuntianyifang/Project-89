@@ -5,6 +5,7 @@ using GridMap = ColdWarWargame.Systems.Battlefield.GridMap;
 using MovementResolver = ColdWarWargame.Systems.Battlefield.MovementResolver;
 using ZOCManager = ColdWarWargame.Systems.Battlefield.ZOCManager;
 using TileData = ColdWarWargame.Models.TileData;
+using Battalion = ColdWarWargame.Models.Battalion;
 
 namespace ColdWarWargame.Tests.Battlefield
 {
@@ -158,6 +159,26 @@ namespace ColdWarWargame.Tests.Battlefield
             AssertFloat(diagCost, 0.7f, "Diagonal onto highway = 0.7 AP");
         }
 
+        static void Test_HeliBattalionMovementCost()
+        {
+            var map = new GridMap(10, 10);
+            map.SetTile(new Vector2I(5, 5), new TileData(1, 0)); // forest, expensive for normal units
+            var resolver = new MovementResolver(map);
+            bool noBlock(Vector2I p) => false;
+
+            var heli = new Battalion { Name = "Heli", Faction = 1 };
+            heli.BattalionTags.Add("Heli_Battalion");
+
+            float orthCost = resolver.GetMoveCost(new Vector2I(4, 5), new Vector2I(5, 5), noBlock, heli);
+            AssertFloat(orthCost, 0.5f, "Heli_Battalion orthogonal move = 0.5 AP regardless of terrain");
+
+            float diagCost = resolver.GetMoveCost(new Vector2I(4, 4), new Vector2I(5, 5), noBlock, heli);
+            AssertFloat(diagCost, 0.7f, "Heli_Battalion diagonal move = 0.7 AP regardless of terrain");
+
+            float normalOrthCost = resolver.GetMoveCost(new Vector2I(4, 5), new Vector2I(5, 5), noBlock);
+            AssertFloat(normalOrthCost, 4.0f, "Non-heli unit still uses terrain-based orthogonal cost");
+        }
+
         static void Test_CornerClipping()
         {
             var map = new GridMap(5, 5);
@@ -295,6 +316,7 @@ namespace ColdWarWargame.Tests.Battlefield
 
             Test_MovementCosts();
             Test_MovementOnHighway();
+            Test_HeliBattalionMovementCost();
             Test_CornerClipping();
             Test_CanAfford();
             Test_ReachableTiles_Plain();

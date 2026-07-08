@@ -26,6 +26,8 @@ namespace ColdWarWargame.Models
         public string TemplateId { get; set; } = string.Empty;
         /// <summary>是否为专业侦察营（PRD §2.7 Advanced Vision）</summary>
         public bool IsAdvancedReconBattalion { get; set; } = false;
+        /// <summary>营级标签（如 Engineer, Heli_Battalion）</summary>
+        public HashSet<string> BattalionTags { get; set; } = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
 
         public List<Company> Companies { get; set; } = new List<Company>();
 
@@ -130,5 +132,12 @@ namespace ColdWarWargame.Models
         public bool CanFillMain() => GetRole() == BattalionRole.Main;
         public bool CanFillSupport() => GetRole() == BattalionRole.Support;
         public bool CanFillArtillery() => GetRole() == BattalionRole.Artillery;
+
+        public bool HasBattalionTag(string tag)
+        {
+            if (string.IsNullOrWhiteSpace(tag) || BattalionTags == null)
+                return false;
+            return BattalionTags.Contains(tag);
+        }
     }
 }

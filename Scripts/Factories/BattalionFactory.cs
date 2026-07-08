@@ -22,7 +22,10 @@ namespace ColdWarWargame.Factories
                 Fatigue = 0,
                 TemplateRole = template.Role ?? "main",
                 TemplateId = templateId,
-                IsAdvancedReconBattalion = IsAdvancedReconTemplate(templateId, template.Name)
+                IsAdvancedReconBattalion = IsAdvancedReconTemplate(templateId, template.Name),
+                BattalionTags = template.BattalionTags != null
+                    ? new HashSet<string>(template.BattalionTags, StringComparer.OrdinalIgnoreCase)
+                    : new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             };
             foreach (var compKvp in template.Companies)
             {

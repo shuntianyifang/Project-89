@@ -350,6 +350,9 @@
         }
       }
     },
-    "role": "support"
+    "role": "support",
+    "battalion_tags": [
+      "Heli_Battalion"
+    ]
   }
 }

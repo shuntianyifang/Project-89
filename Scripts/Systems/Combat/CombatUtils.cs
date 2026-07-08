@@ -32,6 +32,11 @@ namespace ColdWarWargame.Systems.Combat
                 u.Template?.TacticalTags?.Capabilities?.Any(c => lowers.Contains(Normalize(c))) == true);
         }
 
+        public static bool HasBattalionTag(Battalion b, string tag)
+        {
+            return b != null && b.HasBattalionTag(tag);
+        }
+
         public static bool IsInfantry(SubUnitInstance u)
         {
             var ct = u.Template?.ClassType ?? "";

@@ -105,7 +105,7 @@ namespace ColdWarWargame.Systems.Gameplay
                 var enemyZOC = _scenario.ZOC.GetFactionZOC(enemyPositions);
                 bool isEnemyZOC(Vector2I t) => enemyZOC.Contains(t);
                 bool occ(Vector2I t) => _scenario.BlueBattalions.Concat(_scenario.RedBattalions).Any(u => u.Item2 == t && u.Item1 != _flow.CurrentSelection.Unit);
-                var path = _scenario.Movement.FindPath(_flow.CurrentSelection.Pos, pos, _flow.CurrentSelection.Unit.CurrentAP, isEnemyZOC, occ);
+                var path = _scenario.Movement.FindPath(_flow.CurrentSelection.Pos, pos, _flow.CurrentSelection.Unit.CurrentAP, isEnemyZOC, occ, _flow.CurrentSelection.Unit);
                 if (path == null || path.Count < 2)
                 {
                     ClearSelection();
@@ -155,7 +155,7 @@ namespace ColdWarWargame.Systems.Gameplay
                     var enemyZOC3 = _scenario.ZOC.GetFactionZOC(enemyPositions3);
                     bool isEnemyZOC3(Vector2I t) => enemyZOC3.Contains(t);
                     bool occ3(Vector2I t) => _scenario.BlueBattalions.Concat(_scenario.RedBattalions).Any(u => u.Item2 == t && u.Item1 != _flow.CurrentSelection.Unit);
-                    var reachable = _scenario.Movement.GetReachableTiles(pos, _flow.CurrentSelection.Unit.CurrentAP, isEnemyZOC3, occ3);
+                    var reachable = _scenario.Movement.GetReachableTiles(pos, _flow.CurrentSelection.Unit.CurrentAP, isEnemyZOC3, occ3, _flow.CurrentSelection.Unit);
                     _flow.EnterSelection(_flow.CurrentSelection.Unit, pos, reachable);
                     _renderer.SetReachable(reachable, _flow.CurrentSelection.Unit.CurrentAP);
                     _renderer.SetSel(pos);
@@ -235,7 +235,7 @@ namespace ColdWarWargame.Systems.Gameplay
                 var enemyZOC = _scenario.ZOC.GetFactionZOC(enemyPositions);
                 bool isEnemyZOC(Vector2I t) => enemyZOC.Contains(t);
                 bool occ(Vector2I t) => _scenario.BlueBattalions.Concat(_scenario.RedBattalions).Any(u => u.Item2 == t && u.Item1 != _flow.CurrentSelection.Unit);
-                var path = _scenario.Movement.FindPath(_flow.CurrentSelection.Pos, p, _flow.CurrentSelection.Unit.CurrentAP, isEnemyZOC, occ);
+                var path = _scenario.Movement.FindPath(_flow.CurrentSelection.Pos, p, _flow.CurrentSelection.Unit.CurrentAP, isEnemyZOC, occ, _flow.CurrentSelection.Unit);
                 if (path != null) _renderer.ShowPath(path);
             }
 
@@ -293,7 +293,7 @@ namespace ColdWarWargame.Systems.Gameplay
             var enemyZOC = _scenario.ZOC.GetFactionZOC(enemyPositions);
             bool isEnemyZOC(Vector2I p) => enemyZOC.Contains(p);
             bool occ(Vector2I p) => _scenario.BlueBattalions.Concat(_scenario.RedBattalions).Any(u => u.Item2 == p && u.Item1 != bat);
-            var reachable = _scenario.Movement.GetReachableTiles(pos, bat.CurrentAP, isEnemyZOC, occ);
+            var reachable = _scenario.Movement.GetReachableTiles(pos, bat.CurrentAP, isEnemyZOC, occ, bat);
             _flow.EnterSelection(bat, pos, reachable);
             _eventHub.Publish(new GameplayEvent(GameplayEventType.UnitSelected, new SelectionEventData(bat, pos, reachable)));
             _renderer.SetReachable(reachable, bat.CurrentAP);

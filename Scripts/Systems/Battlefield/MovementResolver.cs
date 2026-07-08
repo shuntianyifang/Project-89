@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
+using ColdWarWargame.Models;
 using TileData = ColdWarWargame.Models.TileData;
 
 namespace ColdWarWargame.Systems.Battlefield
@@ -15,6 +16,8 @@ namespace ColdWarWargame.Systems.Battlefield
         const float EPSILON = 0.05f;
         const float ORTH_COST = 1.0f;
         const float DIAG_COST = 1.4f;
+        const float HELI_ORTH_COST = 0.5f;
+        const float HELI_DIAG_COST = 0.7f;
 
         private GridMap _map;
 
@@ -53,7 +56,7 @@ namespace ColdWarWargame.Systems.Battlefield
         /// 计算从 from 到 to（相邻格子）的完整移动 AP 消耗
         /// 含方向基础消耗 × 目的地地形成本
         /// </summary>
-        public float GetMoveCost(Vector2I from, Vector2I to, Func<Vector2I, bool> isBlocked)
+        public float GetMoveCost(Vector2I from, Vector2I to, Func<Vector2I, bool> isBlocked, Battalion mover = null)
         {
             int dx = to.X - from.X;
             int dy = to.Y - from.Y;
@@ -79,6 +82,13 @@ namespace ColdWarWargame.Systems.Battlefield
             if (float.IsPositiveInfinity(tileCost))
                 return float.PositiveInfinity;
 
+            if (mover != null && mover.HasBattalionTag("Heli_Battalion"))
+            {
+                if (Mathf.Abs(dx) == 1 && Mathf.Abs(dy) == 1)
+                    return HELI_DIAG_COST;
+                return HELI_ORTH_COST;
+            }
+
             return baseCost * tileCost;
         }
 
@@ -90,7 +100,8 @@ namespace ColdWarWargame.Systems.Battlefield
             Vector2I start,
             float maxAP,
             Func<Vector2I, bool> isEnemyZOC,
-            Func<Vector2I, bool> isOccupied)
+            Func<Vector2I, bool> isOccupied,
+            Battalion mover = null)
         {
             var costSoFar = new Dictionary<Vector2I, float>();
             costSoFar[start] = 0f;
@@ -123,7 +134,7 @@ namespace ColdWarWargame.Systems.Battlefield
                     if (!_map.IsPassable(neighbor)) continue;
 
                     float moveCost = GetMoveCost(current, neighbor,
-                        p => isEnemyZOC(p) || isOccupied(p) || !_map.IsPassable(p));
+                        p => isEnemyZOC(p) || isOccupied(p) || !_map.IsPassable(p), mover);
                     if (float.IsPositiveInfinity(moveCost)) continue;
 
                     float newCost = currentCost + moveCost;
@@ -147,7 +158,8 @@ namespace ColdWarWargame.Systems.Battlefield
 
         /// <summary>计算从 start 到 target 沿已知路径的精确 AP 消耗</summary>
         public float CalculatePathCost(Vector2I start, Vector2I target,
-            Func<Vector2I, bool> isBlocked)
+            Func<Vector2I, bool> isBlocked,
+            Battalion mover = null)
         {
             var costSoFar = new Dictionary<Vector2I, float>();
             var cameFrom = new Dictionary<Vector2I, Vector2I>();
@@ -175,7 +187,7 @@ namespace ColdWarWargame.Systems.Battlefield
                 {
                     if (!_map.IsPassable(neighbor)) continue;
 
-                    float moveCost = GetMoveCost(current, neighbor, isBlocked);
+                    float moveCost = GetMoveCost(current, neighbor, isBlocked, mover);
                     if (float.IsPositiveInfinity(moveCost)) continue;
 
                     float newCost = currentCost + moveCost;
@@ -199,7 +211,8 @@ namespace ColdWarWargame.Systems.Battlefield
             Vector2I target,
             float maxAP,
             System.Func<Vector2I, bool> isEnemyZOC,
-            System.Func<Vector2I, bool> isOccupied)
+            System.Func<Vector2I, bool> isOccupied,
+            Battalion mover = null)
         {
             var costSoFar = new System.Collections.Generic.Dictionary<Vector2I, float>();
             var cameFrom = new System.Collections.Generic.Dictionary<Vector2I, Vector2I>();
@@ -236,7 +249,7 @@ namespace ColdWarWargame.Systems.Battlefield
                     if (isOccupied(neighbor)) continue;
                     if (!_map.IsPassable(neighbor)) continue;
                     float moveCost = GetMoveCost(current, neighbor,
-                        p => isEnemyZOC(p) || isOccupied(p) || !_map.IsPassable(p));
+                        p => isEnemyZOC(p) || isOccupied(p) || !_map.IsPassable(p), mover);
                     if (float.IsPositiveInfinity(moveCost)) continue;
                     float newCost = currentCost + moveCost;
                     if (!CanAfford(maxAP, newCost)) continue;

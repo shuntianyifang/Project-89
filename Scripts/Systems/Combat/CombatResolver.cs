@@ -291,9 +291,12 @@ namespace ColdWarWargame.Systems.Combat
 
             // Terrain: defender's position grants a defense advantage
             // T_atk = 0 for all terrain types, only T_def applies per Terrain_Combat_Effects.md
-            if (ctx != null && ctx.DefenderTerrainBonus > 0f)
+            float defenderTerrainBonus = ctx?.DefenderTerrainBonus ?? 0f;
+            if (defenderTerrainBonus > 0f && CombatUtils.HasBattalionTag(attacker, "Engineer"))
+                defenderTerrainBonus *= 0.5f;
+            if (defenderTerrainBonus > 0f)
             {
-                attackerMods.Add(new ModifierEntry { Source = "TerrainDefenderBonus", Value = -ctx.DefenderTerrainBonus, Reason = "Defender terrain +" + ctx.DefenderTerrainBonus, Target = "attacker" });
+                attackerMods.Add(new ModifierEntry { Source = "TerrainDefenderBonus", Value = -defenderTerrainBonus, Reason = "Defender terrain +" + defenderTerrainBonus, Target = "attacker" });
             }
 
             // Aggregate
@@ -375,9 +378,12 @@ namespace ColdWarWargame.Systems.Combat
             if (aHasHeli && !dHasAA) defenderMods.Add(new ModifierEntry { Source = "NoAAAgainstHeli", Value = -1.0f, Reason = "No AA vs Heli", Target = "defender" });
             if (dHasHeli && !aHasAA) attackerMods.Add(new ModifierEntry { Source = "NoAAAgainstHeli", Value = -1.0f, Reason = "No AA vs Heli", Target = "attacker" });
 
-            if (ctx != null && ctx.DefenderTerrainBonus > 0f)
+            float defenderTerrainBonus = ctx?.DefenderTerrainBonus ?? 0f;
+            if (defenderTerrainBonus > 0f && attackerBattalions.Any(b => CombatUtils.HasBattalionTag(b, "Engineer")))
+                defenderTerrainBonus *= 0.5f;
+            if (defenderTerrainBonus > 0f)
             {
-                attackerMods.Add(new ModifierEntry { Source = "TerrainDefenderBonus", Value = -ctx.DefenderTerrainBonus, Reason = "Defender terrain +" + ctx.DefenderTerrainBonus, Target = "attacker" });
+                attackerMods.Add(new ModifierEntry { Source = "TerrainDefenderBonus", Value = -defenderTerrainBonus, Reason = "Defender terrain +" + defenderTerrainBonus, Target = "attacker" });
             }
 
             float attackerPenalty = attackerMods.Sum(m => m.Value);

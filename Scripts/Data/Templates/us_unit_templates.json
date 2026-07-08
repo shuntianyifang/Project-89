@@ -352,7 +352,10 @@
 		}
 	  }
 	},
-	"role": "support"
+	"role": "support",
+	"battalion_tags": [
+	  "Heli_Battalion"
+	]
   },
   "us_airborne_battalion": {
 	"name": "美军空降步兵营",
@@ -432,6 +435,9 @@
 		}
 	  }
 	},
-	"role": "main"
+	"role": "main",
+	"battalion_tags": [
+	  "Heli_Battalion"
+	]
   }
 }

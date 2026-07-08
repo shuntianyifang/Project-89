@@ -35,6 +35,13 @@ namespace ColdWarWargame.Tests.Combat
             return bat;
         }
 
+        static Battalion MakeEngineerBat(params string[] unitIds)
+        {
+            var bat = MakeBatWithUnitIds(unitIds);
+            bat.BattalionTags.Add("Engineer");
+            return bat;
+        }
+
         static void Test_TerrainPlain()
         {
             var resolver = new CombatResolver();
@@ -78,6 +85,38 @@ namespace ColdWarWargame.Tests.Combat
             Assert(mod != null, "Forest terrain: TerrainDefenderBonus modifier exists");
             if (mod != null)
                 AssertFloat(mod.Value, -0.1f, "Forest terrain: modifier value = -0.1");
+        }
+
+        static void Test_EngineerHalvesTerrainBonus_SingleCombat()
+        {
+            var resolver = new CombatResolver();
+            var atk = MakeEngineerBat("us_mech_rifles");
+            var def = MakeBatWithUnitIds("us_mech_rifles");
+            var ctx = new CombatContext { DefenderTerrainBonus = 0.4f, AttackerOOSTurns = 0, DefenderOOSTurns = 0 };
+
+            var result = resolver.ComputeAdvantage(atk, def, ctx);
+            var mod = result.Modifiers.Find(m => m.Source == "TerrainDefenderBonus");
+            Assert(mod != null, "Engineer single combat: TerrainDefenderBonus modifier exists");
+            if (mod != null)
+                AssertFloat(mod.Value, -0.2f, "Engineer single combat: terrain bonus halved to -0.2");
+        }
+
+        static void Test_EngineerHalvesTerrainBonus_ForceCombat()
+        {
+            var resolver = new CombatResolver();
+            var atkLead = MakeEngineerBat("us_mech_rifles");
+            var atkSupport = MakeBatWithUnitIds("us_mech_rifles");
+            var defLead = MakeBatWithUnitIds("sov_motostrelkovy");
+
+            var attackers = new List<Battalion> { atkLead, atkSupport };
+            var defenders = new List<Battalion> { defLead };
+            var ctx = new CombatContext { DefenderTerrainBonus = 0.4f };
+
+            var preview = resolver.PreviewCombat(attackers, defenders, ctx);
+            var mod = preview.Advantage.Modifiers.Find(m => m.Source == "TerrainDefenderBonus");
+            Assert(mod != null, "Engineer force combat: TerrainDefenderBonus modifier exists");
+            if (mod != null)
+                AssertFloat(mod.Value, -0.2f, "Engineer force combat: terrain bonus halved to -0.2");
         }
 
         static Battalion MakeFatigueBat(float ap, int fatigue) => new Battalion { Name = "FatigueTest", Faction = 1, CurrentAP = ap, Fatigue = fatigue };
@@ -144,6 +183,8 @@ namespace ColdWarWargame.Tests.Combat
             Test_TerrainPlain();
             Test_TerrainUrban();
             Test_TerrainForest();
+            Test_EngineerHalvesTerrainBonus_SingleCombat();
+            Test_EngineerHalvesTerrainBonus_ForceCombat();
             Test_ForceCombat_OosAppliedPerBattalionPower();
 
             // ---- Existing tests ----
