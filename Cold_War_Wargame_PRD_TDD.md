@@ -285,6 +285,32 @@ else {
 2.  **几何重构：** 沿用现有 `Grid3DRenderer` 的前线链分段与采样逻辑，在链上做有限次插值细分即可，不再要求单独引入新样条渲染管线。
 3.  **视觉渲染：** 使用当前 `Grid3DRenderer` 中的 3D ribbon mesh 与标记节点渲染前线表现，保持与地图、单位、补给覆盖层同一套技术栈。
 
+
+### 2.9 部队消灭阈值（HP 30% 规则）
+
+**设计意图：** 于 PRD §2.4 的 HP 机制之上，增设一项全局消灭阈值——单个子单位（SubUnit）HP 严格低于其最大 HP 的 30% 时即判定为战斗消灭，无论 HP 是否归零。
+
+**判定公式：**
+
+
+	ext{SurvivalState}_i = egin{cases}
+1 & 	ext{若 } HP_i 	imes 10 \ge MaxHp_i 	imes 3 \
+0 & 	ext{若 } HP_i 	imes 10 < MaxHp_i 	imes 3
+\end{cases}
+
+
+**影响范围：**
+
+1. **战斗效力计算：** 被判定消灭的子单位不参与攻击/防御聚合（GetActualAttack、GetActualDefense），不贡献组织度 CE，不提供视野与炮兵支援半径。
+2. **战损抛骰子：** 损伤散射循环中，一旦子单位降至此阈值以下，立即从存活池中剔除，后续伤害不再分配到该单位。
+3. **胜利点数（VP）：** 消灭判定通过 CasualtyRecord.IsDestroyed 记录，汇总后被 VictoryTracker.RecordCombatResult 结算为敌方 VP（等于被消灭单位的 Cost）。
+4. **战役伤亡统计：** VictoryTracker 的伤亡累计（士兵/车辆分别统计）同样基于此消灭判定，而非 HP 归零。
+5. **HP 恢复无效：** 被消灭的单位 SurvivalState == 0，在疲劳恢复阶段的 HP 回复仅作用于存活单位，已消灭单位血量不再恢复。
+
+**实现状态：已实现。** 代码位置：[SubUnitInstance.cs](Scripts/Models/SubUnitInstance.cs:14)、[CombatResolver.cs](Scripts/Systems/Combat/CombatResolver.cs:120)。
+
+**设计考量：** 该阈值避免了「空血皮划水」的反直觉现象——一支被严重削弱的子单位（如只有 1/8 HP 的坦克，实际战斗力已可忽略不计）不再继续吸收大量火力权重并产出零散战斗力。同时，30% 的阈值对低 HP 单位（如后勤卡车 HP=1）自然成立（1/1 = 100% 存活，直到 HP 降至 0），对高 HP 单位（如主战坦克 HP=12）则在 HP 降至 3 时消灭（3/12 = 25% < 30%），兼顾了数值平衡与玩法表现力。
+
 ## 3. 软件工程与技术路线 (Technical Architecture)
 
 ### 3.1 实体架构 (Entity-Component Logic)

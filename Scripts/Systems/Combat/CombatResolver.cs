@@ -117,7 +117,7 @@ namespace ColdWarWargame.Systems.Combat
                     casualties.Add(entry);
                 }
                 entry.HpLost += lost;
-                entry.IsDestroyed = target.CurrentHp == 0;
+                entry.IsDestroyed = target.SurvivalState == 0;  // destroyed when HP < 30% of MaxHp (PRD §2.9)
                 entry.RemainingHp = target.CurrentHp;
                 damagePool--;
             }
@@ -225,7 +225,7 @@ namespace ColdWarWargame.Systems.Combat
                 }
 
                 entry.HpLost += hpLost;
-                entry.IsDestroyed = target.CurrentHp == 0;
+                entry.IsDestroyed = target.SurvivalState == 0;  // destroyed when HP < 30% of MaxHp (PRD §2.9)
                 entry.RemainingHp = target.CurrentHp;
                 damagePool--;
             }

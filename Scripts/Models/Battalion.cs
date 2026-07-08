@@ -40,6 +40,7 @@ namespace ColdWarWargame.Models
         // 1. 计算战斗效能比 (Combat Effectiveness, CE)[cite: 3]
         public float CalculateCE()
         {
+            if (!GetAllSubUnits().Any()) return 0f;
             float maxCost = GetAllSubUnits().Sum(u => u.Cost);
             if (maxCost == 0) return 0f;
             
@@ -55,6 +56,9 @@ namespace ColdWarWargame.Models
             if (ce >= 0.5f) return 0.8f;
             return 0.5f;
         }
+
+        /// <summary>是否有存活的子单位（CE > 0）</summary>
+        public bool HasSurvivingSubUnits => CalculateCE() > 0f;
 
         // 3. 计算面板攻击力：底层真实聚合 x 顶层组织度惩罚[cite: 3]
         public float GetActualAttack()

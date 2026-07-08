@@ -290,6 +290,14 @@ namespace ColdWarWargame.Scenarios
             GD.Print("============================================");
         }
 
+
+        /// <summary>缁ｉ崜宕遍悽銊﹀灇鏉╂瑤绠炴禒銉ㄧ箾閻ㄥ嫯骞忛崣鏍灟闁偀濮為柅婊堟▔缂?/summary>
+        public void RemoveDeadBattalions()
+        {
+            BlueBattalions.RemoveAll(u => !u.bat.HasSurvivingSubUnits);
+            RedBattalions.RemoveAll(u => !u.bat.HasSurvivingSubUnits);
+        }
+
         public void PrintReachableFor(string label, Vector2I pos, float ap)
         {
             bool noBlock(Vector2I p) => false;

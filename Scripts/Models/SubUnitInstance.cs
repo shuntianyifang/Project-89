@@ -11,7 +11,7 @@ namespace ColdWarWargame.Models
         public int CurrentHp { get; set; }
         
         // 状态函数 Si：存活返回 1，阵亡返回 0
-        public int SurvivalState => CurrentHp > 0 ? 1 : 0; 
+        public int SurvivalState => CurrentHp * 10 >= Template.CombatStats.MaxHp * 3 ? 1 : 0;  // HP < 30% MaxHp => eliminated (PRD §2.9) 
         
         // 构造函数：注入模板，初始化满血
         public SubUnitInstance(string unitId)

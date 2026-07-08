@@ -323,6 +323,7 @@ namespace ColdWarWargame.Systems.Gameplay
                     _flow.ExitCombat();
                     _turnFlow.ResolveCombat();
                     _victoryTracker.RecordCombatResult(result, _turnMgr.CurrentFaction);
+                    _scenario.RemoveDeadBattalions();
                     RefreshOccupationFromEntryAndZoc();
                     RefreshFrontline();
                     ClearSelection();

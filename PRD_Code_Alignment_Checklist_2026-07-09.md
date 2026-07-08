@@ -35,6 +35,8 @@
 | V2 | Victory 区间边界 | 4.0/2.0/1.25/0.8/0.5/0.25 分段 | [VictoryTracker.cs](Scripts/Systems/Victory/VictoryTracker.cs#L165) | 对齐 | 保持不变 | 低 |
 | X1 | AP 重置与疲劳联动 | 回合切换应体现疲劳后的最大AP | [TurnManager.cs](Scripts/Systems/Turns/TurnManager.cs#L115), [TurnManager.cs](Scripts/Systems/Turns/TurnManager.cs#L118), [Battalion.cs](Scripts/Models/Battalion.cs#L82) | 偏差 | 将回合重置从固定12改为 b.GetMaxAP() | 高 |
 | X2 | OOS 对战斗惩罚来源 | OOS 惩罚应基于当前作战单位的 turns_oos | [CombatDeploymentPresenter.cs](Scripts/Systems/Gameplay/CombatDeploymentPresenter.cs#L90), [CombatResolver.cs](Scripts/Systems/Combat/CombatResolver.cs#L15) | 已修复（待平衡复测） | 已改为逐营 OOS 先作用到对应营攻防基础值，再按多营聚合进入优势计算 | 中 |
+|
+| H1 | HP 30% 消灭阈值 | HP < 30% MaxHp 判定消灭 | [SubUnitInstance.cs](Scripts/Models/SubUnitInstance.cs:14), [CombatResolver.cs](Scripts/Systems/Combat/CombatResolver.cs:120) | 新规则 | 新增实现，PRD §2.9 | 中 |
 
 ## 重点风险说明
 
