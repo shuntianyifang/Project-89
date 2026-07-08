@@ -8,7 +8,6 @@ using ColdWarWargame.Scenarios;
 using ColdWarWargame.Systems.Battlefield;
 using ColdWarWargame.Systems.Combat;
 using ColdWarWargame.Systems.Turns;
-using ColdWarWargame.UI;
 
 namespace ColdWarWargame.Systems.Gameplay
 {
@@ -19,11 +18,9 @@ namespace ColdWarWargame.Systems.Gameplay
         private readonly TurnManager _turnMgr;
         private readonly Grid3DRenderer _renderer;
         private readonly GameHud _hud;
+        private readonly CombatDeploymentPresenter _combatPresenter;
         private readonly CombatResolver _resolver = new();
 
-        private CombatDeploymentPanel _combatPanel;
-        private CombatForce _attackerStored;
-        private CombatForce _defenderStored;
         private bool _inCombat;
         private bool _isMoving;
         private SelectionState _sel;
@@ -51,6 +48,13 @@ namespace ColdWarWargame.Systems.Gameplay
             _turnMgr = turnMgr;
             _renderer = renderer;
             _hud = hud;
+            _combatPresenter = new CombatDeploymentPresenter(
+                hud.Canvas,
+                hud,
+                renderer,
+                scenario,
+                turnMgr,
+                _resolver);
         }
 
         public string GetStatusText() =>
@@ -269,82 +273,29 @@ namespace ColdWarWargame.Systems.Gameplay
             string tName = terrainType >= 0 && terrainType < terrainNames.Length ? terrainNames[terrainType] : "??";
             int tBonus = (int)(terrainBonus * 10);
 
-            _combatPanel = new CombatDeploymentPanel();
-            _hud.Canvas.AddChild(_combatPanel);
-            _combatPanel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
-
-            _combatPanel.OnAttackerConfirmed = (CombatForce attackerForce) =>
-            {
-                _attackerStored = attackerForce;
-                var defEligible = (_turnMgr.CurrentFaction == 1 ? _scenario.RedBattalions : _scenario.BlueBattalions)
-                    .Where(u => u.Item1 != defBat)
-                    .ToList();
-                defEligible = defEligible.Where(u => Math.Max(Math.Abs(u.Item2.X - defPos.X), Math.Abs(u.Item2.Y - defPos.Y)) <= 2 && u.Item1.CurrentAP >= 4).ToList();
-                var defArtySupports = (_turnMgr.CurrentFaction == 1 ? _scenario.RedBattalions : _scenario.BlueBattalions)
-                    .Where(u => u.Item1 != defBat && u.Item1.GetArtilleryRange() > 0
-                        && (u.Item2.X - defPos.X) * (u.Item2.X - defPos.X) + (u.Item2.Y - defPos.Y) * (u.Item2.Y - defPos.Y) <= u.Item1.GetArtilleryRange() * u.Item1.GetArtilleryRange()
-                        && u.Item1.CurrentAP >= 4
-                        && !defEligible.Any(e => e.Item1 == u.Item1))
-                    .ToList();
-                defEligible.AddRange(defArtySupports);
-                _defenderStored = CombatAutoDeployer.AutoFillForce(defEligible, defBat);
-                _combatPanel.RemoveContent();
-                _combatPanel.ShowDefenderPreview(_defenderStored);
-            };
-
-            _combatPanel.OnResolvePressed = () =>
-            {
-                var ctx = new CombatContext
+            _combatPresenter.StartCombatFlow(
+                _sel.Unit,
+                defBat,
+                defPos,
+                eligible,
+                terrainBonus,
+                tName,
+                (attackerForce, defenderForce, result) =>
                 {
-                    DefenderTerrainBonus = terrainBonus,
-                    AttackerOOSTurns = _sel.Unit.TurnsOOS,
-                    DefenderOOSTurns = defBat.TurnsOOS
-                };
-                var result = _resolver.ResolveCombat(
-                    _attackerStored.GetAllBattalions(),
-                    _defenderStored.GetAllBattalions(),
-                    ctx);
-                foreach (var b in _attackerStored.GetAllBattalions())
+                    _inCombat = false;
+                    ClearSelection();
+                },
+                () =>
                 {
-                    b.Fatigue = Math.Min(10, b.Fatigue + result.AttackerFatigueGained);
-                    b.CurrentAP = Math.Max(0, b.CurrentAP - 4);
-                }
-                foreach (var b in _defenderStored.GetAllBattalions())
+                    ClearSelection();
+                    _inCombat = false;
+                    _hud.SetInfoText("Combat cancelled");
+                },
+                () =>
                 {
-                    b.Fatigue = Math.Min(10, b.Fatigue + result.DefenderFatigueGained);
-                    b.CurrentAP = Math.Max(0, b.CurrentAP - 4);
-                }
-                _combatPanel.RemoveContent();
-                _combatPanel.ShowResult(result);
-                ClearSelection();
-            };
-
-            _combatPanel.OnResultDismissed = () =>
-            {
-                if (_combatPanel != null)
-                {
-                    _combatPanel.Dismiss();
-                    _combatPanel = null;
-                }
-                _inCombat = false;
-                _renderer.SetBlueUnits(_scenario.BlueBattalions);
-                _renderer.SetRedUnits(_scenario.RedBattalions);
-                _hud.SetInfoText("Click to select");
-            };
-
-            _combatPanel.OnCancel = () =>
-            {
-                if (_combatPanel != null)
-                {
-                    _combatPanel.Dismiss();
-                    _combatPanel = null;
-                }
-                ClearSelection();
-                _inCombat = false;
-                _hud.SetInfoText("Combat cancelled");
-            };
-
-            _combatPanel.ShowAttackerPhase(_sel.Unit, defBat, eligible, tBonus, tName);
+                    _inCombat = false;
+                    _hud.SetInfoText("Click to select");
+                });
         }
 
         private void ClearSelection()
