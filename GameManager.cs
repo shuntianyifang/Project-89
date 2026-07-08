@@ -1,24 +1,20 @@
 ﻿using Godot;
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using ColdWarWargame.Data;
 using ColdWarWargame.Data.TOE;
-using ColdWarWargame.Factories;
 using ColdWarWargame.Models;
-using ColdWarWargame.Scenarios;
 using ColdWarWargame.Rendering;
+using ColdWarWargame.Scenarios;
+using ColdWarWargame.Systems.Battlefield;
+using ColdWarWargame.Systems.Gameplay;
 using ColdWarWargame.Systems.Turns;
-using ColdWarWargame.Systems.Combat;
-using ColdWarWargame.Systems.Victory;
-using ColdWarWargame.Tests.Combat;
 using ColdWarWargame.Tests.Battlefield;
+using ColdWarWargame.Tests.Combat;
 using ColdWarWargame.Tests.Supply;
 using ColdWarWargame.Tests.Turns;
 using ColdWarWargame.Tests.Victory;
 using ColdWarWargame.UI;
-
-using ColdWarWargame.Systems.Battlefield;
 
 public partial class GameManager : Node
 {
@@ -30,18 +26,9 @@ public partial class GameManager : Node
     private Button _endTurnBtn;
     private FuldaGapScenario _scenario;
     private TurnManager _turnMgr;
-    private class SelState { public Battalion Unit; public Vector2I Pos; }
-    private SelState _sel;
-    private CombatResolver _resolver = new();
-    private CombatDeploymentPanel _combatPanel;
-    private CombatForce _attackerStored;
-    private CombatForce _defenderStored;
-    private bool _inCombat = false;
-    private bool _isMoving = false;
-    private Dictionary<Vector2I, float> _currentReachable = new();
+    private GameSessionController _session;
     private Panel _tooltipPanel;
     private Label _tooltipLabel;
-    private Vector2 _lastMouseScreenPos;
 
     public override void _Ready()
     {
@@ -66,42 +53,47 @@ public partial class GameManager : Node
         GD.Print("3D scene ready.");
     }
 
-    void SetupScene3D()
+    private void SetupScene3D()
     {
         float gw = 30f, gh = 20f;
         _camCtrl = new GameCamera();
         _camCtrl.Target = new Vector3(gw / 2, 0, gh / 2);
         AddChild(_camCtrl);
+
         _renderer = new Grid3DRenderer();
         _renderer.CellSize = 1.0f;
         _renderer.SetGrid(_scenario.Map);
         _renderer.SetBlueUnits(_scenario.BlueBattalions);
         _renderer.SetRedUnits(_scenario.RedBattalions);
-       _renderer.OnUnitClicked = OnUnitClicked;
-       _renderer.OnTileClicked = OnTileClicked;
+        _renderer.OnUnitClicked = OnUnitClicked;
+        _renderer.OnTileClicked = OnTileClicked;
         _renderer.OnRightClick = OnRightClick;
         _renderer.OnHoverChanged = OnHoverChanged;
-       _renderer.SetCameraRef(_camCtrl.Cam);
+        _renderer.SetCameraRef(_camCtrl.Cam);
         AddChild(_renderer);
+
         _ui = new CanvasLayer();
         AddChild(_ui);
+
         _infoLabel = new Label();
         _infoLabel.Position = new Vector2(10, 10);
         _infoLabel.AddThemeFontSizeOverride("font_size", 16);
         _infoLabel.Text = "Fulda Gap 1985 - Click to select, reachable tile to move";
         _ui.AddChild(_infoLabel);
+
         _statusLabel = new Label();
         _statusLabel.Position = new Vector2(10, 34);
         _statusLabel.AddThemeFontSizeOverride("font_size", 14);
         _statusLabel.Text = GetStatusText();
         _ui.AddChild(_statusLabel);
+
         _endTurnBtn = new Button();
         _endTurnBtn.Position = new Vector2(10, 60);
         _endTurnBtn.Text = "End Turn [Space]";
-       _endTurnBtn.Pressed += OnEndTurn;
+        _endTurnBtn.Pressed += OnEndTurn;
         _endTurnBtn.FocusMode = Control.FocusModeEnum.None;
-       _ui.AddChild(_endTurnBtn);
-        // Tooltip near cursor
+        _ui.AddChild(_endTurnBtn);
+
         _tooltipPanel = new Panel();
         var tipStyle = new StyleBoxFlat();
         tipStyle.BgColor = new Color(0, 0, 0, 0.85f);
@@ -120,317 +112,39 @@ public partial class GameManager : Node
         _tooltipLabel.Position = new Vector2(8, 4);
         _tooltipLabel.Size = new Vector2(504, 24);
         _tooltipPanel.AddChild(_tooltipLabel);
-    }
 
-    string GetStatusText() => "Turn " + _turnMgr.TurnNumber + " - " + (_turnMgr.CurrentFaction == 1 ? "NATO" : "Warsaw Pact") + " - " + _turnMgr.PhaseName();
+        _session = new GameSessionController(
+            this,
+            _scenario,
+            _turnMgr,
+            _renderer,
+            _infoLabel,
+            _statusLabel,
+            _ui,
+            _tooltipPanel,
+            _tooltipLabel);
 
-    void OnUnitClicked(int faction, Battalion bat, Vector2I pos)
-    {
-        if (_inCombat) return;
-        if (faction == _turnMgr.CurrentFaction)
-        {
-            _sel = new SelState { Unit = bat, Pos = pos };
-            _renderer.SetSel(pos);
-            var enemyFaction = _turnMgr.CurrentFaction == 1 ? 2 : 1;
-            var enemyPositions = (enemyFaction == 1 ? _scenario.BlueBattalions : _scenario.RedBattalions).Select(u => u.Item2);
-            var enemyZOC = _scenario.ZOC.GetFactionZOC(enemyPositions);
-            bool isEnemyZOC(Vector2I p) => enemyZOC.Contains(p);
-            bool occ(Vector2I p) => _scenario.BlueBattalions.Concat(_scenario.RedBattalions).Any(u => u.Item2 == p && u.Item1 != bat);
-            _currentReachable = _scenario.Movement.GetReachableTiles(pos, bat.CurrentAP, isEnemyZOC, occ);
-            _renderer.SetReachable(_currentReachable, bat.CurrentAP);
-            _infoLabel.Text = "Selected: " + bat.Name + " reachable " + _currentReachable.Count + " tiles";
-            int artyRange = bat.GetArtilleryRange();
-            if (artyRange > 0)
-            {
-                var tiles = new System.Collections.Generic.HashSet<Vector2I>();
-                int r2 = artyRange * artyRange;
-                int inner2 = (artyRange - 1) * (artyRange - 1);
-                for (int dx = -artyRange; dx <= artyRange; dx++)
-                    for (int dy = -artyRange; dy <= artyRange; dy++)
-                    {
-                        int d2 = dx * dx + dy * dy;
-                        if (d2 <= r2 && d2 >= inner2)
-                        {
-                            var p = new Vector2I(pos.X + dx, pos.Y + dy);
-                            if (_scenario.Map.IsInBounds(p)) tiles.Add(p);
-                        }
-                    }
-                _renderer.SetArtilleryRange(tiles);
-            }
-            else _renderer.ClearArtilleryRange();
-        }
-        else if (_sel != null)
-        {
-            if (_inCombat) return;
-            if (_sel.Unit.CurrentAP < 4f) { _infoLabel.Text = "AP too low, need 4"; return; }
-            int dx = Math.Abs(_sel.Pos.X - pos.X);
-            int dy = Math.Abs(_sel.Pos.Y - pos.Y);
-            if (Math.Max(dx, dy) > 2) { _infoLabel.Text = "Target too far, max 2"; return; }
-            _inCombat = true;
-
-            var friendlyUnits = (_turnMgr.CurrentFaction == 1 ? _scenario.BlueBattalions : _scenario.RedBattalions)
-                .Where(u => u.Item1 != _sel.Unit)
-                .ToList();
-            var eligible = EngagementResolver.GetEligibleUnits(pos, friendlyUnits, 2);
-            eligible = eligible.Where(u => u.bat.CurrentAP >= 4).ToList();
-            eligible.Insert(0, (_sel.Unit, _sel.Pos));
-            // 把火炮支援范围内的炮兵营也加入候选
-            var artySupports = friendlyUnits
-                .Where(u => u.bat.GetArtilleryRange() > 0
-                    && (u.Item2.X - pos.X) * (u.Item2.X - pos.X) + (u.Item2.Y - pos.Y) * (u.Item2.Y - pos.Y) <= u.bat.GetArtilleryRange() * u.bat.GetArtilleryRange()
-                    && u.bat.CurrentAP >= 4
-                    && !eligible.Any(e => e.bat == u.bat))
-                .ToList();
-            eligible.InsertRange(0, artySupports);
-
-            float terrainBonus = _scenario.Map.GetTile(pos).TerrainType switch { 1 => 0.1f, 2 => 0.3f, 3 => 0.4f, _ => 0f };
-            string[] terrainNames = { "Plains", "Forest", "Semi-Urban", "Urban" };
-            int terrainType = _scenario.Map.GetTile(pos).TerrainType;
-            string tName = terrainType >= 0 && terrainType < terrainNames.Length ? terrainNames[terrainType] : "??";
-            int tBonus = (int)(terrainBonus * 10);
-
-            _combatPanel = new CombatDeploymentPanel();
-            _ui.AddChild(_combatPanel); _combatPanel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
-
-            Battalion defBat = bat;
-            Vector2I defPos = pos;
-
-            _combatPanel.OnAttackerConfirmed = (CombatForce attackerForce) =>
-            {
-                _attackerStored = attackerForce;
-                var defEligible = (_turnMgr.CurrentFaction == 1 ? _scenario.RedBattalions : _scenario.BlueBattalions)
-                    .Where(u => u.Item1 != defBat)
-                    .ToList();
-                defEligible = defEligible.Where(u => Math.Max(Math.Abs(u.Item2.X - defPos.X), Math.Abs(u.Item2.Y - defPos.Y)) <= 2 && u.Item1.CurrentAP >= 4).ToList();
-                var defArtySupports = (_turnMgr.CurrentFaction == 1 ? _scenario.RedBattalions : _scenario.BlueBattalions)
-                    .Where(u => u.Item1 != defBat && u.Item1.GetArtilleryRange() > 0
-                        && (u.Item2.X - defPos.X) * (u.Item2.X - defPos.X) + (u.Item2.Y - defPos.Y) * (u.Item2.Y - defPos.Y) <= u.Item1.GetArtilleryRange() * u.Item1.GetArtilleryRange()
-                        && u.Item1.CurrentAP >= 4
-                        && !defEligible.Any(e => e.Item1 == u.Item1))
-                    .ToList();
-                defEligible.AddRange(defArtySupports);
-                _defenderStored = CombatAutoDeployer.AutoFillForce(defEligible, defBat);
-                _combatPanel.RemoveContent();
-                _combatPanel.ShowDefenderPreview(_defenderStored);
-            };
-            _combatPanel.OnResolvePressed = () =>
-            {
-                var ctx = new CombatContext
-                {
-                    DefenderTerrainBonus = terrainBonus,
-                    AttackerOOSTurns = _sel.Unit.TurnsOOS,
-                    DefenderOOSTurns = defBat.TurnsOOS
-                };
-                var result = _resolver.ResolveCombat(
-                    _attackerStored.GetAllBattalions(),
-                    _defenderStored.GetAllBattalions(),
-                    ctx);
-                foreach (var b in _attackerStored.GetAllBattalions())
-                {
-                    b.Fatigue = Math.Min(10, b.Fatigue + result.AttackerFatigueGained);
-                    b.CurrentAP = Math.Max(0, b.CurrentAP - 4);
-                }
-                foreach (var b in _defenderStored.GetAllBattalions())
-                {
-                    b.Fatigue = Math.Min(10, b.Fatigue + result.DefenderFatigueGained);
-                    b.CurrentAP = Math.Max(0, b.CurrentAP - 4);
-                }
-                _combatPanel.RemoveContent();
-                _combatPanel.ShowResult(result);
-                _sel = null; _renderer.ClearSel(); _currentReachable.Clear();
-            };
-
-
-            _combatPanel.OnResultDismissed = () =>
-            {
-                if (_combatPanel != null) { _combatPanel.Dismiss(); _combatPanel = null; }
-                _inCombat = false;
-                _renderer.SetBlueUnits(_scenario.BlueBattalions);
-                _renderer.SetRedUnits(_scenario.RedBattalions);
-                _infoLabel.Text = "Click to select";
-            };
-
-            _combatPanel.OnCancel = () =>
-            {
-                if (_combatPanel != null) { _combatPanel.Dismiss(); _combatPanel = null; }
-                _sel = null; _renderer.ClearSel(); _currentReachable.Clear();
-                _inCombat = false;
-                _infoLabel.Text = "Combat cancelled";
-            };
-
-            _combatPanel.ShowAttackerPhase(_sel.Unit, defBat, eligible, tBonus, tName);
-        }
-    }
-
-   void OnTileClicked(Vector2I pos)
-    {
-        if (_inCombat || _isMoving) return;
-        if (_sel != null && _currentReachable != null && _currentReachable.ContainsKey(pos))
-        {
-            float cost = _currentReachable[pos];
-            var ef2 = _turnMgr.CurrentFaction == 1 ? 2 : 1;
-            var ep2 = (ef2 == 1 ? _scenario.BlueBattalions : _scenario.RedBattalions).Select(u => u.Item2);
-            var ez2 = _scenario.ZOC.GetFactionZOC(ep2);
-            bool isEZ(Vector2I t) => ez2.Contains(t);
-            bool occ(Vector2I t) => _scenario.BlueBattalions.Concat(_scenario.RedBattalions).Any(u => u.Item2 == t && u.Item1 != _sel.Unit);
-            var path = _scenario.Movement.FindPath(_sel.Pos, pos, _sel.Unit.CurrentAP, isEZ, occ);
-            if (path == null || path.Count < 2) { _sel = null; _renderer.ClearSel(); _currentReachable.Clear(); return; }
-
-            _isMoving = true;
-            _renderer.ClearPath();
-            _renderer.StartMoveAnimation(path, _sel.Unit);
-
-            _renderer.OnMoveFinished = () =>
-            {
-                _sel.Unit.CurrentAP = Math.Max(0, _sel.Unit.CurrentAP - cost);
-                _sel.Pos = pos;
-                for (int i = 0; i < _scenario.BlueBattalions.Count; i++)
-                    if (_scenario.BlueBattalions[i].bat == _sel.Unit)
-                        _scenario.BlueBattalions[i] = (_sel.Unit, pos);
-                for (int i = 0; i < _scenario.RedBattalions.Count; i++)
-                    if (_scenario.RedBattalions[i].bat == _sel.Unit)
-                        _scenario.RedBattalions[i] = (_sel.Unit, pos);
-                _renderer.SetBlueUnits(_scenario.BlueBattalions);
-                _renderer.SetRedUnits(_scenario.RedBattalions);
-
-                var ef3 = _turnMgr.CurrentFaction == 1 ? 2 : 1;
-                var ep3 = (ef3 == 1 ? _scenario.BlueBattalions : _scenario.RedBattalions).Select(u => u.Item2);
-                var ez3 = _scenario.ZOC.GetFactionZOC(ep3);
-                bool isEZ3(Vector2I t) => ez3.Contains(t);
-                bool oc3(Vector2I t) => _scenario.BlueBattalions.Concat(_scenario.RedBattalions).Any(u => u.Item2 == t && u.Item1 != _sel.Unit);
-                _currentReachable = _scenario.Movement.GetReachableTiles(pos, _sel.Unit.CurrentAP, isEZ3, oc3);
-                _renderer.SetReachable(_currentReachable, _sel.Unit.CurrentAP);
-                _renderer.SetSel(pos);
-                int artyRange2 = _sel.Unit.GetArtilleryRange();
-                if (artyRange2 > 0)
-                {
-                    var tiles2 = new System.Collections.Generic.HashSet<Vector2I>();
-                    int r2 = artyRange2 * artyRange2;
-                    int inner2 = (artyRange2 - 1) * (artyRange2 - 1);
-                    for (int dx = -artyRange2; dx <= artyRange2; dx++)
-                        for (int dy = -artyRange2; dy <= artyRange2; dy++)
-                        {
-                            int d2 = dx * dx + dy * dy;
-                            if (d2 <= r2 && d2 >= inner2)
-                            {
-                                var pp = new Vector2I(pos.X + dx, pos.Y + dy);
-                                if (_scenario.Map.IsInBounds(pp)) tiles2.Add(pp);
-                            }
-                        }
-                    _renderer.SetArtilleryRange(tiles2);
-                }
-                else _renderer.ClearArtilleryRange();
-                _infoLabel.Text = "Moved to (" + pos.X + "," + pos.Y + ") AP=" + _sel.Unit.CurrentAP.ToString("0.0");
-                _isMoving = false;
-            };
-        }
-        else { _sel = null; _renderer.ClearSel(); _currentReachable.Clear(); _infoLabel.Text = "Click to select"; }
-    }
-
-    void OnRightClick()
-    {
-        if (_inCombat || _isMoving) return;
-        _sel = null;
-        _renderer.ClearSel();
-        _currentReachable.Clear();
-        _infoLabel.Text = "Click to select";
-    }
-
-    static readonly string[] TerrainNames = { "平原", "森林", "半城镇", "城镇" };
-    static readonly string[] InfraNames = { "", "支线公路", "高速公路" };
-
-    void OnHoverChanged(Vector2I? pos)
-    {
-        _renderer.ClearPath();
-
-        if (pos == null)
-        {
-            _tooltipPanel.Visible = false;
-            if (_sel != null)
-                _infoLabel.Text = "Selected: " + _sel.Unit.Name + " reachable " + _currentReachable.Count + " tiles";
-            else
-                _infoLabel.Text = "Click to select";
-            return;
-        }
-
-        var p = pos.Value;
-        _infoLabel.Text = "坐标: (" + p.X + ", " + p.Y + ")";
-
-        var tile = _scenario.Map.GetTile(p);
-        string terrainName = TerrainNames[tile.TerrainType];
-        string info = "地形: " + terrainName;
-
-        if (tile.InfraType > 0)
-            info += " (" + InfraNames[tile.InfraType] + ")";
-
-        if (!tile.IsPassable)
-        {
-            info += " [不可通行]";
-            if (_sel != null) info += " | 到达剩余AP: 0";
-        }
-        else
-        {
-            float moveCost = tile.GetMovementCost();
-            if (!float.IsPositiveInfinity(moveCost))
-                info += " 消耗" + moveCost.ToString("0.0");
-
-            if (_sel != null)
-            {
-                if (p == _sel.Pos)
-                    info += " | 当前所在";
-                else if (_currentReachable.TryGetValue(p, out float totalCost))
-                {
-                    float remaining = _sel.Unit.CurrentAP - totalCost;
-                    info += " | 到达剩余AP: " + remaining.ToString("0.0");
-                }
-                else
-                    info += " | 到达剩余AP: 0";
-            }
-        }
-
-        // 有选中单位时显示路径
-        if (_sel != null && _currentReachable.ContainsKey(p))
-        {
-            var ef = _turnMgr.CurrentFaction == 1 ? 2 : 1;
-            var ep = (ef == 1 ? _scenario.BlueBattalions : _scenario.RedBattalions).Select(u => u.Item2);
-            var ez = _scenario.ZOC.GetFactionZOC(ep);
-            bool isEZ(Vector2I t) => ez.Contains(t);
-            bool occ(Vector2I t) => _scenario.BlueBattalions.Concat(_scenario.RedBattalions).Any(u => u.Item2 == t && u.Item1 != _sel.Unit);
-            var path = _scenario.Movement.FindPath(_sel.Pos, p, _sel.Unit.CurrentAP, isEZ, occ);
-            if (path != null) _renderer.ShowPath(path);
-        }
-
-        _tooltipLabel.Text = info;
-        _tooltipLabel.Size = new Vector2(504, 24);
-        _tooltipPanel.Size = new Vector2(520, 32);
-
-        Vector2 tipPos = _lastMouseScreenPos + new Vector2(20, 20);
-        var vpSize = GetViewport().GetVisibleRect().Size;
-        tipPos.X = Mathf.Clamp(tipPos.X, 0, vpSize.X - _tooltipPanel.Size.X);
-        tipPos.Y = Mathf.Clamp(tipPos.Y, 0, vpSize.Y - _tooltipPanel.Size.Y);
-        _tooltipPanel.Position = tipPos;
-        _tooltipPanel.Visible = true;
-    }
-
-   void OnEndTurn()
-    {
-        if (_inCombat || _isMoving) return;
-        _sel = null; _renderer.ClearSel(); _currentReachable.Clear();
-        _turnMgr.EndStrategicTurn();
-        _renderer.SetBlueUnits(_scenario.BlueBattalions);
-        _renderer.SetRedUnits(_scenario.RedBattalions);
         _statusLabel.Text = GetStatusText();
-        _infoLabel.Text = "Turn " + _turnMgr.TurnNumber + " - " + (_turnMgr.CurrentFaction == 1 ? "NATO" : "Warsaw Pact");
     }
+
+    private string GetStatusText() => _session?.GetStatusText() ?? "Turn 1";
+
+    private void OnUnitClicked(int faction, Battalion bat, Vector2I pos) => _session?.OnUnitClicked(faction, bat, pos);
+
+    private void OnTileClicked(Vector2I pos) => _session?.OnTileClicked(pos);
+
+    private void OnRightClick() => _session?.OnRightClick();
+
+    private void OnHoverChanged(Vector2I? pos) => _session?.OnHoverChanged(pos);
+
+    private void OnEndTurn() => _session?.OnEndTurn();
 
     public override void _Input(InputEvent @event)
     {
         if (@event is InputEventMouseMotion mm)
-        {
-            _lastMouseScreenPos = mm.Position;
-        }
+            _session?.OnMouseMoved(mm.Position);
 
-        if (@event is InputEventKey key && key.Pressed && !key.Echo && key.Keycode == Key.Space && !_inCombat && !_isMoving)
-            OnEndTurn();
+        if (@event is InputEventKey key)
+            _session?.HandleKeyboard(key);
     }
 }
