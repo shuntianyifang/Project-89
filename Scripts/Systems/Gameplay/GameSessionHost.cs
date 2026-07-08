@@ -38,7 +38,7 @@ namespace ColdWarWargame.Systems.Gameplay
 
             _canvasLayer = new CanvasLayer();
             _root.AddChild(_canvasLayer);
-            _hud = new GameHud(_canvasLayer, () => Session?.OnEndTurn());
+            _hud = new GameHud(_canvasLayer, () => Session?.OnEndTurn(), () => Session?.OnToggleCampaignCasualtyPanel());
 
             UnitDatabase.Initialize("res://Scripts/Data/Units");
             TemplateDatabase.Initialize("res://Scripts/Data/Templates");

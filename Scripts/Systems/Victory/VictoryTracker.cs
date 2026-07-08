@@ -67,6 +67,11 @@ namespace ColdWarWargame.Systems.Victory
     {
         public int BlueVP { get; internal set; }
         public int RedVP { get; internal set; }
+        public int BlueSoldierLossTotal { get; private set; }
+        public int BlueVehicleLossTotal { get; private set; }
+        public int RedSoldierLossTotal { get; private set; }
+        public int RedVehicleLossTotal { get; private set; }
+        public int CombatCount { get; private set; }
 
         public int BlueControlledCount => _blueControlled.Count;
         public int RedControlledCount => _redControlled.Count;
@@ -84,7 +89,25 @@ namespace ColdWarWargame.Systems.Victory
         /// </summary>
         public void RecordCombatResult(CombatResolutionResult result, int attackerFaction)
         {
-            int defenderFaction = attackerFaction == 1 ? 2 : 1;
+            CombatCount++;
+
+            var attackerLosses = CombatUtils.CountDestroyedUnitLosses(result?.AttackerCasualties);
+            var defenderLosses = CombatUtils.CountDestroyedUnitLosses(result?.DefenderCasualties);
+
+            if (attackerFaction == 1)
+            {
+                BlueSoldierLossTotal += attackerLosses.soldiers;
+                BlueVehicleLossTotal += attackerLosses.vehicles;
+                RedSoldierLossTotal += defenderLosses.soldiers;
+                RedVehicleLossTotal += defenderLosses.vehicles;
+            }
+            else
+            {
+                RedSoldierLossTotal += attackerLosses.soldiers;
+                RedVehicleLossTotal += attackerLosses.vehicles;
+                BlueSoldierLossTotal += defenderLosses.soldiers;
+                BlueVehicleLossTotal += defenderLosses.vehicles;
+            }
 
             int atkVP = result.DefenderCasualties
                 .Where(c => c.IsDestroyed)
@@ -104,6 +127,19 @@ namespace ColdWarWargame.Systems.Victory
                 RedVP += atkVP;    // 红军摧毁蓝军单位
                 BlueVP += defVP;   // 蓝军摧毁红军单位
             }
+        }
+
+        public string BuildCampaignCasualtySummary()
+        {
+            return string.Join("\n", new[]
+            {
+                "Campaign Casualty Stats",
+                "Battles resolved: " + CombatCount,
+                "Blue losses: soldiers " + BlueSoldierLossTotal + ", vehicles " + BlueVehicleLossTotal,
+                "Red losses: soldiers " + RedSoldierLossTotal + ", vehicles " + RedVehicleLossTotal,
+                "Blue total losses: " + (BlueSoldierLossTotal + BlueVehicleLossTotal),
+                "Red total losses: " + (RedSoldierLossTotal + RedVehicleLossTotal)
+            });
         }
 
         // ---- 2. 地理控制 ----

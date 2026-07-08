@@ -80,6 +80,41 @@ namespace ColdWarWargame.Tests.Victory
             Assert(r.BlueLevel == VictoryLevel.DecisiveVictory, "Blue 45:0 -> Decisive Victory");
         }
 
+        static void Test_CasualtyAccumulation()
+        {
+            var vt = new VictoryTracker();
+            var blueInf = new SubUnitInstance("us_mech_rifles") { Category = "infantry" };
+            var blueVeh = new SubUnitInstance("us_m1a1_abrams") { Category = "vehicle" };
+            var redInf = new SubUnitInstance("sov_motostrelkovy") { Category = "infantry" };
+            var redVeh = new SubUnitInstance("frg_leopard1a5") { Category = "vehicle" };
+            var result = new CombatResolutionResult
+            {
+                AttackerCasualties = new List<CasualtyRecord>
+                {
+                    new CasualtyRecord { Unit = blueInf, HpLost = 1, IsDestroyed = true, RemainingHp = 0 },
+                    new CasualtyRecord { Unit = blueVeh, HpLost = 4, IsDestroyed = true, RemainingHp = 0 }
+                },
+                DefenderCasualties = new List<CasualtyRecord>
+                {
+                    new CasualtyRecord { Unit = redInf, HpLost = 2, IsDestroyed = true, RemainingHp = 0 },
+                    new CasualtyRecord { Unit = redVeh, HpLost = 6, IsDestroyed = true, RemainingHp = 0 }
+                }
+            };
+
+            vt.RecordCombatResult(result, 1);
+
+            Assert(vt.CombatCount == 1, "Combat count increments");
+            Assert(vt.BlueSoldierLossTotal == 1, "Blue soldier loss total accumulates attacker infantry HP losses when Blue attacked");
+            Assert(vt.BlueVehicleLossTotal == 1, "Blue vehicle loss total accumulates attacker vehicle losses when Blue attacked");
+            Assert(vt.RedSoldierLossTotal == 2, "Red soldier loss total accumulates defender infantry HP losses when Blue attacked");
+            Assert(vt.RedVehicleLossTotal == 1, "Red vehicle loss total accumulates defender vehicle losses when Blue attacked");
+
+            var summary = vt.BuildCampaignCasualtySummary();
+            Assert(summary.Contains("Blue losses: soldiers 1, vehicles 1"), "Summary includes blue casualty breakdown");
+            Assert(summary.Contains("Red losses: soldiers 2, vehicles 1"), "Summary includes red casualty breakdown");
+            Assert(!summary.Contains("ratio", StringComparison.OrdinalIgnoreCase), "Summary contains no ratio text");
+        }
+
         static void Test_GeographicalControl()
         {
             var map = new ColdWarWargame.Systems.Battlefield.GridMap(10, 10);
@@ -268,6 +303,7 @@ namespace ColdWarWargame.Tests.Victory
 
             Test_InitialStalemate();
             Test_CombatVP();
+            Test_CasualtyAccumulation();
             Test_GeographicalControl();
             Test_ZOCBlocksControl();
             Test_Occupation_EntryAndUncontestedZocOverwrite();

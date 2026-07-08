@@ -7,17 +7,23 @@ namespace ColdWarWargame.Systems.Gameplay
     {
         private readonly CanvasLayer _canvasLayer;
         private readonly Action _onEndTurnPressed;
+        private readonly Action _onCasualtyStatsPressed;
 
         private Label _infoLabel;
         private Label _statusLabel;
         private Button _endTurnButton;
+        private Button _casualtyStatsButton;
         private Panel _tooltipPanel;
         private Label _tooltipLabel;
+        private Panel _casualtyStatsPanel;
+        private Label _casualtyStatsLabel;
+        private Button _casualtyStatsCloseButton;
 
-        public GameHud(CanvasLayer canvasLayer, Action onEndTurnPressed)
+        public GameHud(CanvasLayer canvasLayer, Action onEndTurnPressed, Action onCasualtyStatsPressed)
         {
             _canvasLayer = canvasLayer;
             _onEndTurnPressed = onEndTurnPressed;
+            _onCasualtyStatsPressed = onCasualtyStatsPressed;
         }
 
         public CanvasLayer Canvas => _canvasLayer;
@@ -47,6 +53,43 @@ namespace ColdWarWargame.Systems.Gameplay
             _endTurnButton.FocusMode = Control.FocusModeEnum.None;
             _canvasLayer.AddChild(_endTurnButton);
 
+            _casualtyStatsButton = new Button();
+            _casualtyStatsButton.Position = new Vector2(10, 92);
+            _casualtyStatsButton.Size = new Vector2(160, 24);
+            _casualtyStatsButton.Text = "Campaign Losses";
+            _casualtyStatsButton.Pressed += () => _onCasualtyStatsPressed?.Invoke();
+            _casualtyStatsButton.FocusMode = Control.FocusModeEnum.None;
+            _canvasLayer.AddChild(_casualtyStatsButton);
+
+            _casualtyStatsPanel = new Panel();
+            var statsStyle = new StyleBoxFlat();
+            statsStyle.BgColor = new Color(0.05f, 0.08f, 0.12f, 0.95f);
+            statsStyle.CornerRadiusTopLeft = 6;
+            statsStyle.CornerRadiusTopRight = 6;
+            statsStyle.CornerRadiusBottomLeft = 6;
+            statsStyle.CornerRadiusBottomRight = 6;
+            _casualtyStatsPanel.AddThemeStyleboxOverride("panel", statsStyle);
+            _casualtyStatsPanel.Position = new Vector2(200, 10);
+            _casualtyStatsPanel.Size = new Vector2(360, 180);
+            _casualtyStatsPanel.Visible = false;
+            _canvasLayer.AddChild(_casualtyStatsPanel);
+
+            _casualtyStatsLabel = new Label();
+            _casualtyStatsLabel.Position = new Vector2(12, 12);
+            _casualtyStatsLabel.Size = new Vector2(336, 120);
+            _casualtyStatsLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+            _casualtyStatsLabel.AddThemeFontSizeOverride("font_size", 14);
+            _casualtyStatsLabel.AddThemeColorOverride("font_color", Colors.White);
+            _casualtyStatsPanel.AddChild(_casualtyStatsLabel);
+
+            _casualtyStatsCloseButton = new Button();
+            _casualtyStatsCloseButton.Position = new Vector2(12, 138);
+            _casualtyStatsCloseButton.Size = new Vector2(120, 24);
+            _casualtyStatsCloseButton.Text = "Close";
+            _casualtyStatsCloseButton.Pressed += () => _casualtyStatsPanel.Visible = false;
+            _casualtyStatsCloseButton.FocusMode = Control.FocusModeEnum.None;
+            _casualtyStatsPanel.AddChild(_casualtyStatsCloseButton);
+
             _tooltipPanel = new Panel();
             var tipStyle = new StyleBoxFlat();
             tipStyle.BgColor = new Color(0, 0, 0, 0.85f);
@@ -72,6 +115,12 @@ namespace ColdWarWargame.Systems.Gameplay
         public void SetInfoText(string text) => _infoLabel.Text = text;
 
         public void SetStatusText(string text) => _statusLabel.Text = text;
+
+        public void SetCampaignCasualtyText(string text) => _casualtyStatsLabel.Text = text;
+
+        public void SetCampaignCasualtyPanelVisible(bool visible) => _casualtyStatsPanel.Visible = visible;
+
+        public bool IsCampaignCasualtyPanelVisible => _casualtyStatsPanel?.Visible ?? false;
 
         public void SetTooltipVisible(bool visible) => _tooltipPanel.Visible = visible;
 

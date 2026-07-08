@@ -254,6 +254,14 @@ namespace ColdWarWargame.Systems.Gameplay
             RefreshPresentationByVision();
             _hud.SetStatusText(GetStatusText());
             _hud.SetInfoText("Turn " + _turnMgr.TurnNumber + " - " + (_turnMgr.CurrentFaction == 1 ? "NATO" : "Warsaw Pact"));
+            RefreshCampaignCasualtyPanel();
+        }
+
+        public void OnToggleCampaignCasualtyPanel()
+        {
+            bool visible = !_hud.IsCampaignCasualtyPanelVisible;
+            _hud.SetCampaignCasualtyPanelVisible(visible);
+            RefreshCampaignCasualtyPanel();
         }
 
         public void OnMouseMoved(Vector2 position) => _lastMouseScreenPos = position;
@@ -319,6 +327,7 @@ namespace ColdWarWargame.Systems.Gameplay
                     RefreshFrontline();
                     ClearSelection();
                     RefreshPresentationByVision();
+                    RefreshCampaignCasualtyPanel();
                 },
                 () =>
                 {
@@ -334,6 +343,14 @@ namespace ColdWarWargame.Systems.Gameplay
                     RefreshPresentationByVision();
                     _hud.SetInfoText("Click to select");
                 });
+        }
+
+        private void RefreshCampaignCasualtyPanel()
+        {
+            if (_hud == null || !_hud.IsCampaignCasualtyPanelVisible)
+                return;
+
+            _hud.SetCampaignCasualtyText(_victoryTracker.BuildCampaignCasualtySummary());
         }
 
         private void ExecuteEndTurnSettlement(int endingFaction)

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Collections.Generic;
 using ColdWarWargame.Models;
 using ColdWarWargame.Systems.Combat;
+using ColdWarWargame.Systems.Victory;
 
 namespace ColdWarWargame.UI
 {
@@ -758,16 +759,32 @@ namespace ColdWarWargame.UI
             casHeader.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.7f));
             vbox.AddChild(casHeader);
 
+            var tactHeader = new Label();
+            tactHeader.Text = "Tactical Casualty Numbers";
+            tactHeader.AddThemeFontSizeOverride("font_size", 14);
+            tactHeader.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.7f));
+            vbox.AddChild(tactHeader);
+
+            var atkLosses = CombatUtils.CountDestroyedUnitLosses(result.AttackerCasualties);
+            var defLosses = CombatUtils.CountDestroyedUnitLosses(result.DefenderCasualties);
+
+            var tactLine = new Label();
+            tactLine.Text = "  A soldiers " + atkLosses.soldiers + ", vehicles " + atkLosses.vehicles +
+                " | D soldiers " + defLosses.soldiers + ", vehicles " + defLosses.vehicles;
+            tactLine.AddThemeFontSizeOverride("font_size", 12);
+            tactLine.AddThemeColorOverride("font_color", new Color(0.9f, 0.95f, 1f));
+            vbox.AddChild(tactLine);
+
             string atkFaction = _leadAttacker?.Faction == 1 ? "NATO" : "WP";
             string defFaction = _leadDefender?.Faction == 1 ? "NATO" : "WP";
 
             var atkCas = new Label();
-            atkCas.Text = atkFaction + " loses " + result.AttackerHpLost + " HP (fatigue +" + result.AttackerFatigueGained + ")";
+            atkCas.Text = atkFaction + " loses soldiers " + atkLosses.soldiers + ", vehicles " + atkLosses.vehicles + " (fatigue +" + result.AttackerFatigueGained + ")";
             atkCas.AddThemeFontSizeOverride("font_size", 13);
             atkCas.AddThemeColorOverride("font_color", new Color(1.0f, 0.6f, 0.4f));
             vbox.AddChild(atkCas);
 
-            int atkDestroyed = result.AttackerCasualties.Count(c => c.IsDestroyed);
+            int atkDestroyed = atkLosses.soldiers + atkLosses.vehicles;
             var atkDet = new Label();
             atkDet.Text = "  " + atkDestroyed + " sub-units destroyed, " +
                 (result.AttackerCasualties.Count - atkDestroyed) + " damaged";
@@ -776,12 +793,12 @@ namespace ColdWarWargame.UI
             vbox.AddChild(atkDet);
 
             var defCas = new Label();
-            defCas.Text = defFaction + " loses " + result.DefenderHpLost + " HP (fatigue +" + result.DefenderFatigueGained + ")";
+            defCas.Text = defFaction + " loses soldiers " + defLosses.soldiers + ", vehicles " + defLosses.vehicles + " (fatigue +" + result.DefenderFatigueGained + ")";
             defCas.AddThemeFontSizeOverride("font_size", 13);
             defCas.AddThemeColorOverride("font_color", new Color(0.4f, 0.6f, 1.0f));
             vbox.AddChild(defCas);
 
-            int defDestroyed = result.DefenderCasualties.Count(c => c.IsDestroyed);
+            int defDestroyed = defLosses.soldiers + defLosses.vehicles;
             var defDet = new Label();
             defDet.Text = "  " + defDestroyed + " sub-units destroyed, " +
                 (result.DefenderCasualties.Count - defDestroyed) + " damaged";

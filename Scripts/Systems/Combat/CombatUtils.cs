@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using ColdWarWargame.Models;
+using ColdWarWargame.Systems.Combat;
 
 namespace ColdWarWargame.Systems.Combat
 {
@@ -36,6 +37,53 @@ namespace ColdWarWargame.Systems.Combat
             var ct = u.Template?.ClassType ?? "";
             ct = Normalize(ct);
             return ct.StartsWith("inf") || ct.Contains("infantry");
+        }
+
+        public static bool IsSoldier(SubUnitInstance u)
+        {
+            if (u == null) return false;
+
+            var category = Normalize(u.Category);
+            if (category == "infantry")
+                return true;
+            if (category == "vehicle")
+                return false;
+
+            var ct = Normalize(u.Template?.ClassType);
+            if (ct.StartsWith("inf") || ct.Contains("infantry"))
+                return true;
+
+            return false;
+        }
+
+        public static bool IsVehicle(SubUnitInstance u)
+        {
+            return u != null && !IsSoldier(u);
+        }
+
+        public static (int soldiers, int vehicles) CountDestroyedUnitLosses(IEnumerable<CasualtyRecord> casualties)
+        {
+            int soldiers = 0;
+            int vehicles = 0;
+
+            if (casualties == null)
+                return (0, 0);
+
+            foreach (var casualty in casualties)
+            {
+                if (casualty == null)
+                    continue;
+
+                if (IsSoldier(casualty.Unit))
+                    soldiers += Math.Max(0, casualty.HpLost);
+                else
+                {
+                    if (casualty.IsDestroyed)
+                        vehicles++;
+                }
+            }
+
+            return (soldiers, vehicles);
         }
 
         public static bool IsArtillery(SubUnitInstance u)
