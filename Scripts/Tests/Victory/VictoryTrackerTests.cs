@@ -120,6 +120,113 @@ namespace ColdWarWargame.Tests.Victory
             Assert(vt.RedControlledCount > 0, "Red controls some tiles");
         }
 
+        static void Test_Occupation_EntryAndUncontestedZocOverwrite()
+        {
+            var map = new ColdWarWargame.Systems.Battlefield.GridMap(8, 8);
+            var zoc = new ColdWarWargame.Systems.Battlefield.ZOCManager(map);
+            var vt = new VictoryTracker();
+
+            var initial = new int[8, 8];
+            initial[2, 2] = 2;
+
+            var bluePos = new HashSet<Vector2I> { new Vector2I(2, 2) };
+            var redPos = new HashSet<Vector2I>();
+
+            var updated = vt.UpdateOccupationFromEntryAndZOC(map, initial, bluePos, redPos, zoc);
+
+            Assert(updated[2, 2] == 1, "Entry tile should be overwritten by occupying faction");
+            Assert(updated[1, 1] == 1, "Uncontested blue ZOC tile should become blue");
+            Assert(updated[7, 7] == 0, "Far tile outside influence remains unchanged");
+        }
+
+        static void Test_Occupation_ConflictBecomesNeutral()
+        {
+            var map = new ColdWarWargame.Systems.Battlefield.GridMap(10, 10);
+            var zoc = new ColdWarWargame.Systems.Battlefield.ZOCManager(map);
+            var vt = new VictoryTracker();
+
+            var initial = new int[10, 10];
+            initial[4, 4] = 1;
+
+            var bluePos = new HashSet<Vector2I> { new Vector2I(4, 4) };
+            var redPos = new HashSet<Vector2I> { new Vector2I(4, 6) };
+
+            var updated = vt.UpdateOccupationFromEntryAndZOC(map, initial, bluePos, redPos, zoc);
+
+            Assert(updated[4, 5] == 0, "Overlapped ZOC tile should become neutral");
+            Assert(updated[4, 4] == 1, "Blue occupied tile remains blue");
+            Assert(updated[4, 6] == 2, "Red occupied tile remains red");
+        }
+
+        static void Test_Occupation_PreservePreviousOutsideInfluence()
+        {
+            var map = new ColdWarWargame.Systems.Battlefield.GridMap(8, 8);
+            var zoc = new ColdWarWargame.Systems.Battlefield.ZOCManager(map);
+            var vt = new VictoryTracker();
+
+            var initial = new int[8, 8];
+            initial[0, 0] = 2;
+            initial[7, 7] = 1;
+
+            var bluePos = new HashSet<Vector2I> { new Vector2I(3, 3) };
+            var redPos = new HashSet<Vector2I>();
+
+            var updated = vt.UpdateOccupationFromEntryAndZOC(map, initial, bluePos, redPos, zoc);
+
+            Assert(updated[0, 0] == 2, "Previous control should persist outside any influence");
+            Assert(updated[7, 7] == 1, "Previous friendly control should persist outside any influence");
+        }
+
+        static void Test_Occupation_PathTilesAreCaptured()
+        {
+            var map = new ColdWarWargame.Systems.Battlefield.GridMap(12, 12);
+            var zoc = new ColdWarWargame.Systems.Battlefield.ZOCManager(map);
+            var vt = new VictoryTracker();
+
+            var initial = new int[12, 12];
+            var bluePos = new HashSet<Vector2I> { new Vector2I(6, 6) };
+            var redPos = new HashSet<Vector2I>();
+            var blueEntered = new HashSet<Vector2I>
+            {
+                new Vector2I(2, 2),
+                new Vector2I(3, 2),
+                new Vector2I(4, 2)
+            };
+
+            var updated = vt.UpdateOccupationFromEntryAndZOC(map, initial, bluePos, redPos, zoc, blueEntered);
+
+            Assert(updated[2, 2] == 1, "Path tile should be captured even outside final ZOC");
+            Assert(updated[3, 2] == 1, "Intermediate path tile should be captured");
+            Assert(updated[4, 2] == 1, "Last traversed path tile should be captured");
+        }
+
+        static void Test_Occupation_PathZocTilesAreCaptured()
+        {
+            var map = new ColdWarWargame.Systems.Battlefield.GridMap(12, 12);
+            var zoc = new ColdWarWargame.Systems.Battlefield.ZOCManager(map);
+            var vt = new VictoryTracker();
+
+            var initial = new int[12, 12];
+            var bluePos = new HashSet<Vector2I> { new Vector2I(10, 10) };
+            var redPos = new HashSet<Vector2I>();
+            var blueEntered = new HashSet<Vector2I> { new Vector2I(2, 2) };
+            var bluePathZoc = zoc.GetFactionZOC(blueEntered);
+
+            var updated = vt.UpdateOccupationFromEntryAndZOC(
+                map,
+                initial,
+                bluePos,
+                redPos,
+                zoc,
+                blueEntered,
+                null,
+                bluePathZoc);
+
+            Assert(updated[1, 2] == 1, "Path ZOC tile should be captured");
+            Assert(updated[2, 1] == 1, "Another path ZOC tile should be captured");
+            Assert(updated[2, 2] == 1, "Path-entered tile remains captured");
+        }
+
         static void Test_VictoryLevels()
         {
             var vt = new VictoryTracker();
@@ -163,6 +270,11 @@ namespace ColdWarWargame.Tests.Victory
             Test_CombatVP();
             Test_GeographicalControl();
             Test_ZOCBlocksControl();
+            Test_Occupation_EntryAndUncontestedZocOverwrite();
+            Test_Occupation_ConflictBecomesNeutral();
+            Test_Occupation_PreservePreviousOutsideInfluence();
+            Test_Occupation_PathTilesAreCaptured();
+            Test_Occupation_PathZocTilesAreCaptured();
             Test_VictoryLevels();
 
             if (_fails == 0)

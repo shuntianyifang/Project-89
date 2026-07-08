@@ -46,6 +46,7 @@ namespace ColdWarWargame.Systems.Gameplay
 
             Scenario = new FuldaGapScenario();
             Scenario.LoadOOB("res://Scripts/Data/Scenarios/Fulda_Gap/oob_blue.json", "res://Scripts/Data/Scenarios/Fulda_Gap/oob_red.json");
+            Scenario.LoadOccupationState();
             Scenario.PrintSummary();
 
             TurnManager = new TurnManager();

@@ -19,6 +19,8 @@ namespace ColdWarWargame.Scenarios
     {
         const int MAP_W = 30;
         const int MAP_H = 20;
+        public const string DefaultOccupationStatePath = "res://Scripts/Data/Scenarios/Fulda_Gap/occupation_state.json";
+        public const string SavedOccupationStatePath = "user://Fulda_Gap_occupation_state.json";
 
         static readonly string[] TerrainRows = {
             "000000000000000000000000000000",
@@ -69,6 +71,7 @@ namespace ColdWarWargame.Scenarios
         public Systems.Battlefield.GridMap Map { get; private set; }
         public MovementResolver Movement { get; private set; }
         public ZOCManager ZOC { get; private set; }
+        public int[,] OccupationMap { get; private set; }
 
         public List<(Battalion bat, Vector2I pos)> BlueBattalions { get; private set; } = new();
         public List<(Battalion bat, Vector2I pos)> RedBattalions { get; private set; } = new();
@@ -78,6 +81,7 @@ namespace ColdWarWargame.Scenarios
             BuildMap();
             Movement = new MovementResolver(Map);
             ZOC = new ZOCManager(Map);
+            LoadOccupationState();
         }
 
         void BuildMap()
@@ -153,6 +157,36 @@ namespace ColdWarWargame.Scenarios
             }
 
             GD.Print("场景 OOB 加载完成：蓝军 " + BlueBattalions.Count + " 个营，红军 " + RedBattalions.Count + " 个营");
+        }
+
+        public void LoadOccupationState()
+        {
+            if (OccupationStateCodec.TryLoad(DefaultOccupationStatePath, MAP_W, MAP_H, out var savedMap))
+            {
+                OccupationMap = savedMap;
+                return;
+            }
+
+            OccupationMap = OccupationStateCodec.CreateDefaultHalfHalf(MAP_W, MAP_H);
+        }
+
+        public void SaveOccupationState(int[,] controlMap)
+        {
+            OccupationMap = OccupationStateCodec.CloneMap(controlMap);
+            OccupationStateCodec.Save(SavedOccupationStatePath, OccupationMap);
+        }
+
+        public void ApplyOccupationState(int[,] controlMap)
+        {
+            OccupationMap = OccupationStateCodec.CloneMap(controlMap);
+        }
+
+        public int[,] GetOccupationMap()
+        {
+            if (OccupationMap == null || OccupationMap.GetLength(0) != MAP_W || OccupationMap.GetLength(1) != MAP_H)
+                LoadOccupationState();
+
+            return OccupationStateCodec.CloneMap(OccupationMap);
         }
 
         public void PrintSummary()

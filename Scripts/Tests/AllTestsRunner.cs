@@ -15,6 +15,8 @@ namespace ColdWarWargame.Tests
             GD.Print("========== RUN ALL TESTS ==========");
 
             GridTests.RunAll();
+            OccupationStateCodecTests.RunAll();
+            FrontlineTests.RunAll();
             VisionTests.RunAll();
             EngagementTests.RunAll();
             CombatResolverTests.RunAll();

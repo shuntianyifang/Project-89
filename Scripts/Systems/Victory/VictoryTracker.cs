@@ -70,9 +70,11 @@ namespace ColdWarWargame.Systems.Victory
 
         public int BlueControlledCount => _blueControlled.Count;
         public int RedControlledCount => _redControlled.Count;
+        public int[,] ControlMap => _controlMap;
 
         private HashSet<Vector2I> _blueControlled = new();
         private HashSet<Vector2I> _redControlled = new();
+        private int[,] _controlMap = new int[0, 0];
 
         // ---- 1. 战损VP ----
 
@@ -118,6 +120,7 @@ namespace ColdWarWargame.Systems.Victory
         {
             _blueControlled.Clear();
             _redControlled.Clear();
+            _controlMap = new int[map.Width, map.Height];
 
             var blueZOC = zocMgr.GetFactionZOC(blueUnitPositions);
             var redZOC = zocMgr.GetFactionZOC(redUnitPositions);
@@ -130,10 +133,148 @@ namespace ColdWarWargame.Systems.Victory
                     bool inBlue = blueZOC.Contains(p);
                     bool inRed = redZOC.Contains(p);
 
-                    if (inBlue && !inRed) _blueControlled.Add(p);
-                    if (inRed && !inBlue) _redControlled.Add(p);
+                    if (inBlue && !inRed)
+                    {
+                        _blueControlled.Add(p);
+                        _controlMap[x, y] = 1;
+                    }
+                    else if (inRed && !inBlue)
+                    {
+                        _redControlled.Add(p);
+                        _controlMap[x, y] = 2;
+                    }
+                    else
+                    {
+                        _controlMap[x, y] = 0;
+                    }
                 }
             }
+        }
+
+        /// <summary>
+        /// 按 PRD 占领规则更新控制图：
+        /// 1) 单位进入格子立即覆写控制权；
+        /// 2) 自身 ZOC 且不受敌方 ZOC 影响的格子覆写控制权；
+        /// 3) 双方 ZOC 冲突格子变为中立；
+        /// 4) 非影响区域保持原控制权不变。
+        /// </summary>
+        public int[,] UpdateOccupationFromEntryAndZOC(
+            Battlefield.GridMap map,
+            int[,] currentControlMap,
+            HashSet<Vector2I> blueUnitPositions,
+            HashSet<Vector2I> redUnitPositions,
+            ZOCManager zocMgr,
+            IEnumerable<Vector2I> blueEnteredTiles = null,
+            IEnumerable<Vector2I> redEnteredTiles = null,
+            IEnumerable<Vector2I> bluePathZocTiles = null,
+            IEnumerable<Vector2I> redPathZocTiles = null)
+        {
+            int width = map.Width;
+            int height = map.Height;
+
+            var updated = new int[width, height];
+            if (currentControlMap != null &&
+                currentControlMap.GetLength(0) == width &&
+                currentControlMap.GetLength(1) == height)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    for (int y = 0; y < height; y++)
+                        updated[x, y] = currentControlMap[x, y];
+                }
+            }
+
+            var blueZOC = zocMgr.GetFactionZOC(blueUnitPositions);
+            var redZOC = zocMgr.GetFactionZOC(redUnitPositions);
+
+            var blueEntered = blueEnteredTiles != null
+                ? new HashSet<Vector2I>(blueEnteredTiles)
+                : new HashSet<Vector2I>();
+            var redEntered = redEnteredTiles != null
+                ? new HashSet<Vector2I>(redEnteredTiles)
+                : new HashSet<Vector2I>();
+
+            if (bluePathZocTiles != null)
+                blueZOC.UnionWith(bluePathZocTiles);
+            if (redPathZocTiles != null)
+                redZOC.UnionWith(redPathZocTiles);
+
+            foreach (var p in blueUnitPositions)
+                if (map.IsInBounds(p))
+                    updated[p.X, p.Y] = 1;
+
+            foreach (var p in blueEntered)
+                if (map.IsInBounds(p))
+                    updated[p.X, p.Y] = 1;
+
+            foreach (var p in redUnitPositions)
+                if (map.IsInBounds(p))
+                    updated[p.X, p.Y] = 2;
+
+            foreach (var p in redEntered)
+                if (map.IsInBounds(p))
+                    updated[p.X, p.Y] = 2;
+
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    var p = new Vector2I(x, y);
+                    bool inBlue = blueZOC.Contains(p);
+                    bool inRed = redZOC.Contains(p);
+
+                    if (inBlue && inRed)
+                    {
+                        updated[x, y] = 0;
+                    }
+                    else if (inBlue)
+                    {
+                        updated[x, y] = 1;
+                    }
+                    else if (inRed)
+                    {
+                        updated[x, y] = 2;
+                    }
+                }
+            }
+
+            _controlMap = updated;
+            RebuildControlSetsFromMap(updated);
+            return CloneMap(updated);
+        }
+
+        private void RebuildControlSetsFromMap(int[,] controlMap)
+        {
+            _blueControlled.Clear();
+            _redControlled.Clear();
+
+            int width = controlMap.GetLength(0);
+            int height = controlMap.GetLength(1);
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    var p = new Vector2I(x, y);
+                    if (controlMap[x, y] == 1)
+                        _blueControlled.Add(p);
+                    else if (controlMap[x, y] == 2)
+                        _redControlled.Add(p);
+                }
+            }
+        }
+
+        private static int[,] CloneMap(int[,] source)
+        {
+            int width = source.GetLength(0);
+            int height = source.GetLength(1);
+            var cloned = new int[width, height];
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                    cloned[x, y] = source[x, y];
+            }
+
+            return cloned;
         }
 
         /// <summary>回合结束时根据控制区数量计分</summary>

@@ -28,6 +28,7 @@ namespace ColdWarWargame.Systems.Gameplay
         private readonly TurnFlowController _turnFlow;
         private readonly SupplyManager _supplyManager = new();
         private readonly VictoryTracker _victoryTracker = new();
+        private readonly FrontlineResolver _frontlineResolver = new();
         private readonly VisionResolver _visionResolver = new();
 
         private Vector2 _lastMouseScreenPos;
@@ -127,6 +128,25 @@ namespace ColdWarWargame.Systems.Gameplay
                     for (int i = 0; i < _scenario.RedBattalions.Count; i++)
                         if (_scenario.RedBattalions[i].bat == _flow.CurrentSelection.Unit)
                             _scenario.RedBattalions[i] = (_flow.CurrentSelection.Unit, pos);
+
+                    HashSet<Vector2I> blueEntered = null;
+                    HashSet<Vector2I> redEntered = null;
+                    HashSet<Vector2I> bluePathZoc = null;
+                    HashSet<Vector2I> redPathZoc = null;
+                    var traversedTiles = path.Skip(1).ToHashSet();
+                    if (_turnMgr.CurrentFaction == 1)
+                    {
+                        blueEntered = traversedTiles;
+                        bluePathZoc = _scenario.ZOC.GetFactionZOC(traversedTiles);
+                    }
+                    else
+                    {
+                        redEntered = traversedTiles;
+                        redPathZoc = _scenario.ZOC.GetFactionZOC(traversedTiles);
+                    }
+
+                    RefreshOccupationFromEntryAndZoc(blueEntered, redEntered, bluePathZoc, redPathZoc);
+                    RefreshFrontline();
                     RefreshPresentationByVision();
 
                     var enemyFaction3 = _turnMgr.CurrentFaction == 1 ? 2 : 1;
@@ -166,7 +186,7 @@ namespace ColdWarWargame.Systems.Gameplay
             {
                 _hud.SetTooltipVisible(false);
                 if (_flow.HasSelection)
-                    _hud.SetInfoText("Selected: " + _flow.CurrentSelection.Unit.Name + " reachable " + _flow.ReachableTiles.Count + " tiles");
+                    _hud.SetInfoText(BuildSelectedUnitInfo(_flow.CurrentSelection.Unit, _flow.ReachableTiles.Count));
                 else
                     _hud.SetInfoText("Click to select");
                 return;
@@ -257,8 +277,16 @@ namespace ColdWarWargame.Systems.Gameplay
             _flow.EnterSelection(bat, pos, reachable);
             _eventHub.Publish(new GameplayEvent(GameplayEventType.UnitSelected, new SelectionEventData(bat, pos, reachable)));
             _renderer.SetReachable(reachable, bat.CurrentAP);
-            _hud.SetInfoText("Selected: " + bat.Name + " reachable " + reachable.Count + " tiles");
+            _hud.SetInfoText(BuildSelectedUnitInfo(bat, reachable.Count));
             UpdateArtilleryOverlay(bat, pos);
+        }
+
+        private static string BuildSelectedUnitInfo(Battalion bat, int reachableCount)
+        {
+            var (visionRange, visionReason) = bat.GetVisionRuleInfo();
+            return "Selected: " + bat.Name +
+                   " reachable " + reachableCount + " tiles" +
+                   " | Vision " + visionRange + " (" + visionReason + ")";
         }
 
         private void StartCombat(Battalion defBat, Vector2I defPos)
@@ -275,6 +303,8 @@ namespace ColdWarWargame.Systems.Gameplay
                     _flow.ExitCombat();
                     _turnFlow.ResolveCombat();
                     _victoryTracker.RecordCombatResult(result, _turnMgr.CurrentFaction);
+                    RefreshOccupationFromEntryAndZoc();
+                    RefreshFrontline();
                     ClearSelection();
                     RefreshPresentationByVision();
                 },
@@ -307,9 +337,9 @@ namespace ColdWarWargame.Systems.Gameplay
                 enemyOccupied,
                 enemyZoc);
 
-            var bluePositions = new HashSet<Vector2I>(_scenario.BlueBattalions.Select(u => u.pos));
-            var redPositions = new HashSet<Vector2I>(_scenario.RedBattalions.Select(u => u.pos));
-            _victoryTracker.UpdateControl(_scenario.Map, bluePositions, redPositions, _scenario.ZOC);
+            RefreshOccupationFromEntryAndZoc();
+            _scenario.SaveOccupationState(_scenario.GetOccupationMap());
+            RefreshFrontline();
             _victoryTracker.ScoreControlVP();
 
             var assessment = _victoryTracker.Evaluate(_turnMgr.TurnNumber);
@@ -330,6 +360,34 @@ namespace ColdWarWargame.Systems.Gameplay
 
             _renderer.SetBlueUnits(blueVisible);
             _renderer.SetRedUnits(redVisible);
+            RefreshFrontline();
+        }
+
+        private void RefreshFrontline()
+        {
+            var chains = _frontlineResolver.ResolveFrontlineChains(_scenario.GetOccupationMap());
+            _renderer.SetFrontlineChains(chains);
+        }
+
+        private void RefreshOccupationFromEntryAndZoc(
+            IEnumerable<Vector2I> blueEnteredTiles = null,
+            IEnumerable<Vector2I> redEnteredTiles = null,
+            IEnumerable<Vector2I> bluePathZocTiles = null,
+            IEnumerable<Vector2I> redPathZocTiles = null)
+        {
+            var bluePositions = new HashSet<Vector2I>(_scenario.BlueBattalions.Select(u => u.pos));
+            var redPositions = new HashSet<Vector2I>(_scenario.RedBattalions.Select(u => u.pos));
+            var updated = _victoryTracker.UpdateOccupationFromEntryAndZOC(
+                _scenario.Map,
+                _scenario.GetOccupationMap(),
+                bluePositions,
+                redPositions,
+                _scenario.ZOC,
+                blueEnteredTiles,
+                redEnteredTiles,
+                bluePathZocTiles,
+                redPathZocTiles);
+            _scenario.ApplyOccupationState(updated);
         }
 
         private IEnumerable<(Battalion bat, Vector2I pos)> GetAllUnits()

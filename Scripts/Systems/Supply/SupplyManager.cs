@@ -21,6 +21,7 @@ namespace ColdWarWargame.Systems.Supply
             foreach (var (bat, pos) in battalions)
             {
                 if (bat.Faction != faction) continue;
+                int fatigueBefore = bat.Fatigue;
                 bool inSupply = sp[pos.X, pos.Y] > 0f;
                 if (!inSupply)
                 {
@@ -37,8 +38,24 @@ namespace ColdWarWargame.Systems.Supply
                         bat.Fatigue = Math.Max(0, bat.Fatigue - 2);
                     else if (bat.CurrentAP >= 4f)
                         bat.Fatigue = Math.Max(0, bat.Fatigue - 1);
+
+                    int fatigueRecovered = Math.Max(0, fatigueBefore - bat.Fatigue);
+                    RecoverHpFromFatigue(bat, fatigueRecovered);
                 }
                 bat.Fatigue = Math.Clamp(bat.Fatigue, 0, Battalion.FatigueOverflowCap);
+            }
+        }
+
+        static void RecoverHpFromFatigue(Battalion bat, int fatigueRecovered)
+        {
+            if (fatigueRecovered <= 0) return;
+
+            int hpRecovered = fatigueRecovered * 2;
+            foreach (var unit in bat.GetAllSubUnits())
+            {
+                if (unit.SurvivalState != 1) continue;
+                int maxHp = unit.Template.CombatStats.MaxHp;
+                unit.CurrentHp = Math.Clamp(unit.CurrentHp + hpRecovered, 0, maxHp);
             }
         }
 

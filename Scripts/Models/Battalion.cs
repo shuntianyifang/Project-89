@@ -22,6 +22,10 @@ namespace ColdWarWargame.Models
         public int TurnsOOS { get; set; } = 0;
         /// <summary>编制模板中写死的营种类: main/support/artillery</summary>
         public string TemplateRole { get; set; } = "main";
+        /// <summary>编制模板ID（用于规则判定与调试）</summary>
+        public string TemplateId { get; set; } = string.Empty;
+        /// <summary>是否为专业侦察营（PRD §2.7 Advanced Vision）</summary>
+        public bool IsAdvancedReconBattalion { get; set; } = false;
 
         public List<Company> Companies { get; set; } = new List<Company>();
 
@@ -91,19 +95,21 @@ namespace ColdWarWargame.Models
             return baseAP;
         }
 
-        public int CalculateVisionRange()
+        public (int range, string reason) GetVisionRuleInfo()
         {
             var aliveUnits = GetAllSubUnits().Where(u => u.SurvivalState == 1).ToList();
-            if (aliveUnits.Count == 0) return 0; // 全灭
-            
-            // 如果判定为侦察营 (这里可以用营级标志位或者全营单位构成判定)，返回 12[cite: 3]
-            // ... (略，后续实现)
+            if (aliveUnits.Count == 0) return (0, "全灭");
+
+            // 专业侦察营：Advanced Vision = 12
+            if (IsAdvancedReconBattalion) return (12, "专业侦察营");
 
             // 如果包含存活的 Recon 标签，视野为 8，否则瞎子基线为 6[cite: 3]
-            if (aliveUnits.Any(u => u.HasCapability("Recon"))) return 8;
-            
-            return 6; 
+            if (aliveUnits.Any(u => u.HasCapability("Recon"))) return (8, "建制内侦察激活");
+
+            return (6, "瞎子基线");
         }
+
+        public int CalculateVisionRange() => GetVisionRuleInfo().range;
 
         /// <summary>获取营内所有炮兵单位的最大支援半径。无炮兵则返回0。</summary>
         public int GetArtilleryRange()

@@ -14,6 +14,7 @@ namespace ColdWarWargame.Tests.Supply
     public static class SupplyManagerTests
     {
         static int _fails = 0;
+        static bool _unitDbReady = false;
 
         static void Assert(bool cond, string msg)
         {
@@ -31,6 +32,37 @@ namespace ColdWarWargame.Tests.Supply
         static Battalion MakeSupplyBat(string name, int faction)
         {
             return new Battalion { Name = name, Faction = faction, CurrentAP = 12f, Fatigue = 0, TurnsOOS = 0 };
+        }
+
+        static void EnsureUnitDatabase()
+        {
+            if (_unitDbReady) return;
+            UnitDatabase.Initialize("res://Scripts/Data/Units");
+            _unitDbReady = true;
+        }
+
+        static Battalion MakeSupplyBatWithTestUnits(string name, int faction)
+        {
+            EnsureUnitDatabase();
+
+            var bat = MakeSupplyBat(name, faction);
+            var comp = new Company { CompanyId = "C1", Name = "C1" };
+            var platoon = new Platoon { PlatoonId = "P1", Type = "standard" };
+
+            var u1 = new SubUnitInstance("us_mech_rifles") { NodeId = "u1", Category = "units" };
+            var u2 = new SubUnitInstance("us_mech_rifles") { NodeId = "u2", Category = "units" };
+            var dead = new SubUnitInstance("us_mech_rifles") { NodeId = "dead", Category = "units" };
+
+            u1.CurrentHp = 5;
+            u2.CurrentHp = 8;
+            dead.CurrentHp = 0;
+
+            platoon.Units.Add(u1);
+            platoon.Units.Add(u2);
+            platoon.Units.Add(dead);
+            comp.Platoons.Add(platoon);
+            bat.Companies.Add(comp);
+            return bat;
         }
 
         // ========== SupplyNetwork Tests ==========
@@ -167,6 +199,64 @@ namespace ColdWarWargame.Tests.Supply
             Assert(bat2.Fatigue == 4, "AP between 4-8: Fatigue 5->4 (recover 1)");
         }
 
+        static void Test_HpRecovery_LinkedToFatigueRecover2()
+        {
+            var map = new ColdWarWargame.Systems.Battlefield.GridMap(5, 5);
+            var mgr = new SupplyManager();
+            var bat = MakeSupplyBatWithTestUnits("Recover2", 1);
+            bat.Fatigue = 6;
+            bat.CurrentAP = 10f; // recover fatigue by 2
+
+            var units = new List<(Battalion, Vector2I)> { (bat, new Vector2I(2, 2)) };
+            mgr.UpdateFactionEndTurn(1, map, units, new HashSet<Vector2I>(), new HashSet<Vector2I>());
+
+            var unit1 = bat.GetAllSubUnits().First(u => u.NodeId == "u1");
+            var unit2 = bat.GetAllSubUnits().First(u => u.NodeId == "u2");
+            var dead = bat.GetAllSubUnits().First(u => u.NodeId == "dead");
+
+            Assert(bat.Fatigue == 4, "Fatigue recover2: 6->4");
+            Assert(unit1.CurrentHp == 9, "Fatigue recover2: alive unit +4 and clamped to max");
+            Assert(unit2.CurrentHp == 9, "Fatigue recover2: near-max unit stays capped at max");
+            Assert(dead.CurrentHp == 0, "Fatigue recover2: dead unit is not revived");
+        }
+
+        static void Test_HpRecovery_LinkedToFatigueRecover1()
+        {
+            var map = new ColdWarWargame.Systems.Battlefield.GridMap(5, 5);
+            var mgr = new SupplyManager();
+            var bat = MakeSupplyBatWithTestUnits("Recover1", 1);
+            bat.Fatigue = 5;
+            bat.CurrentAP = 5f; // recover fatigue by 1
+
+            var units = new List<(Battalion, Vector2I)> { (bat, new Vector2I(2, 2)) };
+            mgr.UpdateFactionEndTurn(1, map, units, new HashSet<Vector2I>(), new HashSet<Vector2I>());
+
+            var unit1 = bat.GetAllSubUnits().First(u => u.NodeId == "u1");
+            Assert(bat.Fatigue == 4, "Fatigue recover1: 5->4");
+            Assert(unit1.CurrentHp == 7, "Fatigue recover1: alive unit +2");
+        }
+
+        static void Test_HpRecovery_NoRecoveryWhenOOS()
+        {
+            int[,] terrain = {
+                { -1, -1, -1 },
+                { -1,  0, -1 },
+                { -1, -1, -1 }
+            };
+            var map = ColdWarWargame.Systems.Battlefield.GridMap.FromLayers(terrain);
+            var mgr = new SupplyManager();
+            var bat = MakeSupplyBatWithTestUnits("NoRecoverOOS", 1);
+            bat.Fatigue = 6;
+            bat.CurrentAP = 10f;
+
+            var units = new List<(Battalion, Vector2I)> { (bat, new Vector2I(1, 1)) };
+            mgr.UpdateFactionEndTurn(1, map, units, new HashSet<Vector2I>(), new HashSet<Vector2I>());
+
+            var unit1 = bat.GetAllSubUnits().First(u => u.NodeId == "u1");
+            Assert(bat.TurnsOOS == 1, "OOS: turns_oos increments");
+            Assert(unit1.CurrentHp == 5, "OOS: no HP recovery should happen");
+        }
+
         public static void RunAll()
         {
             _fails = 0;
@@ -177,6 +267,9 @@ namespace ColdWarWargame.Tests.Supply
             Test_EnemyZOC_Penalty();
             Test_OOS_Accumulation();
             Test_FatigueRecovery();
+            Test_HpRecovery_LinkedToFatigueRecover2();
+            Test_HpRecovery_LinkedToFatigueRecover1();
+            Test_HpRecovery_NoRecoveryWhenOOS();
 
             if (_fails == 0)
                 GD.Print("All SupplyManagerTests passed");

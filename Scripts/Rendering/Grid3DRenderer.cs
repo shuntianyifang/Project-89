@@ -22,6 +22,7 @@ namespace ColdWarWargame.Rendering
         private Node3D _unitRoot;
         private Node3D _highlightRoot;
         private Node3D _linesRoot;
+                private Node3D _frontlineRoot;
         private float _flashTimer = 0f;
         private bool _flashOn = true;
         private float _selectionAlpha = 0.6f;
@@ -32,6 +33,8 @@ namespace ColdWarWargame.Rendering
        private Vector2? _rightClickStart = null;
        private Vector2I? _hoveredPos = null;
         private Node3D _pathRoot;
+                private List<Node3D> _frontlineMarkers = new();
+        private List<MeshInstance3D> _frontlineRibbonMeshes = new();
         private bool _isAnimating;
         private System.Collections.Generic.List<Vector2I> _animPath;
         private int _animIndex;
@@ -89,6 +92,8 @@ namespace ColdWarWargame.Rendering
 
             if (_linesRoot != null) { RemoveChild(_linesRoot); _linesRoot.QueueFree(); }
             _linesRoot = new Node3D(); AddChild(_linesRoot);
+            if (_frontlineRoot != null) { RemoveChild(_frontlineRoot); _frontlineRoot.QueueFree(); }
+            _frontlineRoot = new Node3D(); AddChild(_frontlineRoot);
             var lm = new StandardMaterial3D { AlbedoColor = Colors.Black, ShadingMode = StandardMaterial3D.ShadingModeEnum.Unshaded };
             float lw = 0.03f;
             for (int x = 0; x <= w; x++) { var l = new MeshInstance3D(); l.Mesh = new BoxMesh { Size = new Vector3(lw, 0.02f, gh + 0.1f) }; l.MaterialOverride = lm; l.Position = new Vector3(x, 0.005f, gh / 2); _linesRoot.AddChild(l); }
@@ -410,6 +415,204 @@ namespace ColdWarWargame.Rendering
         public void ClearPath()
         {
             if (_pathRoot != null) { RemoveChild(_pathRoot); _pathRoot.QueueFree(); _pathRoot = null; }
+        }
+
+        public void ClearFrontline()
+        {
+            if (_frontlineRoot == null) return;
+            foreach (var marker in _frontlineMarkers)
+                marker.QueueFree();
+            _frontlineMarkers.Clear();
+            foreach (var ribbon in _frontlineRibbonMeshes)
+                ribbon.QueueFree();
+            _frontlineRibbonMeshes.Clear();
+        }
+
+        public void SetFrontlineChains(IEnumerable<FrontlineChain> chains)
+        {
+            if (_frontlineRoot == null)
+            {
+                _frontlineRoot = new Node3D();
+                AddChild(_frontlineRoot);
+            }
+
+            ClearFrontline();
+
+            if (chains == null)
+                return;
+
+            foreach (var chain in chains)
+            {
+                var ribbon = CreateFrontlineRibbon(chain.Points, chain.BlueOnPositiveNormal);
+                if (ribbon == null)
+                    continue;
+
+                _frontlineRoot.AddChild(ribbon);
+                _frontlineRibbonMeshes.Add(ribbon);
+            }
+        }
+
+        private MeshInstance3D CreateFrontlineRibbon(IReadOnlyList<Vector2> chain, bool blueOnPositiveNormal)
+        {
+            var smooth = SmoothFrontlineChain(chain, 4);
+            if (smooth.Count < 2)
+                return null;
+
+            float width = CellSize * 0.42f;
+            float y = 0.08f;
+            var mat = new StandardMaterial3D
+            {
+                ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+                Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+                VertexColorUseAsAlbedo = true,
+                NoDepthTest = false
+            };
+
+            var surfaceTool = new SurfaceTool();
+            surfaceTool.Begin(Mesh.PrimitiveType.Triangles);
+            surfaceTool.SetMaterial(mat);
+
+            var blue = new Color(0.15f, 0.45f, 1.0f, 0.82f);
+            var red = new Color(1.0f, 0.18f, 0.18f, 0.82f);
+
+            for (int i = 0; i < smooth.Count - 1; i++)
+            {
+                Vector3 a = ToFrontlineWorld(smooth[i], y);
+                Vector3 b = ToFrontlineWorld(smooth[i + 1], y);
+                Vector2 dir2 = new Vector2(b.X - a.X, b.Z - a.Z);
+                if (dir2.LengthSquared() < 0.0001f)
+                    continue;
+
+                dir2 = dir2.Normalized();
+                Vector2 perp2 = new Vector2(-dir2.Y, dir2.X) * (width * 0.5f);
+
+                Vector3 aLeft = new Vector3(a.X + perp2.X, y, a.Z + perp2.Y);
+                Vector3 aRight = new Vector3(a.X - perp2.X, y, a.Z - perp2.Y);
+                Vector3 bLeft = new Vector3(b.X + perp2.X, y, b.Z + perp2.Y);
+                Vector3 bRight = new Vector3(b.X - perp2.X, y, b.Z - perp2.Y);
+
+                if (blueOnPositiveNormal)
+                {
+                    AddRibbonTriangle(surfaceTool, aLeft, blue, aRight, red, bRight, red);
+                    AddRibbonTriangle(surfaceTool, aLeft, blue, bRight, red, bLeft, blue);
+                }
+                else
+                {
+                    AddRibbonTriangle(surfaceTool, aLeft, red, aRight, blue, bRight, blue);
+                    AddRibbonTriangle(surfaceTool, aLeft, red, bRight, blue, bLeft, red);
+                }
+            }
+
+            var mesh = new MeshInstance3D();
+            mesh.Mesh = surfaceTool.Commit();
+            return mesh;
+        }
+
+        private static void AddRibbonTriangle(SurfaceTool surfaceTool, Vector3 a, Color aColor, Vector3 b, Color bColor, Vector3 c, Color cColor)
+        {
+            surfaceTool.SetColor(aColor);
+            surfaceTool.AddVertex(a);
+            surfaceTool.SetColor(bColor);
+            surfaceTool.AddVertex(b);
+            surfaceTool.SetColor(cColor);
+            surfaceTool.AddVertex(c);
+        }
+
+        private Vector3 ToFrontlineWorld(Vector2 point, float y)
+        {
+            return new Vector3(point.X * CellSize, y, point.Y * CellSize);
+        }
+
+        private static List<Vector2> SmoothFrontlineChain(IReadOnlyList<Vector2> chain, int subdivisions)
+        {
+            if (chain == null)
+                return new List<Vector2>();
+
+            if (chain.Count <= 2)
+                return chain.ToList();
+
+            var result = new List<Vector2> { chain[0] };
+            for (int i = 0; i < chain.Count - 1; i++)
+            {
+                Vector2 p0 = i > 0 ? chain[i - 1] : chain[i];
+                Vector2 p1 = chain[i];
+                Vector2 p2 = chain[i + 1];
+                Vector2 p3 = i + 2 < chain.Count ? chain[i + 2] : chain[i + 1];
+
+                for (int step = 1; step <= subdivisions; step++)
+                {
+                    float t = step / (float)subdivisions;
+                    result.Add(CatmullRom(p0, p1, p2, p3, t));
+                }
+            }
+
+            return result;
+        }
+
+        private static Vector2 CatmullRom(Vector2 p0, Vector2 p1, Vector2 p2, Vector2 p3, float t)
+        {
+            float t2 = t * t;
+            float t3 = t2 * t;
+            return ((2f * p1) + (-p0 + p2) * t + (2f * p0 - 5f * p1 + 4f * p2 - p3) * t2 + (-p0 + 3f * p1 - 3f * p2 + p3) * t3) * 0.5f;
+        }
+
+        public void SetFrontline(IEnumerable<FrontlineSegment> segments)
+        {
+            if (_frontlineRoot == null)
+            {
+                _frontlineRoot = new Node3D();
+                AddChild(_frontlineRoot);
+            }
+
+            ClearFrontline();
+
+            if (segments == null)
+                return;
+
+            var mat = new StandardMaterial3D
+            {
+                AlbedoColor = new Color(0.95f, 0.85f, 0.25f, 0.95f),
+                ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+                Transparency = BaseMaterial3D.TransparencyEnum.Alpha
+            };
+
+            foreach (var segment in segments)
+            {
+                var marker = CreateFrontlineMarker(segment, mat);
+                _frontlineRoot.AddChild(marker);
+                _frontlineMarkers.Add(marker);
+            }
+        }
+
+        private MeshInstance3D CreateFrontlineMarker(FrontlineSegment segment, Material mat)
+        {
+            float thickness = CellSize * 0.12f;
+            float y = 0.045f;
+            float startX = segment.Start.X * CellSize;
+            float startZ = segment.Start.Y * CellSize;
+            float endX = segment.End.X * CellSize;
+            float endZ = segment.End.Y * CellSize;
+
+            var marker = new MeshInstance3D();
+            marker.MaterialOverride = mat;
+            marker.Mesh = new BoxMesh();
+            marker.Mesh = new BoxMesh
+            {
+                Size = Math.Abs(startX - endX) < 0.0001f
+                    ? new Vector3(thickness, 0.06f, Math.Max(CellSize * 0.1f, Math.Abs(endZ - startZ)))
+                    : new Vector3(Math.Max(CellSize * 0.1f, Math.Abs(endX - startX)), 0.06f, thickness)
+            };
+
+            if (Math.Abs(startX - endX) < 0.0001f)
+            {
+                marker.Position = new Vector3(startX, y, (startZ + endZ) / 2f);
+            }
+            else
+            {
+                marker.Position = new Vector3((startX + endX) / 2f, y, startZ);
+            }
+
+            return marker;
         }
 
         internal void StartMoveAnimation(System.Collections.Generic.List<Vector2I> path, Battalion bat)

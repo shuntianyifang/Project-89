@@ -20,7 +20,9 @@ namespace ColdWarWargame.Factories
                 Faction = faction,
                 CurrentAP = 12.0f,
                 Fatigue = 0,
-                TemplateRole = template.Role ?? "main"
+                TemplateRole = template.Role ?? "main",
+                TemplateId = templateId,
+                IsAdvancedReconBattalion = IsAdvancedReconTemplate(templateId, template.Name)
             };
             foreach (var compKvp in template.Companies)
             {
@@ -42,6 +44,25 @@ namespace ColdWarWargame.Factories
                 battalion.Companies.Add(company);
             }
             return battalion;
+        }
+
+        static bool IsAdvancedReconTemplate(string templateId, string templateName)
+        {
+            if (!string.IsNullOrWhiteSpace(templateId))
+            {
+                string id = templateId.ToLowerInvariant();
+                if (id.Contains("recon") || id.Contains("cav_squadron"))
+                    return true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(templateName))
+            {
+                string name = templateName.ToLowerInvariant();
+                if (name.Contains("recon") || name.Contains("侦察") || name.Contains("骑兵"))
+                    return true;
+            }
+
+            return false;
         }
 
         static void InstantiateAndAddUnits(Platoon platoon, Dictionary<string, SubUnitDef> unitDefs, string category)
