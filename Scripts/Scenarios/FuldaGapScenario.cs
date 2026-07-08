@@ -117,6 +117,13 @@ namespace ColdWarWargame.Scenarios
                     int x = entry.GetProperty("x").GetInt32();
                     int y = entry.GetProperty("y").GetInt32();
                     var bat = BattalionFactory.CreateFullBattalion(id, tid, 1);
+
+                    if (entry.TryGetProperty("structure_overrides", out JsonElement structureOverrides))
+                        BattalionFactory.ApplyStructureOverrides(bat, structureOverrides);
+
+                    if (entry.TryGetProperty("state_overrides", out JsonElement stateOverrides))
+                        BattalionFactory.ApplyStateOverrides(bat, stateOverrides);
+
                     BlueBattalions.Add((bat, new Vector2I(x, y)));
                 }
             }
@@ -134,6 +141,13 @@ namespace ColdWarWargame.Scenarios
                     int x = entry.GetProperty("x").GetInt32();
                     int y = entry.GetProperty("y").GetInt32();
                     var bat = BattalionFactory.CreateFullBattalion(id, tid, 2);
+
+                    if (entry.TryGetProperty("structure_overrides", out JsonElement structureOverrides))
+                        BattalionFactory.ApplyStructureOverrides(bat, structureOverrides);
+
+                    if (entry.TryGetProperty("state_overrides", out JsonElement stateOverrides))
+                        BattalionFactory.ApplyStateOverrides(bat, stateOverrides);
+
                     RedBattalions.Add((bat, new Vector2I(x, y)));
                 }
             }

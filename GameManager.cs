@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using ColdWarWargame.Models;
 using ColdWarWargame.Rendering;
 using ColdWarWargame.Systems.Gameplay;
+using ColdWarWargame.Tests;
 
 public partial class GameManager : Node
 {
@@ -13,6 +14,13 @@ public partial class GameManager : Node
 
     public override void _Ready()
     {
+        if (OS.GetEnvironment("CW_RUN_TESTS") == "1")
+        {
+            int fails = AllTestsRunner.RunAll();
+            GetTree().Quit(fails > 0 ? 1 : 0);
+            return;
+        }
+
         GD.Print($"========== {"Fulda Gap 1985"} ==========");
         _application = new GameApplication(this, this);
         _application.Initialize();
