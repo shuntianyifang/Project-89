@@ -26,8 +26,10 @@ namespace ColdWarWargame.Rendering
         private float _selectionAlpha = 0.6f;
         private float _selectedUnitAP = 0f;
 
-        private class UnitVis { public MeshInstance3D Body; public Node3D Root; public Label InPanelName; public Vector2I GridPos; }
-        private List<UnitVis> _unitVisuals = new();
+       private class UnitVis { public MeshInstance3D Body; public Node3D Root; public Label InPanelName; public Vector2I GridPos; }
+       private List<UnitVis> _unitVisuals = new();
+        private Vector2? _rightClickStart = null;
+        private Vector2I? _hoveredPos = null;
 
         static readonly Color[] TerrainColors = new[] {
             new Color(0.63f, 0.82f, 0.50f),
@@ -38,6 +40,8 @@ namespace ColdWarWargame.Rendering
 
         public Action<int, Battalion, Vector2I> OnUnitClicked;
         public Action<Vector2I> OnTileClicked;
+        public Action OnRightClick;
+        public Action<Vector2I?> OnHoverChanged;
         private Camera3D _camRef;
 
         public void SetGrid(GridMap map) { _map = map; BuildTerrain(); }
@@ -106,12 +110,12 @@ namespace ColdWarWargame.Rendering
             root.AddChild(labelRoot);
 
 
-        var pnlF = labelRoot.GetChild<SubViewport>(0).GetChild<Control>(0); var nameLbl = pnlF.GetChild<Label>(pnlF.GetChildCount() - 1); _unitVisuals.Add(new UnitVis { Body = body, Root = root, GridPos = pos, InPanelName = nameLbl }); }
+        var vp = labelRoot.GetChild<SubViewport>(0); var nameLbl = vp.GetChild<Label>(vp.GetChildCount() - 1); _unitVisuals.Add(new UnitVis { Body = body, Root = root, GridPos = pos, InPanelName = nameLbl }); }
 
         Node3D BuildLabel(Battalion bat, Color topColor)
         {
             var root = new Node3D();
-            int wL = 600, hL = 600;
+            int wL = 600, hL = 690;
             var vp = new SubViewport();
             vp.Size = new Vector2I(wL, hL);
             vp.TransparentBg = true; vp.Disable3D = true;
@@ -123,7 +127,7 @@ namespace ColdWarWargame.Rendering
             style.CornerRadiusTopLeft = 6; style.CornerRadiusTopRight = 6;
             style.CornerRadiusBottomLeft = 6; style.CornerRadiusBottomRight = 6;
             var panel = new Panel();
-            panel.Size = new Vector2I(wL, hL);
+            panel.Size = new Vector2I(wL, 600);
             panel.MouseFilter = Control.MouseFilterEnum.Ignore;
             panel.AddThemeStyleboxOverride("panel", style);
             vp.AddChild(panel);
@@ -227,23 +231,24 @@ namespace ColdWarWargame.Rendering
             dt.AddThemeColorOverride("font_color", Colors.Black);
             panel.AddChild(dt);
 
-            // Unit name inside panel (bottom, hidden, shown on selection)
+            // Unit name below panel (hidden, shown on selection)
             var nameInPanel = new Label();
             nameInPanel.Text = bat.Name.Length > 20 ? bat.Name[..20] : bat.Name;
-            nameInPanel.Size = new Vector2I(wL, 60);
-            nameInPanel.Position = new Vector2I(0, hL - 60);
+            nameInPanel.Size = new Vector2I(wL, 90);
+            nameInPanel.Position = new Vector2I(0, 600);
             nameInPanel.HorizontalAlignment = HorizontalAlignment.Center;
             nameInPanel.VerticalAlignment = VerticalAlignment.Center;
-            nameInPanel.AddThemeFontSizeOverride("font_size", 40);
+            nameInPanel.AddThemeFontSizeOverride("font_size", 60);
             nameInPanel.AddThemeColorOverride("font_color", Colors.White);
             nameInPanel.Visible = false;
-            panel.AddChild(nameInPanel);
+            vp.AddChild(nameInPanel);
 
             // Sprite3D to display
             var sprite = new Sprite3D();
             sprite.Texture = vp.GetTexture();
             sprite.PixelSize = 0.002f;
-            sprite.Centered = true;
+            sprite.Centered = false;
+            sprite.Position = new Vector3(-0.6f, -0.6f, 0f);
             sprite.Billboard = BaseMaterial3D.BillboardModeEnum.Enabled;
             root.AddChild(sprite);
             return root;
@@ -302,14 +307,43 @@ namespace ColdWarWargame.Rendering
 
         public override void _Input(InputEvent @event)
         {
-            if (@event is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
+            if (@event is InputEventMouseButton mb)
             {
-                var gp = ScreenToGrid(mb.Position);
-                if (gp == null) return;
-                var p = gp.Value;
-                foreach (var (bat, pos) in _blueUnits) { if (pos == p) { OnUnitClicked?.Invoke(1, bat, pos); return; } }
-                foreach (var (bat, pos) in _redUnits) { if (pos == p) { OnUnitClicked?.Invoke(2, bat, pos); return; } }
-                OnTileClicked?.Invoke(p);
+                if (mb.ButtonIndex == MouseButton.Left && mb.Pressed)
+                {
+                    var gp = ScreenToGrid(mb.Position);
+                    if (gp == null) return;
+                    var p = gp.Value;
+                    foreach (var (bat, pos) in _blueUnits) { if (pos == p) { OnUnitClicked?.Invoke(1, bat, pos); return; } }
+                    foreach (var (bat, pos) in _redUnits) { if (pos == p) { OnUnitClicked?.Invoke(2, bat, pos); return; } }
+                    OnTileClicked?.Invoke(p);
+                }
+                else if (mb.ButtonIndex == MouseButton.Right)
+                {
+                    if (mb.Pressed)
+                    {
+                        _rightClickStart = mb.Position;
+                    }
+                    else if (_rightClickStart.HasValue)
+                    {
+                        float dist = _rightClickStart.Value.DistanceTo(mb.Position);
+                        _rightClickStart = null;
+                        if (dist < 8f)
+                        {
+                            OnRightClick?.Invoke();
+                        }
+                    }
+                }
+            }
+
+            if (@event is InputEventMouseMotion mm)
+            {
+                var gp = ScreenToGrid(mm.Position);
+                if (gp != _hoveredPos)
+                {
+                    _hoveredPos = gp;
+                    OnHoverChanged?.Invoke(gp);
+                }
             }
         }
     }

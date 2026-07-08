@@ -66,10 +66,16 @@ namespace ColdWarWargame.Rendering
         public override void _Process(double delta)
         {
             float s = 4f * (float)delta * (Distance / 10f);
-            if (Input.IsKeyPressed(Key.W)) Target -= new Vector3(0, 0, s);
-            if (Input.IsKeyPressed(Key.S)) Target += new Vector3(0, 0, s);
-            if (Input.IsKeyPressed(Key.A)) Target -= new Vector3(s, 0, 0);
-            if (Input.IsKeyPressed(Key.D)) Target += new Vector3(s, 0, 0);
+            var forward = -_cam.GlobalTransform.Basis.Z;
+            forward.Y = 0;
+            forward = forward.Normalized();
+            var right = _cam.GlobalTransform.Basis.X;
+            right.Y = 0;
+            right = right.Normalized();
+            if (Input.IsKeyPressed(Key.W)) Target += forward * s;
+            if (Input.IsKeyPressed(Key.S)) Target -= forward * s;
+            if (Input.IsKeyPressed(Key.A)) Target -= right * s;
+            if (Input.IsKeyPressed(Key.D)) Target += right * s;
             if (Input.IsKeyPressed(Key.Space)) UpdateCamera();
             if (Input.IsKeyPressed(Key.W) || Input.IsKeyPressed(Key.S) || Input.IsKeyPressed(Key.A) || Input.IsKeyPressed(Key.D))
                 UpdateCamera();

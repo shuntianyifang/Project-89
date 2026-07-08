@@ -12,7 +12,7 @@ namespace ColdWarWargame.Systems.Battlefield
     /// </summary>
     public class MovementResolver
     {
-        const float EPSILON = 0.05f;
+        const float EPSILON = 0.0025f;
         const float ORTH_COST = 1.0f;
         const float DIAG_COST = 1.4f;
 

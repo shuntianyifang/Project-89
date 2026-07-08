@@ -67,9 +67,11 @@ public partial class GameManager : Node
         _renderer.SetGrid(_scenario.Map);
         _renderer.SetBlueUnits(_scenario.BlueBattalions);
         _renderer.SetRedUnits(_scenario.RedBattalions);
-        _renderer.OnUnitClicked = OnUnitClicked;
-        _renderer.OnTileClicked = OnTileClicked;
-        _renderer.SetCameraRef(_camCtrl.Cam);
+       _renderer.OnUnitClicked = OnUnitClicked;
+       _renderer.OnTileClicked = OnTileClicked;
+        _renderer.OnRightClick = OnRightClick;
+        _renderer.OnHoverChanged = OnHoverChanged;
+       _renderer.SetCameraRef(_camCtrl.Cam);
         AddChild(_renderer);
         _ui = new CanvasLayer();
         AddChild(_ui);
@@ -99,9 +101,12 @@ public partial class GameManager : Node
         {
             _sel = new SelState { Unit = bat, Pos = pos };
             _renderer.SetSel(pos);
-            bool noZOC(Vector2I p) => false;
+            var enemyFaction = _turnMgr.CurrentFaction == 1 ? 2 : 1;
+            var enemyPositions = (enemyFaction == 1 ? _scenario.BlueBattalions : _scenario.RedBattalions).Select(u => u.Item2);
+            var enemyZOC = _scenario.ZOC.GetFactionZOC(enemyPositions);
+            bool isEnemyZOC(Vector2I p) => enemyZOC.Contains(p);
             bool occ(Vector2I p) => _scenario.BlueBattalions.Concat(_scenario.RedBattalions).Any(u => u.Item2 == p && u.Item1 != bat);
-            _currentReachable = _scenario.Movement.GetReachableTiles(pos, bat.CurrentAP, noZOC, occ);
+            _currentReachable = _scenario.Movement.GetReachableTiles(pos, bat.CurrentAP, isEnemyZOC, occ);
             _renderer.SetReachable(_currentReachable, bat.CurrentAP);
             _infoLabel.Text = "Selected: " + bat.Name + " reachable " + _currentReachable.Count + " tiles";
         }
@@ -118,7 +123,7 @@ public partial class GameManager : Node
         }
     }
 
-    void OnTileClicked(Vector2I pos)
+   void OnTileClicked(Vector2I pos)
     {
         if (_inCombat) return;
         if (_sel != null && _currentReachable != null && _currentReachable.ContainsKey(pos))
@@ -135,9 +140,12 @@ public partial class GameManager : Node
             _renderer.SetBlueUnits(_scenario.BlueBattalions);
             _renderer.SetRedUnits(_scenario.RedBattalions);
         // Recompute reachable for new position and keep selected
-        bool noZ(Vector2I p) => false;
+        var enemyFaction2 = _turnMgr.CurrentFaction == 1 ? 2 : 1;
+        var enemyPositions2 = (enemyFaction2 == 1 ? _scenario.BlueBattalions : _scenario.RedBattalions).Select(u => u.Item2);
+        var enemyZOC2 = _scenario.ZOC.GetFactionZOC(enemyPositions2);
+        bool isEnemyZOC2(Vector2I p) => enemyZOC2.Contains(p);
         bool oc(Vector2I p) => _scenario.BlueBattalions.Concat(_scenario.RedBattalions).Any(u => u.Item2 == p && u.Item1 != _sel.Unit);
-        _currentReachable = _scenario.Movement.GetReachableTiles(pos, _sel.Unit.CurrentAP, noZ, oc);
+        _currentReachable = _scenario.Movement.GetReachableTiles(pos, _sel.Unit.CurrentAP, isEnemyZOC2, oc);
         _renderer.SetReachable(_currentReachable, _sel.Unit.CurrentAP);
         _renderer.SetSel(pos);
         _infoLabel.Text = "Moved to (" + pos.X + "," + pos.Y + ") AP=" + _sel.Unit.CurrentAP.ToString("0.0");
@@ -145,7 +153,75 @@ public partial class GameManager : Node
         else { _sel = null; _renderer.ClearSel(); _currentReachable.Clear(); _infoLabel.Text = "Click to select"; }
     }
 
-    void OnEndTurn()
+    void OnRightClick()
+    {
+        if (_inCombat) return;
+        _sel = null;
+        _renderer.ClearSel();
+        _currentReachable.Clear();
+        _infoLabel.Text = "Click to select";
+    }
+
+    static readonly string[] TerrainNames = { "平原", "森林", "半城镇", "城镇" };
+    static readonly string[] InfraNames = { "", "支线公路", "高速公路" };
+
+    void OnHoverChanged(Vector2I? pos)
+    {
+        if (pos == null)
+        {
+            if (_sel != null)
+                _infoLabel.Text = "Selected: " + _sel.Unit.Name + " reachable " + _currentReachable.Count + " tiles";
+            else
+                _infoLabel.Text = "Click to select";
+            return;
+        }
+
+        var p = pos.Value;
+        var tile = _scenario.Map.GetTile(p);
+        string terrainName = TerrainNames[tile.TerrainType];
+        string info = "地形: " + terrainName;
+
+        if (tile.InfraType > 0)
+            info += " (" + InfraNames[tile.InfraType] + ")";
+
+        if (!tile.IsPassable)
+        {
+            info += " [不可通行]";
+            if (_sel != null) info += " | 到达剩余AP: 0";
+            _infoLabel.Text = info;
+            return;
+        }
+
+        float moveCost = tile.GetMovementCost();
+        if (!float.IsPositiveInfinity(moveCost))
+            info += " 消耗" + moveCost.ToString("0.0");
+
+        if (_sel == null)
+        {
+            _infoLabel.Text = info;
+            return;
+        }
+
+        // 有选中的单位时显示剩余AP
+        if (p == _sel.Pos)
+        {
+            info += " | 当前所在";
+        }
+        else if (_currentReachable.TryGetValue(p, out float totalCost))
+        {
+            float remaining = _sel.Unit.CurrentAP - totalCost;
+            info += " | 到达剩余AP: " + remaining.ToString("0.0");
+        }
+        else
+        {
+            // 不在reachable范围内 → AP不够
+            info += " | 到达剩余AP: 0";
+        }
+
+        _infoLabel.Text = info;
+    }
+
+   void OnEndTurn()
     {
         if (_inCombat) return;
         _sel = null; _renderer.ClearSel(); _currentReachable.Clear();
@@ -154,8 +230,9 @@ public partial class GameManager : Node
         _infoLabel.Text = "Turn " + _turnMgr.TurnNumber + " - " + (_turnMgr.CurrentFaction == 1 ? "NATO" : "Warsaw Pact");
     }
 
-    public override void _Process(double delta)
+    public override void _Input(InputEvent @event)
     {
-        if (Input.IsKeyPressed(Key.Space) && !_inCombat) OnEndTurn();
+        if (@event is InputEventKey key && key.Pressed && !key.Echo && key.Keycode == Key.Space && !_inCombat)
+            OnEndTurn();
     }
 }
