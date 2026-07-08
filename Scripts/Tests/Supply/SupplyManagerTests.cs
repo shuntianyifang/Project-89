@@ -120,6 +120,67 @@ namespace ColdWarWargame.Tests.Supply
             Assert(sp[4, 4] > 0f, "Bottom-right still supplied (ZOC penalty on 5x5 not enough to block)");
         }
 
+        static void Test_Hub_Reactivation_ExtendsPrimaryRange()
+        {
+            var map = new ColdWarWargame.Systems.Battlefield.GridMap(1, 30);
+            var net = new SupplyNetwork();
+
+            // Red supply from top y=0. Plain cost=2 means single-source 36 SP cannot reach y=29.
+            var noHub = net.ComputeSupplySP(map, 2, new HashSet<Vector2I>(), new HashSet<Vector2I>());
+            AssertFloat(noHub[0, 29], 0f, "Without hub reactivation, far tile stays unsupplied");
+
+            // Hub at y=17 is reachable by primary source; it should reactivate to a fresh 36 SP source.
+            var hubs = new HashSet<Vector2I> { new Vector2I(0, 17) };
+            var withHub = net.ComputeSupplySP(
+                map,
+                2,
+                new HashSet<Vector2I>(),
+                new HashSet<Vector2I>(),
+                null,
+                hubs,
+                null);
+
+            Assert(withHub[0, 29] > 0f, "Activated hub extends strategic supply deeper than primary-only range");
+        }
+
+        static void Test_DisconnectedAirport_ProvidesSecondarySupply()
+        {
+            int[,] terrain = {
+                { 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0 },
+                { -1, -1, -1, -1, -1 },
+                { 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0 }
+            };
+
+            var map = ColdWarWargame.Systems.Battlefield.GridMap.FromLayers(terrain);
+            var net = new SupplyNetwork();
+
+            // Red supply source is y=0; row y=5 is fully blocked, so lower half is disconnected.
+            var noAirport = net.ComputeSupplySP(map, 2, new HashSet<Vector2I>(), new HashSet<Vector2I>());
+            AssertFloat(noAirport[2, 10], 0f, "Without airport fallback, disconnected pocket remains OOS");
+
+            var airports = new HashSet<Vector2I> { new Vector2I(2, 8) };
+            var withAirport = net.ComputeSupplySP(
+                map,
+                2,
+                new HashSet<Vector2I>(),
+                new HashSet<Vector2I>(),
+                null,
+                null,
+                airports);
+
+            Assert(withAirport[2, 10] > 0f, "Disconnected airport emits local secondary supply");
+            Assert(withAirport[2, 10] <= 18f + 0.01f, "Secondary supply is capped by 18 SP budget");
+        }
+
         // ========== SupplyManager Tests ==========
 
         static void Test_OOS_Accumulation()
@@ -265,6 +326,8 @@ namespace ColdWarWargame.Tests.Supply
             Test_PlainMap_AllSupplied();
             Test_ImpassableBlocks();
             Test_EnemyZOC_Penalty();
+            Test_Hub_Reactivation_ExtendsPrimaryRange();
+            Test_DisconnectedAirport_ProvidesSecondarySupply();
             Test_OOS_Accumulation();
             Test_FatigueRecovery();
             Test_HpRecovery_LinkedToFatigueRecover2();

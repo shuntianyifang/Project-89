@@ -32,7 +32,7 @@ namespace ColdWarWargame.Systems.Gameplay
             _infoLabel = new Label();
             _infoLabel.Position = new Vector2(10, 10);
             _infoLabel.AddThemeFontSizeOverride("font_size", 16);
-            _infoLabel.Text = "Fulda Gap 1985 - Click to select, reachable tile to move";
+            _infoLabel.Text = "Fulda Gap 1985 - Click to select, reachable tile to move | Supply Overlay [F6]";
             _canvasLayer.AddChild(_infoLabel);
 
             _statusLabel = new Label();

@@ -68,10 +68,37 @@ namespace ColdWarWargame.Scenarios
             "000000000000020000000000000000",
         };
 
+        // Supply special layer (independent from infra/road layer):
+        // '0' = none, 'H' = hub, 'A' = airport, 'B' = both hub + airport on same tile.
+        static readonly string[] SupplySpecialRows = {
+            "000000000000000000000000000000",
+            "000000000000000000000000000000",
+            "000000000000000000000000000000",
+            "000000000000000000000000000000",
+            "000000000000000000000000000000",
+            "000000000000H00000000000000000",
+            "000000000000000000000000000000",
+            "000000000000000000000000000000",
+            "000000000000000000000000000000",
+            "000000000000000000000000000000",
+            "000000000000B00000000000000000",
+            "000000000000000000000000000000",
+            "000000000000000000000000000000",
+            "000000000000000000000000000000",
+            "000000000000000000000000000000",
+            "000000000000000000000000000000",
+            "000000000A00000000000000000000",
+            "000000000000000000000000000000",
+            "000000000000000000000000000000",
+            "000000000000000000000000000000",
+        };
+
         public Systems.Battlefield.GridMap Map { get; private set; }
         public MovementResolver Movement { get; private set; }
         public ZOCManager ZOC { get; private set; }
         public int[,] OccupationMap { get; private set; }
+        public HashSet<Vector2I> SupplyHubs { get; private set; } = new();
+        public HashSet<Vector2I> SupplyAirports { get; private set; } = new();
 
         public List<(Battalion bat, Vector2I pos)> BlueBattalions { get; private set; } = new();
         public List<(Battalion bat, Vector2I pos)> RedBattalions { get; private set; } = new();
@@ -79,6 +106,7 @@ namespace ColdWarWargame.Scenarios
         public FuldaGapScenario()
         {
             BuildMap();
+            BuildSupplySpecialNodes();
             Movement = new MovementResolver(Map);
             ZOC = new ZOCManager(Map);
             LoadOccupationState();
@@ -101,6 +129,39 @@ namespace ColdWarWargame.Scenarios
             }
 
             Map = Systems.Battlefield.GridMap.FromLayers(terrain, infra);
+        }
+
+        void BuildSupplySpecialNodes()
+        {
+            SupplyHubs.Clear();
+            SupplyAirports.Clear();
+
+            for (int y = 0; y < MAP_H; y++)
+            {
+                string row = SupplySpecialRows[y].PadRight(MAP_W, '0');
+                for (int x = 0; x < MAP_W; x++)
+                {
+                    var pos = new Vector2I(x, y);
+                    switch (char.ToUpperInvariant(row[x]))
+                    {
+                        case 'H':
+                            SupplyHubs.Add(pos);
+                            break;
+                        case 'A':
+                            SupplyAirports.Add(pos);
+                            break;
+                        case 'B':
+                            SupplyHubs.Add(pos);
+                            SupplyAirports.Add(pos);
+                            break;
+                    }
+                }
+            }
+        }
+
+        public (HashSet<Vector2I> hubs, HashSet<Vector2I> airports) GetSupplySpecialNodes()
+        {
+            return (new HashSet<Vector2I>(SupplyHubs), new HashSet<Vector2I>(SupplyAirports));
         }
 
         public void LoadOOB(string bluePath, string redPath)
@@ -222,6 +283,9 @@ namespace ColdWarWargame.Scenarios
             GD.Print("  森林: " + terrainCount[1] + " 格");
             GD.Print("  半城镇: " + terrainCount[2] + " 格");
             GD.Print("  城镇: " + terrainCount[3] + " 格");
+            GD.Print("--- 补给设施统计 ---");
+            GD.Print("  Hub: " + SupplyHubs.Count + " 格");
+            GD.Print("  Airport: " + SupplyAirports.Count + " 格");
 
             GD.Print("============================================");
         }

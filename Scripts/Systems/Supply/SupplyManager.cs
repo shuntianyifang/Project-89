@@ -9,14 +9,35 @@ namespace ColdWarWargame.Systems.Supply
     {
         private SupplyNetwork _network = new();
 
+        public float[,] ComputeFactionSupplySP(
+            int faction,
+            ColdWarWargame.Systems.Battlefield.GridMap map,
+            IEnumerable<(Battalion bat, Vector2I pos)> battalions,
+            HashSet<Vector2I> enemyOccupied,
+            HashSet<Vector2I> enemyZOC,
+            HashSet<Vector2I> hubs = null,
+            HashSet<Vector2I> airports = null)
+        {
+            return _network.ComputeSupplySP(
+                map,
+                faction,
+                enemyOccupied,
+                enemyZOC,
+                GetEnemyAP(battalions, faction),
+                hubs,
+                airports);
+        }
+
         public void UpdateFactionEndTurn(
             int faction,
             ColdWarWargame.Systems.Battlefield.GridMap map,
             IEnumerable<(Battalion bat, Vector2I pos)> battalions,
             HashSet<Vector2I> enemyOccupied,
-            HashSet<Vector2I> enemyZOC)
+            HashSet<Vector2I> enemyZOC,
+            HashSet<Vector2I> hubs = null,
+            HashSet<Vector2I> airports = null)
         {
-            var sp = _network.ComputeSupplySP(map, faction, enemyOccupied, enemyZOC, GetEnemyAP(battalions, faction));
+            var sp = ComputeFactionSupplySP(faction, map, battalions, enemyOccupied, enemyZOC, hubs, airports);
 
             foreach (var (bat, pos) in battalions)
             {

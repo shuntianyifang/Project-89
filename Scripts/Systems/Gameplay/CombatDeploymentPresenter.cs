@@ -6,6 +6,7 @@ using ColdWarWargame.Models;
 using ColdWarWargame.Rendering;
 using ColdWarWargame.Scenarios;
 using ColdWarWargame.Systems.Combat;
+using ColdWarWargame.Systems.Battlefield;
 using ColdWarWargame.Systems.Turns;
 using ColdWarWargame.UI;
 
@@ -19,6 +20,7 @@ namespace ColdWarWargame.Systems.Gameplay
         private readonly FuldaGapScenario _scenario;
         private readonly TurnManager _turnMgr;
         private readonly CombatResolver _resolver;
+        private readonly VisionResolver _visionResolver = new();
 
         private CombatDeploymentPanel _panel;
         private CombatForce _attackerStored;
@@ -58,6 +60,7 @@ namespace ColdWarWargame.Systems.Gameplay
             _panel = new CombatDeploymentPanel();
             _canvasLayer.AddChild(_panel);
             _panel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+            RefreshRendererForFaction(attacker.Faction);
 
             var defenderAutoEligible = (_turnMgr.CurrentFaction == 1 ? _scenario.RedBattalions : _scenario.BlueBattalions)
                 .Where(u => u.Item1 != defender)
@@ -76,6 +79,7 @@ namespace ColdWarWargame.Systems.Gameplay
                 _attackerStored = CloneForce(attackerForce);
 
                 _turnMgr.FinishAttackerDeployment();
+                RefreshRendererForFaction(defender.Faction);
                 _panel.ShowDefenderPhase(
                     _attackerStored,
                     attacker,
@@ -89,6 +93,7 @@ namespace ColdWarWargame.Systems.Gameplay
             {
                 _defenderStored = CloneForce(defenderForce);
                 _turnMgr.CompleteCombatResolution();
+                RefreshRendererForFaction(attacker.Faction);
 
                 var ctx = new CombatContext
                 {
@@ -165,6 +170,7 @@ namespace ColdWarWargame.Systems.Gameplay
             _panel.OnCancel = () =>
             {
                 _turnMgr.CancelCombat();
+                RefreshRendererForFaction(_turnMgr.CurrentFaction);
                 Dismiss();
                 onCancelled?.Invoke();
             };
@@ -199,8 +205,24 @@ namespace ColdWarWargame.Systems.Gameplay
                 _panel = null;
             }
             _isActive = false;
-            _renderer.SetBlueUnits(_scenario.BlueBattalions);
-            _renderer.SetRedUnits(_scenario.RedBattalions);
+            RefreshRendererForFaction(_turnMgr.CurrentFaction);
+        }
+
+        private void RefreshRendererForFaction(int faction)
+        {
+            var all = _scenario.BlueBattalions.Concat(_scenario.RedBattalions);
+            var visible = _visionResolver.UpdateGlobalVision(faction, all);
+
+            var blueVisible = faction == 1
+                ? _scenario.BlueBattalions
+                : _scenario.BlueBattalions.Where(u => visible.Contains(u.pos)).ToList();
+
+            var redVisible = faction == 2
+                ? _scenario.RedBattalions
+                : _scenario.RedBattalions.Where(u => visible.Contains(u.pos)).ToList();
+
+            _renderer.SetBlueUnits(blueVisible);
+            _renderer.SetRedUnits(redVisible);
         }
     }
 }

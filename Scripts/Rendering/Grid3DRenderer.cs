@@ -8,6 +8,14 @@ using GridMap = ColdWarWargame.Systems.Battlefield.GridMap;
 
 namespace ColdWarWargame.Rendering
 {
+    public enum SupplyOverlayDisplayMode
+    {
+        Off,
+        Friendly,
+        Enemy,
+        Both
+    }
+
         public partial class Grid3DRenderer : Node3D
     {
         [Export] public float CellSize { get; set; } = 1.0f;
@@ -22,7 +30,9 @@ namespace ColdWarWargame.Rendering
         private Node3D _unitRoot;
         private Node3D _highlightRoot;
         private Node3D _linesRoot;
-                private Node3D _frontlineRoot;
+        private Node3D _frontlineRoot;
+        private Node3D _supplyOverlayRoot;
+        private readonly List<MultiMeshInstance3D> _supplyOverlayInstances = new();
         private float _flashTimer = 0f;
         private bool _flashOn = true;
         private float _selectionAlpha = 0.6f;
@@ -30,11 +40,17 @@ namespace ColdWarWargame.Rendering
 
       private class UnitVis { public MeshInstance3D Body; public Node3D Root; public Label InPanelName; public Vector2I GridPos; }
       private List<UnitVis> _unitVisuals = new();
-       private Vector2? _rightClickStart = null;
-       private Vector2I? _hoveredPos = null;
+        private Vector2? _rightClickStart = null;
+        private Vector2I? _hoveredPos = null;
         private Node3D _pathRoot;
-                private List<Node3D> _frontlineMarkers = new();
+        private List<Node3D> _frontlineMarkers = new();
         private List<MeshInstance3D> _frontlineRibbonMeshes = new();
+        private float[,] _blueSupplySp;
+        private float[,] _redSupplySp;
+        private HashSet<Vector2I> _blueOosPositions = new();
+        private HashSet<Vector2I> _redOosPositions = new();
+        private SupplyOverlayDisplayMode _supplyOverlayMode = SupplyOverlayDisplayMode.Off;
+        private int _activeFaction = 1;
         private bool _isAnimating;
         private System.Collections.Generic.List<Vector2I> _animPath;
         private int _animIndex;
@@ -58,6 +74,32 @@ namespace ColdWarWargame.Rendering
         public void SetGrid(GridMap map) { _map = map; BuildTerrain(); }
         public void SetBlueUnits(List<(Battalion bat, Vector2I pos)> u) { _blueUnits = u; BuildUnits(); }
         public void SetRedUnits(List<(Battalion bat, Vector2I pos)> u) { _redUnits = u; BuildUnits(); }
+        public void SetActiveFaction(int faction)
+        {
+            _activeFaction = faction;
+            UpdateSupplyOverlay();
+        }
+
+        public void SetSupplyOverlayData(float[,] blueSp, float[,] redSp, SupplyOverlayDisplayMode mode)
+        {
+            _blueSupplySp = blueSp;
+            _redSupplySp = redSp;
+            _supplyOverlayMode = mode;
+            UpdateSupplyOverlay();
+        }
+
+        public void SetSupplyOverlayMode(SupplyOverlayDisplayMode mode)
+        {
+            _supplyOverlayMode = mode;
+            UpdateSupplyOverlay();
+        }
+
+        public void SetUnitSupplyStatus(HashSet<Vector2I> blueOos, HashSet<Vector2I> redOos)
+        {
+            _blueOosPositions = blueOos ?? new HashSet<Vector2I>();
+            _redOosPositions = redOos ?? new HashSet<Vector2I>();
+            BuildUnits();
+        }
         public void SetReachable(Dictionary<Vector2I, float> r, float uap = 0f) { _reachableTiles = r; _selectedUnitAP = uap; UpdateHighlights(); }
         public void ClearSel() { _selectedPos = null; _reachableTiles.Clear(); _artilleryRangeTiles.Clear(); foreach (var uv in _unitVisuals) if (uv.InPanelName != null) uv.InPanelName.Visible = false; UpdateHighlights(); }
         public void SetArtilleryRange(HashSet<Vector2I> tiles) { _artilleryRangeTiles = tiles ?? new(); UpdateHighlights(); }
@@ -94,21 +136,26 @@ namespace ColdWarWargame.Rendering
             _linesRoot = new Node3D(); AddChild(_linesRoot);
             if (_frontlineRoot != null) { RemoveChild(_frontlineRoot); _frontlineRoot.QueueFree(); }
             _frontlineRoot = new Node3D(); AddChild(_frontlineRoot);
+            if (_supplyOverlayRoot != null) { RemoveChild(_supplyOverlayRoot); _supplyOverlayRoot.QueueFree(); }
+            _supplyOverlayRoot = new Node3D(); AddChild(_supplyOverlayRoot);
             var lm = new StandardMaterial3D { AlbedoColor = Colors.Black, ShadingMode = StandardMaterial3D.ShadingModeEnum.Unshaded };
             float lw = 0.03f;
             for (int x = 0; x <= w; x++) { var l = new MeshInstance3D(); l.Mesh = new BoxMesh { Size = new Vector3(lw, 0.02f, gh + 0.1f) }; l.MaterialOverride = lm; l.Position = new Vector3(x, 0.005f, gh / 2); _linesRoot.AddChild(l); }
             for (int y = 0; y <= h; y++) { var l = new MeshInstance3D(); l.Mesh = new BoxMesh { Size = new Vector3(gw + 0.1f, 0.02f, lw) }; l.MaterialOverride = lm; l.Position = new Vector3(gw / 2, 0.005f, y); _linesRoot.AddChild(l); }
+            UpdateSupplyOverlay();
         }
 
         void BuildUnits()
         {
             if (_unitRoot != null) { RemoveChild(_unitRoot); _unitRoot.QueueFree(); }
             _unitRoot = new Node3D(); AddChild(_unitRoot); _unitVisuals.Clear();
-            foreach (var u in _blueUnits) CreateUnitVis(u.pos, new Color(0.27f, 0.53f, 1.0f), new Color(0.5f, 0.7f, 1.0f), u.bat);
-            foreach (var u in _redUnits) CreateUnitVis(u.pos, new Color(1.0f, 0.27f, 0.27f), new Color(1.0f, 0.6f, 0.6f), u.bat);
+            foreach (var u in _blueUnits)
+                CreateUnitVis(u.pos, new Color(0.27f, 0.53f, 1.0f), new Color(0.5f, 0.7f, 1.0f), u.bat, _blueOosPositions.Contains(u.pos));
+            foreach (var u in _redUnits)
+                CreateUnitVis(u.pos, new Color(1.0f, 0.27f, 0.27f), new Color(1.0f, 0.6f, 0.6f), u.bat, _redOosPositions.Contains(u.pos));
         }
 
-        void CreateUnitVis(Vector2I pos, Color bodyCol, Color topCol, Battalion bat)
+        void CreateUnitVis(Vector2I pos, Color bodyCol, Color topCol, Battalion bat, bool isOos)
         {
             float cx = pos.X * CellSize + CellSize / 2, cz = pos.Y * CellSize + CellSize / 2;
             var root = new Node3D(); root.Position = new Vector3(cx, 0, cz);
@@ -124,8 +171,135 @@ namespace ColdWarWargame.Rendering
             labelRoot.Position = new Vector3(0, 1.5f, 0);
             root.AddChild(labelRoot);
 
+            if (isOos)
+            {
+                var oosLabel = new Label3D();
+                oosLabel.Text = "OOS";
+                oosLabel.Position = new Vector3(0f, 1.25f, 0f);
+                oosLabel.Billboard = BaseMaterial3D.BillboardModeEnum.Enabled;
+                oosLabel.Modulate = new Color(1f, 0.25f, 0.25f, 0.95f);
+                oosLabel.FontSize = 42;
+                root.AddChild(oosLabel);
+            }
+
 
         var vp = labelRoot.GetChild<SubViewport>(0); var nameLbl = vp.GetChild<Label>(vp.GetChildCount() - 1); _unitVisuals.Add(new UnitVis { Body = body, Root = root, GridPos = pos, InPanelName = nameLbl }); }
+
+        private void UpdateSupplyOverlay()
+        {
+            if (_map == null)
+                return;
+
+            if (_supplyOverlayRoot == null)
+            {
+                _supplyOverlayRoot = new Node3D();
+                AddChild(_supplyOverlayRoot);
+            }
+
+            foreach (var child in _supplyOverlayRoot.GetChildren())
+            {
+                if (child is Node node)
+                    node.QueueFree();
+            }
+
+            _supplyOverlayInstances.Clear();
+
+            if (_supplyOverlayMode == SupplyOverlayDisplayMode.Off)
+                return;
+
+            bool showBlue = _supplyOverlayMode == SupplyOverlayDisplayMode.Both ||
+                            (_supplyOverlayMode == SupplyOverlayDisplayMode.Friendly && _activeFaction == 1) ||
+                            (_supplyOverlayMode == SupplyOverlayDisplayMode.Enemy && _activeFaction == 2);
+
+            bool showRed = _supplyOverlayMode == SupplyOverlayDisplayMode.Both ||
+                           (_supplyOverlayMode == SupplyOverlayDisplayMode.Friendly && _activeFaction == 2) ||
+                           (_supplyOverlayMode == SupplyOverlayDisplayMode.Enemy && _activeFaction == 1);
+
+            int w = _map.Width;
+            int h = _map.Height;
+            var sharedMesh = new BoxMesh { Size = new Vector3(CellSize * 0.9f, 0.02f, CellSize * 0.9f) };
+            var blueMaterials = CreateSupplyMaterials(new Color(0.2f, 0.5f, 1f), new float[] { 0.12f, 0.18f, 0.24f });
+            var redMaterials = CreateSupplyMaterials(new Color(1f, 0.25f, 0.25f), new float[] { 0.12f, 0.18f, 0.24f });
+            var bothMaterials = CreateSupplyMaterials(new Color(0.78f, 0.2f, 0.88f), new float[] { 0.12f, 0.18f, 0.24f });
+
+            var blueCells = new List<Vector3>[3] { new(), new(), new() };
+            var redCells = new List<Vector3>[3] { new(), new(), new() };
+            var bothCells = new List<Vector3>[3] { new(), new(), new() };
+
+            for (int x = 0; x < w; x++)
+            {
+                for (int y = 0; y < h; y++)
+                {
+                    float blue = showBlue && _blueSupplySp != null ? _blueSupplySp[x, y] : 0f;
+                    float red = showRed && _redSupplySp != null ? _redSupplySp[x, y] : 0f;
+                    if (blue <= 0f && red <= 0f)
+                        continue;
+
+                    float strength = Mathf.Clamp(Mathf.Max(blue, red) / 36f, 0f, 1f);
+                    int bucket = strength < 0.34f ? 0 : (strength < 0.67f ? 1 : 2);
+                    var pos = new Vector3(x * CellSize + CellSize / 2, 0.012f, y * CellSize + CellSize / 2);
+                    if (blue > 0f && red > 0f)
+                    {
+                        bothCells[bucket].Add(pos);
+                    }
+                    else if (blue > 0f)
+                    {
+                        blueCells[bucket].Add(pos);
+                    }
+                    else
+                    {
+                        redCells[bucket].Add(pos);
+                    }
+                }
+            }
+
+            for (int i = 0; i < 3; i++)
+            {
+                CreateSupplyOverlayLayer(sharedMesh, blueMaterials[i], blueCells[i]);
+                CreateSupplyOverlayLayer(sharedMesh, redMaterials[i], redCells[i]);
+                CreateSupplyOverlayLayer(sharedMesh, bothMaterials[i], bothCells[i]);
+            }
+        }
+
+        private static StandardMaterial3D[] CreateSupplyMaterials(Color baseColor, float[] alphaLevels)
+        {
+            var materials = new StandardMaterial3D[alphaLevels.Length];
+            for (int i = 0; i < alphaLevels.Length; i++)
+            {
+                materials[i] = new StandardMaterial3D
+                {
+                    AlbedoColor = new Color(baseColor.R, baseColor.G, baseColor.B, alphaLevels[i]),
+                    ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+                    Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+                    NoDepthTest = false
+                };
+            }
+            return materials;
+        }
+
+        private void CreateSupplyOverlayLayer(Mesh sharedMesh, Material sharedMaterial, List<Vector3> cells)
+        {
+            if (cells == null || cells.Count == 0)
+                return;
+
+            var instance = new MultiMeshInstance3D();
+            var multiMesh = new MultiMesh
+            {
+                Mesh = sharedMesh,
+                TransformFormat = MultiMesh.TransformFormatEnum.Transform3D,
+                InstanceCount = cells.Count
+            };
+
+            for (int i = 0; i < cells.Count; i++)
+            {
+                multiMesh.SetInstanceTransform(i, new Transform3D(Basis.Identity, cells[i]));
+            }
+
+            instance.Multimesh = multiMesh;
+            instance.MaterialOverride = sharedMaterial;
+            _supplyOverlayRoot.AddChild(instance);
+            _supplyOverlayInstances.Add(instance);
+        }
 
         Node3D BuildLabel(Battalion bat, Color topColor)
         {

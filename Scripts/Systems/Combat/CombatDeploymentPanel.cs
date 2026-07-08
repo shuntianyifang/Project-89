@@ -13,7 +13,11 @@ namespace ColdWarWargame.UI
     /// </summary>
     public partial class CombatDeploymentPanel : Control
     {
-        public CombatDeploymentPanel() { }
+        public CombatDeploymentPanel()
+        {
+            SetProcess(true);
+            SetProcessInput(true);
+        }
 
         enum DeploymentSide
         {
@@ -55,6 +59,9 @@ namespace ColdWarWargame.UI
         private Button _nextBtn;
         private Control _contentRoot;
         private Control _resultRoot;
+        private Battalion _draggedUnit;
+        private Panel _dragPreview;
+        private Label _dragPreviewLabel;
 
         bool IsLeadSlotLocked()
         {
@@ -160,7 +167,7 @@ namespace ColdWarWargame.UI
 
             // ---- 可用单位列表 ----
             var availLabel = new Label();
-            availLabel.Text = "Available Forces — click a battalion, then click a slot to assign";
+            availLabel.Text = "Available Forces — drag battalion cards into slots (or click-select then click slot)";
             availLabel.AddThemeFontSizeOverride("font_size", 13);
             availLabel.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.7f));
             vbox.AddChild(availLabel);
@@ -247,6 +254,9 @@ namespace ColdWarWargame.UI
             btnRow.AddChild(_confirmBtn);
 
             _nextBtn = null;
+
+            EnsureDragPreview();
+            HideDragPreview();
         }
 
         Button MakeUnitCard(Battalion bat, Vector2I pos, bool isAvailable, bool isSelected, bool isAttackerSide)
@@ -276,6 +286,14 @@ namespace ColdWarWargame.UI
             btn.Pressed += () =>
             {
                 _selectedUnit = bat;
+            };
+
+            btn.GuiInput += (InputEvent ev) =>
+            {
+                if (ev is InputEventMouseButton mb && mb.ButtonIndex == MouseButton.Left && mb.Pressed)
+                {
+                    StartDrag(bat);
+                }
             };
 
             return btn;
@@ -365,6 +383,108 @@ namespace ColdWarWargame.UI
                     EnableConfirm();
                     RebuildAvailable();
                 }
+            }
+        }
+
+        private void StartDrag(Battalion bat)
+        {
+            if (bat == null)
+                return;
+            if (IsUnitAssigned(bat))
+                return;
+
+            _draggedUnit = bat;
+            EnsureDragPreview();
+            _dragPreviewLabel.Text = bat.Name;
+            _dragPreview.Visible = true;
+        }
+
+        private void EnsureDragPreview()
+        {
+            if (_dragPreview != null)
+            {
+                // BuildUI 会重建内容根节点，确保拖拽预览始终位于最上层
+                if (_dragPreview.GetParent() != this)
+                {
+                    _dragPreview.Reparent(this);
+                }
+                MoveChild(_dragPreview, -1);
+                return;
+            }
+
+            _dragPreview = new Panel();
+            _dragPreview.Size = new Vector2(210, 34);
+            _dragPreview.MouseFilter = MouseFilterEnum.Ignore;
+            _dragPreview.TopLevel = true;
+            _dragPreview.ZIndex = 1000;
+
+            var style = new StyleBoxFlat();
+            style.BgColor = new Color(0.15f, 0.25f, 0.4f, 0.85f);
+            style.BorderColor = new Color(0.55f, 0.75f, 1f);
+            style.BorderWidthLeft = 1;
+            style.BorderWidthRight = 1;
+            style.BorderWidthTop = 1;
+            style.BorderWidthBottom = 1;
+            style.CornerRadiusTopLeft = 4;
+            style.CornerRadiusTopRight = 4;
+            style.CornerRadiusBottomLeft = 4;
+            style.CornerRadiusBottomRight = 4;
+            _dragPreview.AddThemeStyleboxOverride("panel", style);
+
+            _dragPreviewLabel = new Label();
+            _dragPreviewLabel.Position = new Vector2(8, 7);
+            _dragPreviewLabel.AddThemeFontSizeOverride("font_size", 12);
+            _dragPreviewLabel.AddThemeColorOverride("font_color", Colors.White);
+            _dragPreview.AddChild(_dragPreviewLabel);
+
+            AddChild(_dragPreview);
+            MoveChild(_dragPreview, -1);
+        }
+
+        private void HideDragPreview()
+        {
+            _draggedUnit = null;
+            if (_dragPreview != null)
+                _dragPreview.Visible = false;
+        }
+
+        private void TryDropDraggedUnit(Vector2 mousePos)
+        {
+            if (_draggedUnit == null)
+                return;
+
+            for (int i = 0; i < _slotButtons.Length; i++)
+            {
+                var slot = _slotButtons[i];
+                if (slot == null)
+                    continue;
+                if (!slot.GetGlobalRect().HasPoint(mousePos))
+                    continue;
+
+                if (i == 0 && IsLeadSlotLocked())
+                    return;
+
+                var existing = GetCurrentForceSlotBattalion(i);
+                if (existing != null)
+                    return;
+
+                bool ok = i switch
+                {
+                    0 => _draggedUnit.CanFillMain(),
+                    1 => _draggedUnit.CanFillMain(),
+                    2 => _draggedUnit.CanFillSupport(),
+                    3 => _draggedUnit.CanFillArtillery(),
+                    _ => false
+                };
+                if (!ok)
+                    return;
+
+                SetCurrentForceSlotBattalion(i, _draggedUnit);
+                _selectedUnit = null;
+                UpdateSlots();
+                EnableConfirm();
+                RebuildAvailable();
+                return;
             }
         }
 
@@ -749,11 +869,27 @@ namespace ColdWarWargame.UI
         }
         public override void _Input(InputEvent @event)
         {
+            if (@event is InputEventMouseButton mouseButton && mouseButton.ButtonIndex == MouseButton.Left && !mouseButton.Pressed)
+            {
+                if (_draggedUnit != null)
+                    TryDropDraggedUnit(mouseButton.Position);
+                HideDragPreview();
+            }
+
             if (@event is InputEventKey key && key.Pressed && !key.Echo && key.Keycode == Key.Escape)
             {
                 if (_resultRoot == null) return;
                 OnResultDismissed?.Invoke();
             }
+        }
+
+        public override void _Process(double delta)
+        {
+            if (_dragPreview == null || !_dragPreview.Visible)
+                return;
+
+            var mp = GetViewport().GetMousePosition();
+            _dragPreview.GlobalPosition = mp + new Vector2(12, 12);
         }
 
     }

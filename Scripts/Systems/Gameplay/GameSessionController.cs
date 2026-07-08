@@ -32,6 +32,7 @@ namespace ColdWarWargame.Systems.Gameplay
         private readonly VisionResolver _visionResolver = new();
 
         private Vector2 _lastMouseScreenPos;
+        private SupplyOverlayDisplayMode _supplyOverlayMode = SupplyOverlayDisplayMode.Off;
 
         private static readonly string[] TerrainNames = { "平原", "森林", "半城镇", "城镇" };
         private static readonly string[] InfraNames = { "", "支线公路", "高速公路" };
@@ -259,8 +260,19 @@ namespace ColdWarWargame.Systems.Gameplay
 
         public void HandleKeyboard(InputEventKey key)
         {
-            if (key.Pressed && !key.Echo && key.Keycode == Key.Space && _rules.IsActionAllowed(_flow.CurrentState, GameAction.EndTurn))
+            if (!key.Pressed || key.Echo)
+                return;
+
+            if (key.Keycode == Key.Space && _rules.IsActionAllowed(_flow.CurrentState, GameAction.EndTurn))
+            {
                 OnEndTurn();
+                return;
+            }
+
+            if (key.Keycode == Key.F6)
+            {
+                CycleSupplyOverlayMode();
+            }
         }
 
         private void SelectUnit(Battalion bat, Vector2I pos)
@@ -329,13 +341,16 @@ namespace ColdWarWargame.Systems.Gameplay
             var enemyPositions = GetFactionUnits(endingFaction == 1 ? 2 : 1).Select(u => u.pos);
             var enemyOccupied = new HashSet<Vector2I>(enemyPositions);
             var enemyZoc = _scenario.ZOC.GetFactionZOC(enemyPositions);
+            var (hubs, airports) = _scenario.GetSupplySpecialNodes();
 
             _supplyManager.UpdateFactionEndTurn(
                 endingFaction,
                 _scenario.Map,
                 GetAllUnits(),
                 enemyOccupied,
-                enemyZoc);
+                enemyZoc,
+                hubs,
+                airports);
 
             RefreshOccupationFromEntryAndZoc();
             _scenario.SaveOccupationState(_scenario.GetOccupationMap());
@@ -360,7 +375,76 @@ namespace ColdWarWargame.Systems.Gameplay
 
             _renderer.SetBlueUnits(blueVisible);
             _renderer.SetRedUnits(redVisible);
+            _renderer.SetActiveFaction(_turnMgr.CurrentFaction);
+            RefreshSupplyVisualization();
             RefreshFrontline();
+        }
+
+        private void RefreshSupplyVisualization()
+        {
+            var allUnits = GetAllUnits().ToList();
+            var (hubs, airports) = _scenario.GetSupplySpecialNodes();
+
+            float[,] blueSp = ComputeSupplyMapForFaction(1, allUnits, hubs, airports);
+            float[,] redSp = ComputeSupplyMapForFaction(2, allUnits, hubs, airports);
+
+            var blueOos = new HashSet<Vector2I>(_scenario.BlueBattalions
+                .Where(u => blueSp[u.pos.X, u.pos.Y] <= 0f)
+                .Select(u => u.pos));
+
+            var redOos = new HashSet<Vector2I>(_scenario.RedBattalions
+                .Where(u => redSp[u.pos.X, u.pos.Y] <= 0f)
+                .Select(u => u.pos));
+
+            _renderer.SetUnitSupplyStatus(blueOos, redOos);
+            _renderer.SetSupplyOverlayData(blueSp, redSp, _supplyOverlayMode);
+        }
+
+        private float[,] ComputeSupplyMapForFaction(
+            int faction,
+            List<(Battalion bat, Vector2I pos)> allUnits,
+            HashSet<Vector2I> hubs,
+            HashSet<Vector2I> airports)
+        {
+            int enemyFaction = faction == 1 ? 2 : 1;
+            var enemyUnits = allUnits.Where(u => u.bat.Faction == enemyFaction).ToList();
+            var enemyOccupied = enemyUnits.Select(u => u.pos).ToHashSet();
+            var enemyZoc = _scenario.ZOC.GetFactionZOC(enemyOccupied);
+
+            return _supplyManager.ComputeFactionSupplySP(
+                faction,
+                _scenario.Map,
+                allUnits,
+                enemyOccupied,
+                enemyZoc,
+                hubs,
+                airports);
+        }
+
+        private void CycleSupplyOverlayMode()
+        {
+            _supplyOverlayMode = _supplyOverlayMode switch
+            {
+                SupplyOverlayDisplayMode.Off => SupplyOverlayDisplayMode.Friendly,
+                SupplyOverlayDisplayMode.Friendly => SupplyOverlayDisplayMode.Enemy,
+                SupplyOverlayDisplayMode.Enemy => SupplyOverlayDisplayMode.Both,
+                _ => SupplyOverlayDisplayMode.Off
+            };
+
+            _renderer.SetSupplyOverlayMode(_supplyOverlayMode);
+            _hud.SetInfoText("Supply Overlay [F6]: " + DescribeSupplyOverlayMode(_supplyOverlayMode));
+        }
+
+        private string DescribeSupplyOverlayMode(SupplyOverlayDisplayMode mode)
+        {
+            return mode switch
+            {
+                SupplyOverlayDisplayMode.Off => "OFF",
+                SupplyOverlayDisplayMode.Friendly => "Friendly",
+                SupplyOverlayDisplayMode.Enemy => "Enemy",
+                SupplyOverlayDisplayMode.Both => "Both",
+                _ => "OFF"
+            };
         }
 
         private void RefreshFrontline()

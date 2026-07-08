@@ -2,81 +2,171 @@ using System;
 using System.Collections.Generic;
 using Godot;
 
-
 namespace ColdWarWargame.Systems.Supply
 {
     /// <summary>
-    /// 鍩轰簬 Dijkstra 娉涙椽绠楁硶鐨勫姩鎬佽ˉ缁欑綉锛圥RD 搂2.5.2锛?    /// 浠庨樀钀ュ悗鏂瑰湴鍥捐竟缂樺嚭鍙戯紝娌垮彲閫氳缃戞牸浼犳挱琛ョ粰鍔胯兘锛圫P锛夈€?    /// 鏁屾柟鍗犳嵁鏍间笉鍙€氳锛屾晫鏂?ZOC 澧炲姞 15 SP 娑堣€椼€?    /// </summary>
+    /// Dynamic supply propagation based on weighted Dijkstra.
+    /// - Primary source: map edge with 36 SP.
+    /// - Hub reactivation: a hub reached by primary network becomes a new 36 SP source.
+    /// - Airport fallback: disconnected airports emit local 18 SP secondary supply.
+    /// </summary>
     public class SupplyNetwork
     {
-        /// <summary>缁濆琛ョ粰婧愬娍鑳斤紙PRD 搂2.5.2锛?/summary>
         const float MAX_SP = 36f;
-
-        /// <summary>ZOC 闃绘柇闄勫姞娑堣€楋紙PRD 搂2.5.2锛?/summary>
+        const float SECONDARY_SP = 18f;
         const float ZOC_PENALTY = 15f;
-
         const float EPS = 1e-6f;
 
-        /// <summary>
-        /// 璁＄畻鎸囧畾闃佃惀鐨勮ˉ缁欏娍鑳界綉鏍笺€?        /// 钃濆啗锛?锛夎ˉ缁欐簮涓哄湴鍥惧簳杈癸紝绾㈠啗锛?锛変负鍦板浘椤惰竟銆?        /// 杩斿洖 float[width, height]锛屽€?> 0 琛ㄧず鏈夎ˉ缁欍€?        /// </summary>
         public float[,] ComputeSupplySP(
             ColdWarWargame.Systems.Battlefield.GridMap map,
             int faction,
             HashSet<Vector2I> enemyOccupied,
-            HashSet<Vector2I> enemyZOC, Dictionary<Vector2I, float> enemyAP = null)
+            HashSet<Vector2I> enemyZOC,
+            Dictionary<Vector2I, float> enemyAP = null,
+            HashSet<Vector2I> hubs = null,
+            HashSet<Vector2I> airports = null)
         {
-            int w = map.Width, h = map.Height;
-            var cost = new float[w, h];
-            for (int x = 0; x < w; x++)
-                for (int y = 0; y < h; y++)
-                    cost[x, y] = float.PositiveInfinity;
+            int w = map.Width;
+            int h = map.Height;
 
-            // 纭畾琛ョ粰婧愯竟
-            int sourceY = faction == 1 ? h - 1 : 0;
-            if (faction == 1 || faction == 2)
+            hubs ??= new HashSet<Vector2I>();
+            airports ??= new HashSet<Vector2I>();
+
+            var primarySources = BuildPrimarySources(map, faction, enemyOccupied);
+            var globalCost = BuildInfiniteGrid(w, h);
+
+            MergeBestCost(
+                globalCost,
+                RunBoundedDijkstra(map, primarySources, MAX_SP, enemyOccupied, enemyZOC, enemyAP));
+
+            // Re-activate hubs reached by the strategic (primary) network.
+            var activatedHubs = new HashSet<Vector2I>();
+            var newHubSources = new List<Vector2I>();
+            CollectNewActivatedHubs(hubs, globalCost, activatedHubs, newHubSources);
+
+            while (newHubSources.Count > 0)
             {
+                var hubCost = RunBoundedDijkstra(map, newHubSources, MAX_SP, enemyOccupied, enemyZOC, enemyAP);
+                MergeBestCost(globalCost, hubCost);
+
+                newHubSources = new List<Vector2I>();
+                CollectNewActivatedHubs(hubs, globalCost, activatedHubs, newHubSources);
+            }
+
+            var result = BuildSpFromCost(globalCost, MAX_SP);
+
+            // Airport fallback: airports disconnected from primary/hub strategic network emit local secondary SP.
+            var disconnectedAirports = new List<Vector2I>();
+            foreach (var airport in airports)
+            {
+                if (!map.IsInBounds(airport) || !map.IsPassable(airport) || enemyOccupied.Contains(airport))
+                    continue;
+
+                if (float.IsPositiveInfinity(globalCost[airport.X, airport.Y]))
+                    disconnectedAirports.Add(airport);
+            }
+
+            if (disconnectedAirports.Count > 0)
+            {
+                var secondaryCost = RunBoundedDijkstra(map, disconnectedAirports, SECONDARY_SP, enemyOccupied, enemyZOC, enemyAP);
+                var secondarySp = BuildSpFromCost(secondaryCost, SECONDARY_SP);
+
                 for (int x = 0; x < w; x++)
                 {
-                    var pos = new Vector2I(x, sourceY);
-                    if (map.IsPassable(pos) && !enemyOccupied.Contains(pos))
-                        cost[x, sourceY] = 0f;
+                    for (int y = 0; y < h; y++)
+                    {
+                        if (secondarySp[x, y] > result[x, y])
+                            result[x, y] = secondarySp[x, y];
+                    }
                 }
             }
 
-            // Dijkstra
+            return result;
+        }
+
+        private static List<Vector2I> BuildPrimarySources(
+            ColdWarWargame.Systems.Battlefield.GridMap map,
+            int faction,
+            HashSet<Vector2I> enemyOccupied)
+        {
+            var sources = new List<Vector2I>();
+            int sourceY = faction == 1 ? map.Height - 1 : 0;
+
+            if (faction != 1 && faction != 2)
+                return sources;
+
+            for (int x = 0; x < map.Width; x++)
+            {
+                var pos = new Vector2I(x, sourceY);
+                if (map.IsPassable(pos) && !enemyOccupied.Contains(pos))
+                    sources.Add(pos);
+            }
+
+            return sources;
+        }
+
+        private static float[,] RunBoundedDijkstra(
+            ColdWarWargame.Systems.Battlefield.GridMap map,
+            List<Vector2I> sources,
+            float budget,
+            HashSet<Vector2I> enemyOccupied,
+            HashSet<Vector2I> enemyZOC,
+            Dictionary<Vector2I, float> enemyAP)
+        {
+            int w = map.Width;
+            int h = map.Height;
+            var cost = BuildInfiniteGrid(w, h);
             var frontier = new List<Vector2I>();
-            for (int x = 0; x < w; x++)
-                if (!float.IsPositiveInfinity(cost[x, sourceY]))
-                    frontier.Add(new Vector2I(x, sourceY));
+
+            foreach (var src in sources)
+            {
+                if (!map.IsInBounds(src) || !map.IsPassable(src) || enemyOccupied.Contains(src))
+                    continue;
+
+                if (cost[src.X, src.Y] > EPS)
+                {
+                    cost[src.X, src.Y] = 0f;
+                    frontier.Add(src);
+                }
+            }
 
             while (frontier.Count > 0)
             {
-                // 鎵炬渶灏?cost 鑺傜偣
                 int minIdx = 0;
                 float minCost = cost[frontier[0].X, frontier[0].Y];
                 for (int i = 1; i < frontier.Count; i++)
                 {
                     float c = cost[frontier[i].X, frontier[i].Y];
-                    if (c < minCost) { minCost = c; minIdx = i; }
+                    if (c < minCost)
+                    {
+                        minCost = c;
+                        minIdx = i;
+                    }
                 }
 
                 var current = frontier[minIdx];
                 frontier.RemoveAt(minIdx);
 
-                if (minCost >= MAX_SP - EPS) continue;
+                if (minCost >= budget - EPS)
+                    continue;
 
                 foreach (var nb in map.GetAllNeighbors(current))
                 {
-                    if (!map.IsPassable(nb)) continue;
-                    if (enemyOccupied.Contains(nb)) continue;
+                    if (!map.IsPassable(nb) || enemyOccupied.Contains(nb))
+                        continue;
 
                     float tileCost = map.GetTile(nb).GetMovementCost();
-                    if (float.IsPositiveInfinity(tileCost)) continue;
+                    if (float.IsPositiveInfinity(tileCost))
+                        continue;
 
-                    bool zocActive = enemyZOC.Contains(nb); if (zocActive && enemyAP != null && enemyAP.TryGetValue(nb, out float ap) && ap < 4f) zocActive = false; float extra = zocActive ? ZOC_PENALTY : 0f;
+                    bool zocActive = enemyZOC.Contains(nb);
+                    if (zocActive && enemyAP != null && enemyAP.TryGetValue(nb, out float ap) && ap < 4f)
+                        zocActive = false;
+
+                    float extra = zocActive ? ZOC_PENALTY : 0f;
                     float newCost = minCost + tileCost + extra;
 
-                    if (newCost < cost[nb.X, nb.Y] - EPS && newCost < MAX_SP - EPS)
+                    if (newCost < cost[nb.X, nb.Y] - EPS && newCost < budget - EPS)
                     {
                         cost[nb.X, nb.Y] = newCost;
                         frontier.Add(nb);
@@ -84,12 +174,72 @@ namespace ColdWarWargame.Systems.Supply
                 }
             }
 
-            // 杞崲涓轰緵缁欏娍鑳?SP = max(0, MAX_SP - cost)
+            return cost;
+        }
+
+        private static void CollectNewActivatedHubs(
+            HashSet<Vector2I> hubs,
+            float[,] currentBestCost,
+            HashSet<Vector2I> activatedHubs,
+            List<Vector2I> outputNewHubs)
+        {
+            int w = currentBestCost.GetLength(0);
+            int h = currentBestCost.GetLength(1);
+            foreach (var hub in hubs)
+            {
+                if (activatedHubs.Contains(hub))
+                    continue;
+
+                if (hub.X < 0 || hub.X >= w || hub.Y < 0 || hub.Y >= h)
+                    continue;
+
+                if (!float.IsPositiveInfinity(currentBestCost[hub.X, hub.Y]))
+                {
+                    activatedHubs.Add(hub);
+                    outputNewHubs.Add(hub);
+                }
+            }
+        }
+
+        private static float[,] BuildInfiniteGrid(int w, int h)
+        {
+            var grid = new float[w, h];
+            for (int x = 0; x < w; x++)
+            {
+                for (int y = 0; y < h; y++)
+                {
+                    grid[x, y] = float.PositiveInfinity;
+                }
+            }
+            return grid;
+        }
+
+        private static void MergeBestCost(float[,] target, float[,] candidate)
+        {
+            int w = target.GetLength(0);
+            int h = target.GetLength(1);
+            for (int x = 0; x < w; x++)
+            {
+                for (int y = 0; y < h; y++)
+                {
+                    if (candidate[x, y] < target[x, y] - EPS)
+                        target[x, y] = candidate[x, y];
+                }
+            }
+        }
+
+        private static float[,] BuildSpFromCost(float[,] costGrid, float budget)
+        {
+            int w = costGrid.GetLength(0);
+            int h = costGrid.GetLength(1);
             var sp = new float[w, h];
             for (int x = 0; x < w; x++)
+            {
                 for (int y = 0; y < h; y++)
-                    sp[x, y] = float.IsPositiveInfinity(cost[x, y]) ? 0f : Math.Max(0f, MAX_SP - cost[x, y]);
-
+                {
+                    sp[x, y] = float.IsPositiveInfinity(costGrid[x, y]) ? 0f : Math.Max(0f, budget - costGrid[x, y]);
+                }
+            }
             return sp;
         }
     }
