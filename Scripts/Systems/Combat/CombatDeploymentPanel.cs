@@ -1,4 +1,4 @@
-using Godot;
+﻿using Godot;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -172,11 +172,22 @@ namespace ColdWarWargame.UI
             availLabel.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.7f));
             vbox.AddChild(availLabel);
 
-            var availScroll = new VBoxContainer();
-            availScroll.Size = new Vector2(880, 0);
-            availScroll.AddThemeConstantOverride("separation", 6);
-            vbox.AddChild(availScroll);
-            var availFlow = availScroll;
+           var scrollContainer = new ScrollContainer();
+            scrollContainer.CustomMinimumSize = new Vector2(0, 220);
+            scrollContainer.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+            scrollContainer.SizeFlagsVertical = Control.SizeFlags.ShrinkBegin;
+           scrollContainer.HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled;
+            var scrollbarStyle = new StyleBoxFlat();
+            scrollbarStyle.BgColor = new Color(0.12f, 0.12f, 0.16f);
+            scrollbarStyle.CornerRadiusTopLeft = 4; scrollbarStyle.CornerRadiusTopRight = 4;
+            scrollbarStyle.CornerRadiusBottomLeft = 4; scrollbarStyle.CornerRadiusBottomRight = 4;
+            scrollContainer.AddThemeStyleboxOverride("panel", scrollbarStyle);
+            vbox.AddChild(scrollContainer);
+           var availFlow = new VBoxContainer();
+           availFlow.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+           availFlow.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+           availFlow.AddThemeConstantOverride("separation", 6);
+            scrollContainer.AddChild(availFlow);
 
             var activeEligible = isDefenderPhase ? _defenderEligibleUnits : _eligibleUnits;
             foreach (var (bat, pos) in activeEligible)
@@ -263,8 +274,9 @@ namespace ColdWarWargame.UI
             if (bat == _leadDefender && !isAttackerSide) return null; // lead defender handled separately
 
             var btn = new Button();
-            btn.Size = new Vector2(200, 70);
-            string atkStr = bat.GetActualAttack().ToString("0.0");
+           btn.Size = new Vector2(200, 70);
+            btn.CustomMinimumSize = new Vector2(200, 70);
+           string atkStr = bat.GetActualAttack().ToString("0.0");
             string defStr = bat.GetActualDefense().ToString("0.0");
             string hpStr = bat.GetTotalCurrentHp() + "/" + bat.GetTotalMaxHp();
             btn.Text = bat.Name + "\nATK " + atkStr + "  DEF " + defStr + "  HP " + hpStr;

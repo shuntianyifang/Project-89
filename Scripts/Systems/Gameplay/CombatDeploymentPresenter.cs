@@ -138,10 +138,10 @@ namespace ColdWarWargame.Systems.Gameplay
                     effectiveDefForce = CombatAutoDeployer.AutoFillForce(defenderAutoEligible, defender);
                     _panel.ShowOpponentPreview("对方自动填充（预估）：\n" + string.Join("\n", FormatForceLines(effectiveDefForce)));
                 }
-                else
-                {
-                    _panel.ShowOpponentPreview("对方锁定部署（真实）：\n" + string.Join("\n", FormatForceLines(_attackerStored)));
-                }
+               else
+               {
+                    _panel.ShowOpponentPreview("Attacker deployment locked. See panel above for details.");
+               }
 
                 if (effectiveDefForce == null || effectiveDefForce.GetAllBattalions().Count == 0)
                     return;
