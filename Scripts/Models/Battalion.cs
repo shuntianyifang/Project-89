@@ -117,20 +117,24 @@ namespace ColdWarWargame.Models
 
         public int CalculateVisionRange() => GetVisionRuleInfo().range;
 
-        /// <summary>获取营内所有炮兵单位的最大支援半径。无炮兵则返回0。</summary>
-        public int GetArtilleryRange()
-        {
-            return GetAllSubUnits()
-                .Where(u => u.SurvivalState == 1)
-                .Select(u => u.Template.ArtyArea ?? 0)
-                .DefaultIfEmpty(0)
-                .Max();
-        }
         /// <summary>营战斗角色：主力(可填主战插槽)、辅助、炮兵</summary>
         public enum BattalionRole { Main, Support, Artillery }
         public BattalionRole GetRole()
         {
             return TemplateRole switch { "support" => BattalionRole.Support, "artillery" => BattalionRole.Artillery, _ => BattalionRole.Main };
+        }
+
+        /// <summary>获取营内所有炮兵单位的最大支援半径。非炮兵类营（没有）和无炮兵的炮兵类营（打光了是这样的）则返回0。</summary>
+        public int GetArtilleryRange()
+        {
+            //这不大规范，但是没时间优雅修bug了
+            if (GetRole() != BattalionRole.Artillery)
+                return 0;
+            return GetAllSubUnits()
+                .Where(u => u.SurvivalState == 1)
+                .Select(u => u.Template.ArtyArea ?? 0)
+                .DefaultIfEmpty(0)
+                .Max();
         }
 
         public bool CanFillMain() => GetRole() == BattalionRole.Main;

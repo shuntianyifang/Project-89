@@ -403,11 +403,12 @@ _hud.UpdateVPPanel(_victoryTracker, _owner.GetViewport().GetVisibleRect().Size.X
             RefreshFrontline();
         }
 
-        private void RefreshSupplyVisualization()
-        {
-            var allUnits = GetAllUnits().ToList();
-            var (hubs, airports) = _scenario.GetSupplySpecialNodes();
+       private void RefreshSupplyVisualization()
+       {
+           var allUnits = GetAllUnits().ToList();
+           var (hubs, airports) = _scenario.GetSupplySpecialNodes();
 
+            _renderer.SetSupplySpecialNodes(hubs, airports);
             float[,] blueSp = ComputeSupplyMapForFaction(1, allUnits, hubs, airports);
             float[,] redSp = ComputeSupplyMapForFaction(2, allUnits, hubs, airports);
 

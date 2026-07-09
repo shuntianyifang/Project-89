@@ -30,9 +30,11 @@ namespace ColdWarWargame.Rendering
         private Node3D _unitRoot;
         private Node3D _highlightRoot;
         private Node3D _linesRoot;
-        private Node3D _frontlineRoot;
-        private Node3D _supplyOverlayRoot;
-        private readonly List<MultiMeshInstance3D> _supplyOverlayInstances = new();
+       private Node3D _frontlineRoot;
+       private Node3D _supplyOverlayRoot;
+        private Node3D _roadRoot;
+        private Node3D _markerRoot;
+       private readonly List<MultiMeshInstance3D> _supplyOverlayInstances = new();
         private float _flashTimer = 0f;
         private bool _flashOn = true;
         private float _selectionAlpha = 0.6f;
@@ -50,8 +52,10 @@ namespace ColdWarWargame.Rendering
         private HashSet<Vector2I> _blueOosPositions = new();
         private HashSet<Vector2I> _redOosPositions = new();
         private SupplyOverlayDisplayMode _supplyOverlayMode = SupplyOverlayDisplayMode.Off;
-        private int _activeFaction = 1;
-        private bool _isAnimating;
+       private int _activeFaction = 1;
+        private HashSet<Vector2I> _supplyHubPositions = new();
+        private HashSet<Vector2I> _supplyAirportPositions = new();
+       private bool _isAnimating;
         private System.Collections.Generic.List<Vector2I> _animPath;
         private int _animIndex;
         private float _animTimer;
@@ -64,6 +68,14 @@ namespace ColdWarWargame.Rendering
             new Color(0.1f, 0.1f, 0.1f),
         };
 
+        // Road visual constants
+        static readonly Color HighwayColor = new Color(1.0f, 0.84f, 0.0f);
+        static readonly Color BranchRoadColor = new Color(0.92f, 0.92f, 0.90f);
+        const float RoadElevation = 0.028f;
+        const float RoadThickness = 0.015f;
+        const float HighwayWidth = 0.55f;
+        const float BranchRoadWidth = 0.32f;
+
         public Action<int, Battalion, Vector2I> OnUnitClicked;
         public Action<Vector2I> OnTileClicked;
         public Action OnRightClick;
@@ -71,7 +83,14 @@ namespace ColdWarWargame.Rendering
         public System.Action OnMoveFinished;
         private Camera3D _camRef;
 
-        public void SetGrid(GridMap map) { _map = map; BuildTerrain(); }
+       public void SetGrid(GridMap map) { _map = map; BuildTerrain(); }
+        public void SetSupplySpecialNodes(HashSet<Vector2I> hubs, HashSet<Vector2I> airports)
+        {
+            _supplyHubPositions = hubs ?? new HashSet<Vector2I>();
+            _supplyAirportPositions = airports ?? new HashSet<Vector2I>();
+            BuildRoadNetwork();
+            BuildSupplyMarkers();
+        }
         public void SetBlueUnits(List<(Battalion bat, Vector2I pos)> u) { _blueUnits = u; BuildUnits(); }
         public void SetRedUnits(List<(Battalion bat, Vector2I pos)> u) { _redUnits = u; BuildUnits(); }
         public void SetActiveFaction(int faction)
@@ -116,8 +135,6 @@ namespace ColdWarWargame.Rendering
                 {
                     var tile = _map.GetTile(new Vector2I(x, y));
                     var col = TerrainColors[tile.TerrainType];
-                    if (tile.InfraType == 2) col = col.Lerp(new Color(0.6f, 0.6f, 0.6f), 0.4f);
-                    else if (tile.InfraType == 1) col = col.Lerp(new Color(0.8f, 0.7f, 0.5f), 0.3f);
                     img.SetPixel(x, y, col);
                 }
             var tex = ImageTexture.CreateFromImage(img);
@@ -138,6 +155,13 @@ namespace ColdWarWargame.Rendering
             _frontlineRoot = new Node3D(); AddChild(_frontlineRoot);
             if (_supplyOverlayRoot != null) { RemoveChild(_supplyOverlayRoot); _supplyOverlayRoot.QueueFree(); }
             _supplyOverlayRoot = new Node3D(); AddChild(_supplyOverlayRoot);
+            if (_roadRoot != null) { RemoveChild(_roadRoot); _roadRoot.QueueFree(); }
+            if (_markerRoot != null) { RemoveChild(_markerRoot); _markerRoot.QueueFree(); }
+            _roadRoot = new Node3D(); AddChild(_roadRoot);
+            _markerRoot = new Node3D(); AddChild(_markerRoot);
+            BuildRoadNetwork();
+            BuildSupplyMarkers();
+
             var lm = new StandardMaterial3D { AlbedoColor = Colors.Black, ShadingMode = StandardMaterial3D.ShadingModeEnum.Unshaded };
             float lw = 0.03f;
             for (int x = 0; x <= w; x++) { var l = new MeshInstance3D(); l.Mesh = new BoxMesh { Size = new Vector3(lw, 0.02f, gh + 0.1f) }; l.MaterialOverride = lm; l.Position = new Vector3(x, 0.005f, gh / 2); _linesRoot.AddChild(l); }
@@ -786,10 +810,10 @@ namespace ColdWarWargame.Rendering
                 marker.Position = new Vector3((startX + endX) / 2f, y, startZ);
             }
 
-            return marker;
-        }
+           return marker;
+       }
 
-        internal void StartMoveAnimation(System.Collections.Generic.List<Vector2I> path, Battalion bat)
+                internal void StartMoveAnimation(System.Collections.Generic.List<Vector2I> path, Battalion bat)
         {
             _animUnit = null;
             foreach (var uv in _unitVisuals)
@@ -799,5 +823,88 @@ namespace ColdWarWargame.Rendering
             _animPath = path;
             _animIndex = 0;
             _animTimer = 0f;
+        }
+
+        private void BuildRoadNetwork()
+        {
+            if (_map == null || _roadRoot == null) return;
+            foreach (var child in _roadRoot.GetChildren())
+                if (child is Node n) n.QueueFree();
+            int w = _map.Width, h = _map.Height;
+            float roadY = RoadElevation;
+            var highwayMat = new StandardMaterial3D { AlbedoColor = HighwayColor, ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded };
+            var branchMat = new StandardMaterial3D { AlbedoColor = BranchRoadColor, ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded };
+            var hubSet = new HashSet<Vector2I>();
+            for (int x = 0; x < w; x++)
+                for (int y = 0; y < h; y++)
+                {
+                    var pos = new Vector2I(x, y);
+                    var tile = _map.GetTile(pos);
+                    if (tile.InfraType <= 0) continue;
+                    if (_supplyHubPositions.Contains(pos) || _supplyAirportPositions.Contains(pos)) { hubSet.Add(pos); continue; }
+                    int conn = 0;
+                    foreach (var n in new[] { Vector2I.Right, Vector2I.Left, Vector2I.Down, Vector2I.Up })
+                    { var nb = pos + n; if (nb.X >= 0 && nb.X < w && nb.Y >= 0 && nb.Y < h && _map.GetTile(nb).InfraType >= 1) conn++; }
+                    if (conn >= 3) hubSet.Add(pos);
+                }
+            var drawnPairs = new HashSet<string>();
+            for (int x = 0; x < w; x++)
+                for (int y = 0; y < h; y++)
+                {
+                    var pos = new Vector2I(x, y);
+                    var tile = _map.GetTile(pos);
+                    if (tile.InfraType <= 0) continue;
+                    float cx = x * CellSize + CellSize / 2, cz = y * CellSize + CellSize / 2;
+                    bool isHighway = tile.InfraType >= 2;
+                    bool isHub = hubSet.Contains(pos);
+                    float tw = isHighway ? HighwayWidth : BranchRoadWidth;
+                    var mat = isHighway ? highwayMat : branchMat;
+                    foreach (var dir in new[] { Vector2I.Right, Vector2I.Down, new Vector2I(1, 1), new Vector2I(-1, 1) })
+                    {
+                        var nb = pos + dir;
+                        if (nb.X < 0 || nb.X >= w || nb.Y < 0 || nb.Y >= h) continue;
+                        var nbTile = _map.GetTile(nb);
+                        if (nbTile.InfraType <= 0) continue;
+                        string pk = string.Format("{0},{1}-{2},{3}", Math.Min(pos.X,nb.X), Math.Min(pos.Y,nb.Y), Math.Max(pos.X,nb.X), Math.Max(pos.Y,nb.Y));
+                        if (drawnPairs.Contains(pk)) continue;
+                        drawnPairs.Add(pk);
+                        bool connHw = isHighway || nbTile.InfraType >= 2;
+                        float cw = connHw ? HighwayWidth : BranchRoadWidth;
+                        var cmat = connHw ? highwayMat : branchMat;
+                        float mx = ((nb.X * CellSize + CellSize / 2) + cx) / 2;
+                        float mz = ((nb.Y * CellSize + CellSize / 2) + cz) / 2;
+                        bool isDiagonal = (dir.X != 0 && dir.Y != 0); if (isDiagonal) { float diagLen = CellSize * 1.414f; var s = new MeshInstance3D(); s.Mesh = new BoxMesh { Size = new Vector3(cw * CellSize, RoadThickness, diagLen) }; s.MaterialOverride = cmat; s.Position = new Vector3(mx, roadY, mz); s.RotationDegrees = new Vector3(0, dir.X * dir.Y > 0 ? 45f : -45f, 0); _roadRoot.AddChild(s); } else if (dir == Vector2I.Right) { var s = new MeshInstance3D(); s.Mesh = new BoxMesh { Size = new Vector3(CellSize, RoadThickness, cw * CellSize) }; s.MaterialOverride = cmat; s.Position = new Vector3(mx, roadY, mz); _roadRoot.AddChild(s); } else { var s = new MeshInstance3D(); s.Mesh = new BoxMesh { Size = new Vector3(cw * CellSize, RoadThickness, CellSize) }; s.MaterialOverride = cmat; s.Position = new Vector3(mx, roadY, mz); _roadRoot.AddChild(s); }
+                    }
+                    float ns = isHub ? Math.Max(tw, 0.45f) : tw;
+                    var nd = new MeshInstance3D(); nd.Mesh = new BoxMesh { Size = new Vector3(ns * CellSize, RoadThickness, ns * CellSize) }; nd.MaterialOverride = mat; nd.Position = new Vector3(cx, roadY + 0.002f, cz); _roadRoot.AddChild(nd);
+                    if (isHub && (_supplyHubPositions.Contains(pos) || _supplyAirportPositions.Contains(pos)))
+                    { float hs = ns + 0.12f; var hn = new MeshInstance3D(); hn.Mesh = new BoxMesh { Size = new Vector3(hs * CellSize, RoadThickness * 1.5f, hs * CellSize) }; hn.MaterialOverride = isHighway ? highwayMat : branchMat; hn.Position = new Vector3(cx, roadY + RoadThickness, cz); _roadRoot.AddChild(hn); }
+                }
+        }
+
+        private void BuildSupplyMarkers()
+        {
+            if (_map == null || _markerRoot == null) return;
+            foreach (var child in _markerRoot.GetChildren())
+                if (child is Node n) n.QueueFree();
+            float my = 0.065f, ms = CellSize * 0.22f;
+            var hm = new StandardMaterial3D { AlbedoColor = new Color(1.0f, 0.72f, 0.1f, 0.9f), ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded };
+            var him = new StandardMaterial3D { AlbedoColor = new Color(0.15f, 0.15f, 0.15f, 0.95f), ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded };
+            foreach (var hub in _supplyHubPositions)
+            {
+                float cx = hub.X * CellSize + CellSize / 2, cz = hub.Y * CellSize + CellSize / 2;
+                var ob = new MeshInstance3D(); ob.Mesh = new BoxMesh { Size = new Vector3(ms, ms * 0.4f, ms) }; ob.MaterialOverride = hm; ob.Position = new Vector3(cx, my, cz); ob.RotationDegrees = new Vector3(0, 45, 0); _markerRoot.AddChild(ob);
+                var ib = new MeshInstance3D(); ib.Mesh = new BoxMesh { Size = new Vector3(ms * 0.45f, ms * 0.5f, ms * 0.45f) }; ib.MaterialOverride = him; ib.Position = new Vector3(cx, my, cz); _markerRoot.AddChild(ib);
+            }
+            var am = new StandardMaterial3D { AlbedoColor = new Color(0.95f, 0.95f, 0.95f, 0.85f), ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded };
+            var dm = new StandardMaterial3D { AlbedoColor = new Color(0.2f, 0.75f, 1.0f, 0.9f), ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded };
+            foreach (var ap in _supplyAirportPositions)
+            {
+                float cx = ap.X * CellSize + CellSize / 2, cz = ap.Y * CellSize + CellSize / 2;
+                var ew = new MeshInstance3D(); ew.Mesh = new BoxMesh { Size = new Vector3(CellSize * 0.5f, ms * 0.15f, ms * 0.6f) }; ew.MaterialOverride = am; ew.Position = new Vector3(cx, my, cz); _markerRoot.AddChild(ew);
+                var n2 = new MeshInstance3D(); n2.Mesh = new BoxMesh { Size = new Vector3(ms * 0.6f, ms * 0.15f, CellSize * 0.5f) }; n2.MaterialOverride = am; n2.Position = new Vector3(cx, my, cz); _markerRoot.AddChild(n2);
+                var dot = new MeshInstance3D(); dot.Mesh = new BoxMesh { Size = new Vector3(ms * 0.5f, ms * 0.25f, ms * 0.5f) }; dot.MaterialOverride = dm; dot.Position = new Vector3(cx, my, cz); _markerRoot.AddChild(dot);
+            }
         }}
+
 }
