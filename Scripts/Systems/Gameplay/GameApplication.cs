@@ -16,7 +16,7 @@ namespace ColdWarWargame.Systems.Gameplay
             _owner = owner;
         }
 
-        public string Title { get; } = "Fulda Gap 1985";
+        public string Title { get; } = "Fulda Gap 1989";
         public bool IsInitialized { get; private set; }
         public GameSessionHost SessionHost => _sessionHost;
         public Grid3DRenderer Renderer => _sessionHost?.Renderer;

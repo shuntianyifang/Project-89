@@ -21,7 +21,7 @@ public partial class GameManager : Node
             return;
         }
 
-        GD.Print($"========== {"Fulda Gap 1985"} ==========");
+        GD.Print($"========== {"Fulda Gap 1989"} ==========");
         _application = new GameApplication(this, this);
         _application.Initialize();
         _renderer = _application.Renderer;

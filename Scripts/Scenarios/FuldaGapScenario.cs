@@ -283,7 +283,7 @@ namespace ColdWarWargame.Scenarios
 
         public void PrintSummary()
         {
-            GD.Print("========== Fulda Gap 1985 场景摘要 ==========");
+            GD.Print("========== Fulda Gap 1989 场景摘要 ==========");
             GD.Print("地图尺寸: " + MAP_W + " x " + MAP_H + " (共 " + (MAP_W * MAP_H) + " 格)");
 
             Map.PrintCostGrid();
