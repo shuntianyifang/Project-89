@@ -174,6 +174,24 @@ namespace ColdWarWargame.Tests.Combat
                 "Force combat: OOS no longer appears as advantage modifier entries");
         }
 
+        static void Test_BattalionEliminationThreshold_CascadesToOtherUnits()
+        {
+            var resolver = new CombatResolver();
+            var attacker = MakeBatWithUnitIds("us_mech_rifles", "us_mech_rifles");
+            var defender = MakeBatWithUnitIds("us_mech_rifles");
+
+            var units = attacker.GetAllSubUnits().ToList();
+            units[0].CurrentHp = 2;
+            units[1].CurrentHp = 2;
+
+            var result = resolver.ResolveCombat(attacker, defender, new CombatContext { AttackerOOSTurns = 0, DefenderOOSTurns = 0 }, 321ul);
+            var surviving = attacker.GetAllSubUnits().Where(u => u.SurvivalState == 1).ToList();
+
+            Assert(attacker.GetAllSubUnits().All(u => u.SurvivalState == 0), "Battalion below 30% total HP should be treated as eliminated");
+            Assert(result.AttackerCasualties.Any(c => c.IsDestroyed && c.HpLost == 0), "Eliminated battalion contributes cascade casualty records");
+            Assert(surviving.Count == 0, "All sub-units in an eliminated battalion should be removed from active state");
+        }
+
         public static void RunAll()
         {
             fails = 0;
@@ -186,6 +204,7 @@ namespace ColdWarWargame.Tests.Combat
             Test_EngineerHalvesTerrainBonus_SingleCombat();
             Test_EngineerHalvesTerrainBonus_ForceCombat();
             Test_ForceCombat_OosAppliedPerBattalionPower();
+            Test_BattalionEliminationThreshold_CascadesToOtherUnits();
 
             // ---- Existing tests ----
             var defHeavy = MakeBatWithUnitIds("us_m1a1_abrams");

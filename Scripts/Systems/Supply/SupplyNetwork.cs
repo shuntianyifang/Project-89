@@ -34,10 +34,11 @@ namespace ColdWarWargame.Systems.Supply
 
             var primarySources = BuildPrimarySources(map, faction, enemyOccupied);
             var globalCost = BuildInfiniteGrid(w, h);
+            var blockedTiles = BuildBlockedTiles(map, enemyOccupied, enemyAP);
 
             MergeBestCost(
                 globalCost,
-                RunBoundedDijkstra(map, primarySources, MAX_SP, enemyOccupied, enemyZOC, enemyAP));
+                RunBoundedDijkstra(map, primarySources, MAX_SP, blockedTiles, enemyZOC, enemyAP));
 
             // Re-activate hubs reached by the strategic (primary) network.
             var activatedHubs = new HashSet<Vector2I>();
@@ -46,7 +47,7 @@ namespace ColdWarWargame.Systems.Supply
 
             while (newHubSources.Count > 0)
             {
-                var hubCost = RunBoundedDijkstra(map, newHubSources, MAX_SP, enemyOccupied, enemyZOC, enemyAP);
+                var hubCost = RunBoundedDijkstra(map, newHubSources, MAX_SP, blockedTiles, enemyZOC, enemyAP);
                 MergeBestCost(globalCost, hubCost);
 
                 newHubSources = new List<Vector2I>();
@@ -68,7 +69,7 @@ namespace ColdWarWargame.Systems.Supply
 
             if (disconnectedAirports.Count > 0)
             {
-                var secondaryCost = RunBoundedDijkstra(map, disconnectedAirports, SECONDARY_SP, enemyOccupied, enemyZOC, enemyAP);
+                var secondaryCost = RunBoundedDijkstra(map, disconnectedAirports, SECONDARY_SP, blockedTiles, enemyZOC, enemyAP);
                 var secondarySp = BuildSpFromCost(secondaryCost, SECONDARY_SP);
 
                 for (int x = 0; x < w; x++)
@@ -109,7 +110,7 @@ namespace ColdWarWargame.Systems.Supply
             ColdWarWargame.Systems.Battlefield.GridMap map,
             List<Vector2I> sources,
             float budget,
-            HashSet<Vector2I> enemyOccupied,
+            HashSet<Vector2I> blockedTiles,
             HashSet<Vector2I> enemyZOC,
             Dictionary<Vector2I, float> enemyAP)
         {
@@ -120,7 +121,7 @@ namespace ColdWarWargame.Systems.Supply
 
             foreach (var src in sources)
             {
-                if (!map.IsInBounds(src) || !map.IsPassable(src) || enemyOccupied.Contains(src))
+                if (!map.IsInBounds(src) || !map.IsPassable(src) || blockedTiles.Contains(src))
                     continue;
 
                 if (cost[src.X, src.Y] > EPS)
@@ -152,7 +153,7 @@ namespace ColdWarWargame.Systems.Supply
 
                 foreach (var nb in map.GetAllNeighbors(current))
                 {
-                    if (!map.IsPassable(nb) || enemyOccupied.Contains(nb))
+                    if (!map.IsPassable(nb) || blockedTiles.Contains(nb))
                         continue;
 
                     float tileCost = map.GetTile(nb).GetMovementCost();
@@ -175,6 +176,38 @@ namespace ColdWarWargame.Systems.Supply
             }
 
             return cost;
+        }
+
+        private static HashSet<Vector2I> BuildBlockedTiles(
+            ColdWarWargame.Systems.Battlefield.GridMap map,
+            HashSet<Vector2I> enemyOccupied,
+            Dictionary<Vector2I, float> enemyAP)
+        {
+            var blocked = new HashSet<Vector2I>();
+            if (enemyOccupied == null) return blocked;
+
+            foreach (var pos in enemyOccupied)
+            {
+                if (!map.IsInBounds(pos)) continue;
+
+                // 实体阻断：敌方单位所在格无条件视为阻隔。
+                blocked.Add(pos);
+
+                // 最大阻断范围：剩余 AP >= 4 的单位，对其中心 3x3 范围实施阻隔。
+                if (enemyAP != null && enemyAP.TryGetValue(pos, out float ap) && ap >= 4f)
+                {
+                    for (int dx = -1; dx <= 1; dx++)
+                    {
+                        for (int dy = -1; dy <= 1; dy++)
+                        {
+                            var tile = new Vector2I(pos.X + dx, pos.Y + dy);
+                            if (map.IsInBounds(tile)) blocked.Add(tile);
+                        }
+                    }
+                }
+            }
+
+            return blocked;
         }
 
         private static void CollectNewActivatedHubs(

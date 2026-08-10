@@ -314,8 +314,42 @@ namespace ColdWarWargame.Tests.Supply
             mgr.UpdateFactionEndTurn(1, map, units, new HashSet<Vector2I>(), new HashSet<Vector2I>());
 
             var unit1 = bat.GetAllSubUnits().First(u => u.NodeId == "u1");
-            Assert(bat.TurnsOOS == 1, "OOS: turns_oos increments");
+            Assert(bat.TurnsOOS == 0, "First OOS turn keeps turns_oos at 0");
             Assert(unit1.CurrentHp == 5, "OOS: no HP recovery should happen");
+        }
+
+        static void Test_OOS_UsesTurn0AndTurn1Rules()
+        {
+            var map = new ColdWarWargame.Systems.Battlefield.GridMap(5, 5);
+            var mgr = new SupplyManager();
+            var bat = MakeSupplyBat("TurnTransition", 1);
+            bat.Fatigue = 3;
+            bat.CurrentAP = 12f;
+
+            var enemyOccupied = new HashSet<Vector2I> { new Vector2I(2, 2) };
+            var units = new List<(Battalion, Vector2I)> { (bat, new Vector2I(2, 2)) };
+
+            mgr.UpdateFactionEndTurn(1, map, units, enemyOccupied, new HashSet<Vector2I>());
+            Assert(bat.TurnsOOS == 0, "First OOS turn should use turn-0 state");
+            Assert(bat.Fatigue == 3, "First OOS turn should not add fatigue yet");
+
+            mgr.UpdateFactionEndTurn(1, map, units, enemyOccupied, new HashSet<Vector2I>());
+            Assert(bat.TurnsOOS == 1, "Second consecutive OOS turn should enter turn-1 state");
+            Assert(bat.Fatigue == 4, "Turn-1 OOS should add 1 fatigue at end turn");
+        }
+
+        static void Test_BlockingRange_UsesOwnTileAnd3x3ForHighAPUnits()
+        {
+            var map = new ColdWarWargame.Systems.Battlefield.GridMap(5, 5);
+            var net = new SupplyNetwork();
+            var enemyOccupied = new HashSet<Vector2I> { new Vector2I(2, 2) };
+            var enemyAP = new Dictionary<Vector2I, float> { { new Vector2I(2, 2), 4f } };
+
+            var sp = net.ComputeSupplySP(map, 2, enemyOccupied, new HashSet<Vector2I>(), enemyAP);
+
+            AssertFloat(sp[2, 2], 0f, "Own tile is blocked");
+            AssertFloat(sp[3, 2], 0f, "3x3 range should block the adjacent tile");
+            Assert(sp[4, 2] > 0f, "Tiles beyond the 3x3 range should remain reachable");
         }
 
         static void Test_DisorganizedInSupply_ForcedToFatigue8NextTurn()
@@ -349,6 +383,8 @@ namespace ColdWarWargame.Tests.Supply
             Test_HpRecovery_LinkedToFatigueRecover2();
             Test_HpRecovery_LinkedToFatigueRecover1();
             Test_HpRecovery_NoRecoveryWhenOOS();
+            Test_OOS_UsesTurn0AndTurn1Rules();
+            Test_BlockingRange_UsesOwnTileAnd3x3ForHighAPUnits();
             Test_DisorganizedInSupply_ForcedToFatigue8NextTurn();
 
             if (_fails == 0)

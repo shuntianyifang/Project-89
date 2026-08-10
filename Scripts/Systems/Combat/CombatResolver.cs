@@ -68,11 +68,9 @@ namespace ColdWarWargame.Systems.Combat
             int defTotalHp = defenderBattalions.Sum(b => b.GetTotalCurrentHp());
             int atkDmgPool = (int)Math.Round(atkTotalHp * atkRate);
             int defDmgPool = (int)Math.Round(defTotalHp * defRate);
-            var atkAllUnits = attackerBattalions.SelectMany(b => b.GetAllSubUnits()).ToList();
-            var defAllUnits = defenderBattalions.SelectMany(b => b.GetAllSubUnits()).ToList();
             var rng = CreateRandom(randomSeed);
-            var atkCas = ApplyDamageToUnits(atkAllUnits, atkDmgPool, rng);
-            var defCas = ApplyDamageToUnits(defAllUnits, defDmgPool, rng);
+            var atkCas = ApplyDamageToBattalions(attackerBattalions, atkDmgPool, rng);
+            var defCas = ApplyDamageToBattalions(defenderBattalions, defDmgPool, rng);
             return new CombatResolutionResult
             {
                 Advantage = advantage,
@@ -88,15 +86,20 @@ namespace ColdWarWargame.Systems.Combat
         }
 
         /// <summary>在任意子单位列表上执行权重随机伤亡分摊</summary>
-        List<CasualtyRecord> ApplyDamageToUnits(List<SubUnitInstance> allUnits, int damagePool, System.Random rng)
+        List<CasualtyRecord> ApplyDamageToBattalions(List<Battalion> battalions, int damagePool, System.Random rng)
         {
             var casualties = new List<CasualtyRecord>();
-            if (damagePool <= 0 || !allUnits.Any()) return casualties;
+            if (damagePool <= 0 || battalions == null || !battalions.Any()) return casualties;
+
+            var allUnits = battalions.SelectMany(b => b.GetAllSubUnits()).ToList();
+            if (!allUnits.Any()) return casualties;
+
             var recordByUnit = new Dictionary<SubUnitInstance, CasualtyRecord>();
             while (damagePool > 0)
             {
                 var alive = allUnits.Where(u => u.SurvivalState == 1).ToList();
                 if (!alive.Any()) break;
+
                 float totalW = alive.Sum(u => Math.Max(1, u.BaseWeight));
                 double pick = rng.NextDouble() * totalW;
                 float acc = 0f;
@@ -106,22 +109,54 @@ namespace ColdWarWargame.Systems.Combat
                     acc += Math.Max(1, u.BaseWeight);
                     if (pick <= acc) { target = u; break; }
                 }
+
                 int beforeHp = target.CurrentHp;
                 target.CurrentHp = Math.Max(0, target.CurrentHp - 1);
                 int lost = beforeHp - target.CurrentHp;
                 if (lost <= 0) break;
+
+                var ownerBattalion = battalions.FirstOrDefault(b => b.GetAllSubUnits().Contains(target));
+                if (ownerBattalion != null)
+                {
+                    CascadeEliminateBattalion(ownerBattalion, recordByUnit, casualties);
+                }
+
                 if (!recordByUnit.TryGetValue(target, out var entry))
                 {
                     entry = new CasualtyRecord { Unit = target, HpLost = 0, IsDestroyed = false, RemainingHp = target.CurrentHp };
                     recordByUnit[target] = entry;
                     casualties.Add(entry);
                 }
+
                 entry.HpLost += lost;
                 entry.IsDestroyed = target.SurvivalState == 0;  // destroyed when HP < 30% of MaxHp (PRD §2.9)
                 entry.RemainingHp = target.CurrentHp;
                 damagePool--;
             }
             return casualties;
+        }
+
+        void CascadeEliminateBattalion(Battalion battalion, Dictionary<SubUnitInstance, CasualtyRecord> recordByUnit, List<CasualtyRecord> casualties)
+        {
+            if (battalion == null || !battalion.IsEliminatedByThreshold()) return;
+
+            foreach (var unit in battalion.GetAllSubUnits().Where(u => u.SurvivalState == 1).ToList())
+            {
+                if (unit.CurrentHp <= 0) continue;
+                unit.CurrentHp = 0;
+
+                if (!recordByUnit.TryGetValue(unit, out var entry))
+                {
+                    entry = new CasualtyRecord { Unit = unit, HpLost = 0, IsDestroyed = true, RemainingHp = 0 };
+                    recordByUnit[unit] = entry;
+                    casualties.Add(entry);
+                }
+                else
+                {
+                    entry.IsDestroyed = true;
+                    entry.RemainingHp = 0;
+                }
+            }
         }
 
 
@@ -185,6 +220,7 @@ namespace ColdWarWargame.Systems.Combat
             if (!aliveUnits.Any()) return casualties;
 
             var recordByUnit = new Dictionary<SubUnitInstance, CasualtyRecord>();
+            CascadeEliminateBattalion(battalion, recordByUnit, casualties);
 
             while (damagePool > 0)
             {
@@ -227,6 +263,7 @@ namespace ColdWarWargame.Systems.Combat
                 entry.HpLost += hpLost;
                 entry.IsDestroyed = target.SurvivalState == 0;  // destroyed when HP < 30% of MaxHp (PRD §2.9)
                 entry.RemainingHp = target.CurrentHp;
+                CascadeEliminateBattalion(battalion, recordByUnit, casualties);
                 damagePool--;
             }
 

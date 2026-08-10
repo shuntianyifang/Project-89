@@ -20,6 +20,8 @@ namespace ColdWarWargame.Models
         public int Fatigue { get; set; }
         /// <summary>断联回合数（PRD §2.5.3）</summary>
         public int TurnsOOS { get; set; } = 0;
+        /// <summary>上回合是否处于断联状态，用于推进 Turn 0 -> Turn 1。</summary>
+        public bool WasOOSLastTurn { get; set; } = false;
         /// <summary>编制模板中写死的营种类: main/support/artillery</summary>
         public string TemplateRole { get; set; } = "main";
         /// <summary>编制模板ID（用于规则判定与调试）</summary>
@@ -88,6 +90,13 @@ namespace ColdWarWargame.Models
         public int GetTotalMaxHp()
         {
             return GetAllSubUnits().Sum(u => u.Template.CombatStats.MaxHp);
+        }
+
+        public bool IsEliminatedByThreshold()
+        {
+            int maxHp = GetTotalMaxHp();
+            if (maxHp <= 0) return false;
+            return GetTotalCurrentHp() * 10 < maxHp * 3;
         }
         
         // 4. 视野聚合规则[cite: 3]

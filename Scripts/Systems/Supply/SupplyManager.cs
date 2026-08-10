@@ -46,11 +46,15 @@ namespace ColdWarWargame.Systems.Supply
                 bool inSupply = sp[pos.X, pos.Y] > 0f;
                 if (!inSupply)
                 {
-                    bat.TurnsOOS++;
-                    if (bat.TurnsOOS == 1)
+                    if (bat.WasOOSLastTurn)
+                    {
+                        bat.TurnsOOS = 1;
                         bat.Fatigue = Math.Min(bat.Fatigue + 1, Battalion.FatigueOverflowCap);
+                    }
                     else
-                        bat.Fatigue = Math.Min(bat.Fatigue + 2, Battalion.FatigueOverflowCap);
+                    {
+                        bat.TurnsOOS = 0;
+                    }
                 }
                 else
                 {
@@ -72,6 +76,7 @@ namespace ColdWarWargame.Systems.Supply
                     int fatigueRecovered = Math.Max(0, fatigueBefore - bat.Fatigue);
                     RecoverHpFromFatigue(bat, fatigueRecovered);
                 }
+                bat.WasOOSLastTurn = !inSupply;
                 bat.Fatigue = Math.Clamp(bat.Fatigue, 0, Battalion.FatigueOverflowCap);
             }
         }
