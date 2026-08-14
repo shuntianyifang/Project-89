@@ -102,22 +102,17 @@ namespace ColdWarWargame.Tests.Supply
             Assert(sp[1, 2] > 0f, "Center bottom: CAN be reached via diagonal around impassable");
         }
 
-        static void Test_EnemyZOC_Penalty()
+        static void Test_LowAPEnemy_BlocksOnlyOwnTile()
         {
             var map = new ColdWarWargame.Systems.Battlefield.GridMap(5, 5);
             var net = new SupplyNetwork();
+            var enemyOccupied = new HashSet<Vector2I> { new Vector2I(2, 2) };
+            var enemyAP = new Dictionary<Vector2I, float> { { new Vector2I(2, 2), 3f } };
 
-            // Enemy ZOC at (2, 2) - center of map
-            var zoc = new HashSet<Vector2I> { new Vector2I(2, 2) };
+            var sp = net.ComputeSupplySP(map, 2, enemyOccupied, new HashSet<Vector2I>(), enemyAP);
 
-            // Red supply from top
-            var sp = net.ComputeSupplySP(map, 2, new HashSet<Vector2I>(), zoc);
-
-            // (2,2) should still have supply (just lower)
-            Assert(sp[2, 2] > 0f, "ZOC tile still has some supply (high cost but within range)");
-
-            // Bottom corner far from source + ZOC penalty still within 36 SP on 5x5
-            Assert(sp[4, 4] > 0f, "Bottom-right still supplied (ZOC penalty on 5x5 not enough to block)");
+            AssertFloat(sp[2, 2], 0f, "Low-AP enemy own tile is blocked");
+            Assert(sp[3, 2] > 0f, "Low-AP enemy does not block adjacent tiles");
         }
 
         static void Test_Hub_Reactivation_ExtendsPrimaryRange()
@@ -179,6 +174,65 @@ namespace ColdWarWargame.Tests.Supply
 
             Assert(withAirport[2, 10] > 0f, "Disconnected airport emits local secondary supply");
             Assert(withAirport[2, 10] <= 18f + 0.01f, "Secondary supply is capped by 18 SP budget");
+        }
+
+        static void Test_EnemyControlledHub_DoesNotReactivateSupply()
+        {
+            var map = new ColdWarWargame.Systems.Battlefield.GridMap(1, 30);
+            var net = new SupplyNetwork();
+            var hubs = new HashSet<Vector2I> { new Vector2I(0, 17) };
+            var occupation = new int[1, 30];
+            for (int y = 0; y < 30; y++)
+                occupation[0, y] = 2;
+            occupation[0, 17] = 1;
+
+            var supply = net.ComputeSupplySP(
+                map,
+                2,
+                new HashSet<Vector2I>(),
+                new HashSet<Vector2I>(),
+                null,
+                hubs,
+                null,
+                occupation);
+
+            AssertFloat(supply[0, 29], 0f, "Enemy-controlled hub must not reactivate supply");
+        }
+
+        static void Test_EnemyControlledAirport_DoesNotProvideSecondarySupply()
+        {
+            int[,] terrain = {
+                { 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0 },
+                { -1, -1, -1, -1, -1 },
+                { 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0 }
+            };
+            var map = ColdWarWargame.Systems.Battlefield.GridMap.FromLayers(terrain);
+            var net = new SupplyNetwork();
+            var occupation = new int[map.Width, map.Height];
+            for (int x = 0; x < map.Width; x++)
+                for (int y = 0; y < map.Height; y++)
+                    occupation[x, y] = 1;
+
+            var supply = net.ComputeSupplySP(
+                map,
+                2,
+                new HashSet<Vector2I>(),
+                new HashSet<Vector2I>(),
+                null,
+                null,
+                new HashSet<Vector2I> { new Vector2I(2, 8) },
+                occupation);
+
+            AssertFloat(supply[2, 10], 0f, "Enemy-controlled airport must not provide secondary supply");
         }
 
         // ========== SupplyManager Tests ==========
@@ -352,6 +406,28 @@ namespace ColdWarWargame.Tests.Supply
             Assert(sp[4, 2] > 0f, "Tiles beyond the 3x3 range should remain reachable");
         }
 
+        static void Test_HighAPBlockingRange_CutsOffPathsBeyondBarrier()
+        {
+            var map = new ColdWarWargame.Systems.Battlefield.GridMap(5, 7);
+            var net = new SupplyNetwork();
+            var enemyOccupied = new HashSet<Vector2I>
+            {
+                new Vector2I(0, 3),
+                new Vector2I(2, 3),
+                new Vector2I(4, 3)
+            };
+            var enemyAP = new Dictionary<Vector2I, float>
+            {
+                { new Vector2I(0, 3), 4f },
+                { new Vector2I(2, 3), 4f },
+                { new Vector2I(4, 3), 4f }
+            };
+
+            var sp = net.ComputeSupplySP(map, 2, enemyOccupied, new HashSet<Vector2I>(), enemyAP);
+
+            AssertFloat(sp[2, 6], 0f, "High-AP 3x3 barrier blocks every path beyond it");
+        }
+
         static void Test_DisorganizedInSupply_ForcedToFatigue8NextTurn()
         {
             var map = new ColdWarWargame.Systems.Battlefield.GridMap(5, 5);
@@ -375,9 +451,11 @@ namespace ColdWarWargame.Tests.Supply
 
             Test_PlainMap_AllSupplied();
             Test_ImpassableBlocks();
-            Test_EnemyZOC_Penalty();
+            Test_LowAPEnemy_BlocksOnlyOwnTile();
             Test_Hub_Reactivation_ExtendsPrimaryRange();
             Test_DisconnectedAirport_ProvidesSecondarySupply();
+            Test_EnemyControlledHub_DoesNotReactivateSupply();
+            Test_EnemyControlledAirport_DoesNotProvideSecondarySupply();
             Test_OOS_Accumulation();
             Test_FatigueRecovery();
             Test_HpRecovery_LinkedToFatigueRecover2();
@@ -385,6 +463,7 @@ namespace ColdWarWargame.Tests.Supply
             Test_HpRecovery_NoRecoveryWhenOOS();
             Test_OOS_UsesTurn0AndTurn1Rules();
             Test_BlockingRange_UsesOwnTileAnd3x3ForHighAPUnits();
+            Test_HighAPBlockingRange_CutsOffPathsBeyondBarrier();
             Test_DisorganizedInSupply_ForcedToFatigue8NextTurn();
 
             if (_fails == 0)

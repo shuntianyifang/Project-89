@@ -16,6 +16,12 @@ namespace ColdWarWargame.Rendering
         Both
     }
 
+    public enum ControlOverlayDisplayMode
+    {
+        Off,
+        On
+    }
+
         public partial class Grid3DRenderer : Node3D
     {
         [Export] public float CellSize { get; set; } = 1.0f;
@@ -32,9 +38,11 @@ namespace ColdWarWargame.Rendering
         private Node3D _linesRoot;
        private Node3D _frontlineRoot;
        private Node3D _supplyOverlayRoot;
+    private Node3D _controlOverlayRoot;
         private Node3D _roadRoot;
         private Node3D _markerRoot;
        private readonly List<MultiMeshInstance3D> _supplyOverlayInstances = new();
+    private readonly List<MultiMeshInstance3D> _controlOverlayInstances = new();
         private float _flashTimer = 0f;
         private bool _flashOn = true;
         private float _selectionAlpha = 0.6f;
@@ -52,6 +60,8 @@ namespace ColdWarWargame.Rendering
         private HashSet<Vector2I> _blueOosPositions = new();
         private HashSet<Vector2I> _redOosPositions = new();
         private SupplyOverlayDisplayMode _supplyOverlayMode = SupplyOverlayDisplayMode.Off;
+        private int[,] _controlMap;
+        private ControlOverlayDisplayMode _controlOverlayMode = ControlOverlayDisplayMode.Off;
        private int _activeFaction = 1;
         private HashSet<Vector2I> _supplyHubPositions = new();
         private HashSet<Vector2I> _supplyAirportPositions = new();
@@ -111,6 +121,19 @@ namespace ColdWarWargame.Rendering
         {
             _supplyOverlayMode = mode;
             UpdateSupplyOverlay();
+        }
+
+        public void SetControlOverlayData(int[,] controlMap, ControlOverlayDisplayMode mode)
+        {
+            _controlMap = controlMap;
+            _controlOverlayMode = mode;
+            UpdateControlOverlay();
+        }
+
+        public void SetControlOverlayMode(ControlOverlayDisplayMode mode)
+        {
+            _controlOverlayMode = mode;
+            UpdateControlOverlay();
         }
 
         public void SetUnitSupplyStatus(HashSet<Vector2I> blueOos, HashSet<Vector2I> redOos)
@@ -299,6 +322,77 @@ namespace ColdWarWargame.Rendering
                 };
             }
             return materials;
+        }
+
+        private void UpdateControlOverlay()
+        {
+            if (_map == null)
+                return;
+
+            if (_controlOverlayRoot == null)
+            {
+                _controlOverlayRoot = new Node3D();
+                AddChild(_controlOverlayRoot);
+            }
+
+            foreach (var child in _controlOverlayRoot.GetChildren())
+            {
+                if (child is Node node)
+                    node.QueueFree();
+            }
+
+            _controlOverlayInstances.Clear();
+
+            if (_controlOverlayMode == ControlOverlayDisplayMode.Off || _controlMap == null)
+                return;
+
+            var sharedMesh = new BoxMesh { Size = new Vector3(CellSize * 0.9f, 0.02f, CellSize * 0.9f) };
+            var blueCells = new List<Vector3>();
+            var redCells = new List<Vector3>();
+
+            for (int x = 0; x < _map.Width; x++)
+            {
+                for (int y = 0; y < _map.Height; y++)
+                {
+                    var pos = new Vector3(x * CellSize + CellSize / 2, 0.035f, y * CellSize + CellSize / 2);
+                    if (_controlMap[x, y] == 1)
+                        blueCells.Add(pos);
+                    else if (_controlMap[x, y] == 2)
+                        redCells.Add(pos);
+                }
+            }
+
+            CreateControlOverlayLayer(sharedMesh, new Color(0.15f, 0.45f, 1f, 0.22f), blueCells);
+            CreateControlOverlayLayer(sharedMesh, new Color(1f, 0.18f, 0.18f, 0.22f), redCells);
+        }
+
+        private void CreateControlOverlayLayer(Mesh sharedMesh, Color color, List<Vector3> cells)
+        {
+            if (cells.Count == 0)
+                return;
+
+            var material = new StandardMaterial3D
+            {
+                AlbedoColor = color,
+                ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+                Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+                NoDepthTest = false
+            };
+            var instance = new MultiMeshInstance3D();
+            var multiMesh = new MultiMesh
+            {
+                Mesh = sharedMesh,
+                TransformFormat = MultiMesh.TransformFormatEnum.Transform3D,
+                InstanceCount = cells.Count
+            };
+
+            for (int i = 0; i < cells.Count; i++)
+                multiMesh.SetInstanceTransform(i, new Transform3D(Basis.Identity, cells[i]));
+
+            instance.Multimesh = multiMesh;
+            instance.MaterialOverride = material;
+            _controlOverlayRoot.AddChild(instance);
+            _controlOverlayInstances.Add(instance);
         }
 
         private void CreateSupplyOverlayLayer(Mesh sharedMesh, Material sharedMaterial, List<Vector3> cells)

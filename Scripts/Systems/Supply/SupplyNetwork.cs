@@ -12,9 +12,8 @@ namespace ColdWarWargame.Systems.Supply
     /// </summary>
     public class SupplyNetwork
     {
-        const float MAX_SP = 36f;
-        const float SECONDARY_SP = 18f;
-        const float ZOC_PENALTY = 15f;
+        const float MAX_SP = 36;
+        const float SECONDARY_SP = 12;
         const float EPS = 1e-6f;
 
         public float[,] ComputeSupplySP(
@@ -24,7 +23,8 @@ namespace ColdWarWargame.Systems.Supply
             HashSet<Vector2I> enemyZOC,
             Dictionary<Vector2I, float> enemyAP = null,
             HashSet<Vector2I> hubs = null,
-            HashSet<Vector2I> airports = null)
+            HashSet<Vector2I> airports = null,
+            int[,] occupationMap = null)
         {
             int w = map.Width;
             int h = map.Height;
@@ -38,20 +38,20 @@ namespace ColdWarWargame.Systems.Supply
 
             MergeBestCost(
                 globalCost,
-                RunBoundedDijkstra(map, primarySources, MAX_SP, blockedTiles, enemyZOC, enemyAP));
+                RunBoundedDijkstra(map, primarySources, MAX_SP, blockedTiles));
 
             // Re-activate hubs reached by the strategic (primary) network.
             var activatedHubs = new HashSet<Vector2I>();
             var newHubSources = new List<Vector2I>();
-            CollectNewActivatedHubs(hubs, globalCost, activatedHubs, newHubSources);
+            CollectNewActivatedHubs(hubs, globalCost, activatedHubs, newHubSources, occupationMap, faction);
 
             while (newHubSources.Count > 0)
             {
-                var hubCost = RunBoundedDijkstra(map, newHubSources, MAX_SP, blockedTiles, enemyZOC, enemyAP);
+                var hubCost = RunBoundedDijkstra(map, newHubSources, MAX_SP, blockedTiles);
                 MergeBestCost(globalCost, hubCost);
 
                 newHubSources = new List<Vector2I>();
-                CollectNewActivatedHubs(hubs, globalCost, activatedHubs, newHubSources);
+                CollectNewActivatedHubs(hubs, globalCost, activatedHubs, newHubSources, occupationMap, faction);
             }
 
             var result = BuildSpFromCost(globalCost, MAX_SP);
@@ -62,6 +62,8 @@ namespace ColdWarWargame.Systems.Supply
             {
                 if (!map.IsInBounds(airport) || !map.IsPassable(airport) || enemyOccupied.Contains(airport))
                     continue;
+                if (!IsControlledByFaction(occupationMap, airport, faction))
+                    continue;
 
                 if (float.IsPositiveInfinity(globalCost[airport.X, airport.Y]))
                     disconnectedAirports.Add(airport);
@@ -69,7 +71,7 @@ namespace ColdWarWargame.Systems.Supply
 
             if (disconnectedAirports.Count > 0)
             {
-                var secondaryCost = RunBoundedDijkstra(map, disconnectedAirports, SECONDARY_SP, blockedTiles, enemyZOC, enemyAP);
+                var secondaryCost = RunBoundedDijkstra(map, disconnectedAirports, SECONDARY_SP, blockedTiles);
                 var secondarySp = BuildSpFromCost(secondaryCost, SECONDARY_SP);
 
                 for (int x = 0; x < w; x++)
@@ -110,9 +112,7 @@ namespace ColdWarWargame.Systems.Supply
             ColdWarWargame.Systems.Battlefield.GridMap map,
             List<Vector2I> sources,
             float budget,
-            HashSet<Vector2I> blockedTiles,
-            HashSet<Vector2I> enemyZOC,
-            Dictionary<Vector2I, float> enemyAP)
+            HashSet<Vector2I> blockedTiles)
         {
             int w = map.Width;
             int h = map.Height;
@@ -160,12 +160,7 @@ namespace ColdWarWargame.Systems.Supply
                     if (float.IsPositiveInfinity(tileCost))
                         continue;
 
-                    bool zocActive = enemyZOC.Contains(nb);
-                    if (zocActive && enemyAP != null && enemyAP.TryGetValue(nb, out float ap) && ap < 4f)
-                        zocActive = false;
-
-                    float extra = zocActive ? ZOC_PENALTY : 0f;
-                    float newCost = minCost + tileCost + extra;
+                    float newCost = minCost + tileCost;
 
                     if (newCost < cost[nb.X, nb.Y] - EPS && newCost < budget - EPS)
                     {
@@ -214,7 +209,9 @@ namespace ColdWarWargame.Systems.Supply
             HashSet<Vector2I> hubs,
             float[,] currentBestCost,
             HashSet<Vector2I> activatedHubs,
-            List<Vector2I> outputNewHubs)
+            List<Vector2I> outputNewHubs,
+            int[,] occupationMap,
+            int faction)
         {
             int w = currentBestCost.GetLength(0);
             int h = currentBestCost.GetLength(1);
@@ -225,6 +222,8 @@ namespace ColdWarWargame.Systems.Supply
 
                 if (hub.X < 0 || hub.X >= w || hub.Y < 0 || hub.Y >= h)
                     continue;
+                if (!IsControlledByFaction(occupationMap, hub, faction))
+                    continue;
 
                 if (!float.IsPositiveInfinity(currentBestCost[hub.X, hub.Y]))
                 {
@@ -232,6 +231,16 @@ namespace ColdWarWargame.Systems.Supply
                     outputNewHubs.Add(hub);
                 }
             }
+        }
+
+        private static bool IsControlledByFaction(int[,] occupationMap, Vector2I position, int faction)
+        {
+            if (occupationMap == null)
+                return true;
+
+            return position.X >= 0 && position.X < occupationMap.GetLength(0) &&
+                   position.Y >= 0 && position.Y < occupationMap.GetLength(1) &&
+                   occupationMap[position.X, position.Y] == faction;
         }
 
         private static float[,] BuildInfiniteGrid(int w, int h)

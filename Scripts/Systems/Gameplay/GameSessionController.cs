@@ -33,6 +33,7 @@ namespace ColdWarWargame.Systems.Gameplay
 
         private Vector2 _lastMouseScreenPos;
         private SupplyOverlayDisplayMode _supplyOverlayMode = SupplyOverlayDisplayMode.Off;
+        private ControlOverlayDisplayMode _controlOverlayMode = ControlOverlayDisplayMode.Off;
 
         private static readonly string[] TerrainNames = { "平原", "森林", "半城镇", "城镇" };
         private static readonly string[] InfraNames = { "", "支线公路", "高速公路" };
@@ -280,6 +281,12 @@ namespace ColdWarWargame.Systems.Gameplay
             if (key.Keycode == Key.F6)
             {
                 CycleSupplyOverlayMode();
+                return;
+            }
+
+            if (key.Keycode == Key.F7)
+            {
+                ToggleControlOverlay();
             }
         }
 
@@ -372,7 +379,8 @@ _hud.UpdateVPPanel(_victoryTracker, _owner.GetViewport().GetVisibleRect().Size.X
                 enemyOccupied,
                 enemyZoc,
                 hubs,
-                airports);
+                airports,
+                _scenario.GetOccupationMap());
 
             RefreshOccupationFromEntryAndZoc();
             _scenario.SaveOccupationState(_scenario.GetOccupationMap());
@@ -400,6 +408,7 @@ _hud.UpdateVPPanel(_victoryTracker, _owner.GetViewport().GetVisibleRect().Size.X
             _renderer.SetRedUnits(redVisible);
             _renderer.SetActiveFaction(_turnMgr.CurrentFaction);
             RefreshSupplyVisualization();
+            RefreshControlVisualization();
             RefreshFrontline();
         }
 
@@ -442,7 +451,8 @@ _hud.UpdateVPPanel(_victoryTracker, _owner.GetViewport().GetVisibleRect().Size.X
                 enemyOccupied,
                 enemyZoc,
                 hubs,
-                airports);
+                airports,
+                _scenario.GetOccupationMap());
         }
 
         private void CycleSupplyOverlayMode()
@@ -457,6 +467,22 @@ _hud.UpdateVPPanel(_victoryTracker, _owner.GetViewport().GetVisibleRect().Size.X
 
             _renderer.SetSupplyOverlayMode(_supplyOverlayMode);
             _hud.SetInfoText("Supply Overlay [F6]: " + DescribeSupplyOverlayMode(_supplyOverlayMode));
+        }
+
+        private void RefreshControlVisualization()
+        {
+            _renderer.SetControlOverlayData(_scenario.GetOccupationMap(), _controlOverlayMode);
+        }
+
+        private void ToggleControlOverlay()
+        {
+            _controlOverlayMode = _controlOverlayMode == ControlOverlayDisplayMode.Off
+                ? ControlOverlayDisplayMode.On
+                : ControlOverlayDisplayMode.Off;
+
+            _renderer.SetControlOverlayMode(_controlOverlayMode);
+            _hud.SetInfoText("Control Overlay [F7]: " +
+                (_controlOverlayMode == ControlOverlayDisplayMode.On ? "ON" : "OFF"));
         }
 
         private string DescribeSupplyOverlayMode(SupplyOverlayDisplayMode mode)
@@ -496,6 +522,7 @@ _hud.UpdateVPPanel(_victoryTracker, _owner.GetViewport().GetVisibleRect().Size.X
                 bluePathZocTiles,
                 redPathZocTiles);
             _scenario.ApplyOccupationState(updated);
+            RefreshControlVisualization();
         }
 
         private IEnumerable<(Battalion bat, Vector2I pos)> GetAllUnits()
