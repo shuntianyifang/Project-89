@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Godot;
+using ColdWarWargame.Systems.Battlefield;
 
 namespace ColdWarWargame.Systems.Supply
 {
@@ -118,6 +119,8 @@ namespace ColdWarWargame.Systems.Supply
             int h = map.Height;
             var cost = BuildInfiniteGrid(w, h);
             var frontier = new List<Vector2I>();
+            var movement = new MovementResolver(map);
+            Func<Vector2I, bool> isBlocked = pos => !map.IsPassable(pos) || blockedTiles.Contains(pos);
 
             foreach (var src in sources)
             {
@@ -156,11 +159,13 @@ namespace ColdWarWargame.Systems.Supply
                     if (!map.IsPassable(nb) || blockedTiles.Contains(nb))
                         continue;
 
-                    float tileCost = map.GetTile(nb).GetMovementCost();
-                    if (float.IsPositiveInfinity(tileCost))
+                    // Supply follows the same step rules as movement: diagonal travel
+                    // costs 1.4x and cannot cut through two blocked corners.
+                    float stepCost = movement.GetMoveCost(current, nb, isBlocked);
+                    if (float.IsPositiveInfinity(stepCost))
                         continue;
 
-                    float newCost = minCost + tileCost;
+                    float newCost = minCost + stepCost;
 
                     if (newCost < cost[nb.X, nb.Y] - EPS && newCost < budget - EPS)
                     {

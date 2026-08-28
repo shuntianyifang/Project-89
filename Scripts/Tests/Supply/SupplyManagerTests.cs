@@ -428,6 +428,38 @@ namespace ColdWarWargame.Tests.Supply
             AssertFloat(sp[2, 6], 0f, "High-AP 3x3 barrier blocks every path beyond it");
         }
 
+        static void Test_Supply_DiagonalCostMatchesMovementAP()
+        {
+            const int size = 14;
+            var terrain = new int[size, size];
+            for (int x = 1; x < size; x++)
+                terrain[0, x] = -1; // Only (0,0) is a valid Red supply source.
+
+            var map = ColdWarWargame.Systems.Battlefield.GridMap.FromLayers(terrain);
+            var net = new SupplyNetwork();
+            var sp = net.ComputeSupplySP(map, 2, new HashSet<Vector2I>(), new HashSet<Vector2I>());
+
+            // Nine plain diagonal steps cost 9 * (1.4 * 2.0) = 25.2 AP/SP.
+            AssertFloat(sp[9, 9], 10.8f, "Supply diagonal cost must match movement AP cost");
+        }
+
+        static void Test_Supply_CannotCutBlockedCorners()
+        {
+            const int size = 5;
+            var terrain = new int[size, size];
+            for (int x = 1; x < size; x++)
+                terrain[0, x] = -1; // Only (0,0) is a valid Red supply source.
+            terrain[1, 0] = -1;
+
+            var map = ColdWarWargame.Systems.Battlefield.GridMap.FromLayers(terrain);
+            var net = new SupplyNetwork();
+            var sp = net.ComputeSupplySP(map, 2, new HashSet<Vector2I>(), new HashSet<Vector2I>());
+
+            // (1,1) is diagonally adjacent to the source but both crossing flanks are blocked.
+            AssertFloat(sp[1, 1], 0f, "Supply cannot diagonally leak through two blocked corners");
+            AssertFloat(sp[4, 4], 0f, "Tiles beyond a blocked corner remain cut off");
+        }
+
         static void Test_DisorganizedInSupply_ForcedToFatigue8NextTurn()
         {
             var map = new ColdWarWargame.Systems.Battlefield.GridMap(5, 5);
@@ -464,6 +496,8 @@ namespace ColdWarWargame.Tests.Supply
             Test_OOS_UsesTurn0AndTurn1Rules();
             Test_BlockingRange_UsesOwnTileAnd3x3ForHighAPUnits();
             Test_HighAPBlockingRange_CutsOffPathsBeyondBarrier();
+            Test_Supply_DiagonalCostMatchesMovementAP();
+            Test_Supply_CannotCutBlockedCorners();
             Test_DisorganizedInSupply_ForcedToFatigue8NextTurn();
 
             if (_fails == 0)
