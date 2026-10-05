@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "status": "design_only_not_loaded_by_runtime",
+  "historical_battle": false,
+  "approved_boundary": {
+    "date": "1989-07-01",
+    "area": "Fulda–Bad Hersfeld",
+    "width_cells": 50,
+    "height_cells": 30,
+    "cell_size_km": 2,
+    "hours_per_full_round": 2,
+    "focus": "11th ACR delaying action against leading elements in the 8th Guards Army direction"
+  },
+  "runtime_data_status": "unvalidated_placeholder",
+  "approved_opening_assumption": {
+    "evidence_kind": "assumed",
+    "posture": "warned_and_forward_deployed",
+    "blue": ["11ACR_1Sqdn", "11ACR_3Sqdn"],
+    "red_leading": "39GMRD_117GMRR",
+    "red_following": "79GTD_17GTR",
+    "arrival_schedule": null
+  },
+  "approved_cavalry_role": "main",
+  "baseline_document": "docs/current/Fulda_Gap_Historical_Baseline.md",
+  "formations": [
+    {
+      "id": "11ACR_1Sqdn",
+      "parent": "11ACR",
+      "garrison": "Downs Barracks, Fulda",
+      "source_ids": ["S01"],
+      "evidence_kind": "historical",
+      "confidence": "institutional narrative; daily strength unknown",
+      "deployment": null
+    },
+    {
+      "id": "11ACR_3Sqdn",
+      "parent": "11ACR",
+      "garrison": "McPheeters Barracks, Bad Hersfeld",
+      "source_ids": ["S01"],
+      "evidence_kind": "historical",
+      "confidence": "institutional narrative; daily strength unknown",
+      "deployment": null
+    },
+    {
+      "id": "11ACR_2Sqdn",
+      "parent": "11ACR",
+      "garrison": "Daley Barracks, Bad Kissingen",
+      "source_ids": ["S01"],
+      "evidence_kind": "historical",
+      "confidence": "institutional narrative; outside proposed northern focus",
+      "deployment": null
+    },
+    {
+      "id": "79GTD_17GTR",
+      "parent": "79GTD",
+      "garrison": "Saalfeld",
+      "source_ids": ["S04"],
+      "as_of": "1988 organizational list",
+      "evidence_kind": "historical",
+      "confidence": "secondary compilation; combat assignment unconfirmed",
+      "deployment": null,
+      "equipment_count_1989_07_01": null
+    },
+    {
+      "id": "39GMRD_117GMRR",
+      "parent": "39GMRD",
+      "garrison": "Meiningen",
+      "source_ids": ["S05"],
+      "as_of": "1988 organizational list",
+      "evidence_kind": "historical",
+      "confidence": "secondary compilation; combat assignment unconfirmed",
+      "deployment": null,
+      "equipment_count_1989_07_01": null
+    }
+  ],
+  "unresolved": [
+    "Georeferenced historical map and sheet dates not yet verified",
+    "1989 equipment strength and lower-echelon organization not yet established",
+    "Mission scoring weights and reinforcement schedule not approved",
+    "Physical scale calibration and historical scenario regression tests not implemented"
+  ]
+}

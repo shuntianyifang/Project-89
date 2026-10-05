@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "note": "Structural entries are not a historical equipment census; unresolved findings do not mean tests failed.",
+  "factions": {
+    "blue": {
+      "instances": 54,
+      "templates": {
+        "us_cav_squadron": 3,
+        "us_aviation_battalion": 5,
+        "us_armor_battalion": 11,
+        "us_mech_battalion_standard": 9,
+        "us_div_recon_squadron": 2,
+        "us_div_arty_battalion": 8,
+        "us_airborne_battalion": 1,
+        "frg_tank_battalion": 7,
+        "frg_panzergrenadier_battalion": 4,
+        "frg_recon_battalion": 1,
+        "frg_arty_battalion": 3
+      }
+    },
+    "red": {
+      "instances": 89,
+      "templates": {
+        "sov_heavy_tank_battalion": 29,
+        "sov_motorifle_battalion": 34,
+        "sov_recon_battalion": 4,
+        "sov_aviation_battalion": 5,
+        "sov_arty_group": 9,
+        "sov_heavy_arty_battalion": 4,
+        "gdr_tank_battalion": 2,
+        "gdr_motorifle_battalion": 2
+      }
+    }
+  },
+  "map_layers": {
+    "TerrainRows": {
+      "rows": 30,
+      "row_lengths": {
+        "50": 30
+      }
+    },
+    "InfraRows": {
+      "rows": 30,
+      "row_lengths": {
+        "52": 30
+      }
+    }
+  },
+  "template_composition": {
+    "frg_tank_battalion": {
+      "frg_leopard1a5": 41
+    },
+    "frg_panzergrenadier_battalion": {
+      "frg_Gepard1A1": 2,
+      "frg_grenadiers": 27,
+      "frg_leopard1a5": 4,
+      "frg_marder1A1": 23,
+      "frg_marder1A1_milan": 9
+    },
+    "frg_recon_battalion": {
+      "frg_grenadiers": 6,
+      "frg_marder1A1": 6
+    },
+    "frg_arty_battalion": {
+      "us_m109a2": 24
+    },
+    "gdr_tank_battalion": {
+      "gdr_t55a": 30
+    },
+    "gdr_motorifle_battalion": {
+      "gdr_bmp1": 20,
+      "gdr_motostrelkovy": 18,
+      "gdr_t55a": 6
+    },
+    "sov_heavy_tank_battalion": {
+      "sov_t72b": 30,
+      "sov_t72b_cp": 1
+    },
+    "sov_motorifle_battalion": {
+      "sov_2s1_gvozdika": 3,
+      "sov_bmp1": 33,
+      "sov_motostrelkovy": 29,
+      "sov_sa8_gecko": 2
+    },
+    "sov_recon_battalion": {
+      "sov_brdm2": 9
+    },
+    "sov_arty_group": {
+      "sov_2s1_gvozdika": 24,
+      "sov_zsu234_shilka": 2
+    },
+    "sov_aviation_battalion": {
+      "sov_mi24_hind": 9
+    },
+    "sov_heavy_arty_battalion": {
+      "sov_2s3_akatsiya": 24
+    },
+    "us_armor_battalion": {
+      "us_m109a2": 2,
+      "us_m1a1_abrams": 56,
+      "us_m1a1_abrams_cp": 1,
+      "us_m2a2_bradley": 4
+    },
+    "us_mech_battalion_standard": {
+      "us_m2a2_bradley": 56,
+      "us_mech_rifles": 48,
+      "us_tow2": 8
+    },
+    "us_cav_squadron": {
+      "us_m109a2": 6,
+      "us_m1a1_abrams": 38,
+      "us_m1a1_acav": 30
+    },
+    "us_aviation_battalion": {
+      "us_ah64a_apache": 9
+    },
+    "us_airborne_battalion": {
+      "us_aero_rifles": 9,
+      "us_stinger": 2,
+      "us_tow2": 2
+    },
+    "us_div_arty_battalion": {
+      "us_m109a2": 24
+    },
+    "us_div_recon_squadron": {
+      "us_m1a1_abrams": 16,
+      "us_m1a1_acav": 20
+    }
+  },
+  "issues": [
+    "InfraRows: expected 30 rows of 50 cells"
+  ]
+}

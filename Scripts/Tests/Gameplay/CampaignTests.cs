@@ -64,6 +64,20 @@ namespace ColdWarWargame.Tests.Gameplay
             Assert(occupation[6,4] == 0 && occupation[5,4] == 2, "Disorganized enemy occupies own tile without capturing neighboring tiles");
         }
 
+        private static void TestCavalryMainRole()
+        {
+            var cavalry = ColdWarWargame.Factories.BattalionFactory.CreateFullBattalion(
+                "11ACR_1Sqdn_role_test", "us_cav_squadron", 1);
+            Assert(cavalry.GetRole() == Battalion.BattalionRole.Main && cavalry.CanFillMain(),
+                "Actual cavalry template creates a main battalion eligible to initiate combat");
+            Assert(!cavalry.CanFillSupport() && !cavalry.CanFillArtillery(),
+                "Cavalry main battalion cannot occupy support or artillery slots");
+            var aviation = ColdWarWargame.Factories.BattalionFactory.CreateFullBattalion(
+                "aviation_role_test", "us_aviation_battalion", 1);
+            Assert(aviation.CanFillSupport() && !aviation.CanFillMain(),
+                "Cavalry role change preserves neighboring aviation support role");
+        }
+
         private static void TestThresholdAndTermination()
         {
             var b = Unit(1); var u = b.GetAllSubUnits().Single();
@@ -144,6 +158,7 @@ namespace ColdWarWargame.Tests.Gameplay
         public static int RunAll()
         {
             _fails = 0;
+            TestCavalryMainRole();
             TestMovementCombatSettlement(); TestThresholdAndTermination(); TestSaveRoundTrip(); TestSessionLifecycle();
             if (_fails == 0) GD.Print("All CampaignTests passed");
             else GD.PrintErr(_fails + " CampaignTests FAILED");
