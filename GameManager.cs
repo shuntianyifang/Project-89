@@ -14,6 +14,13 @@ public partial class GameManager : Node
 
     public override void _Ready()
     {
+        string replay = OS.GetEnvironment("CW_SUPPLY_REPLAY");
+        if (!string.IsNullOrEmpty(replay))
+        {
+            try { GetTree().Quit(ColdWarWargame.Systems.Supply.SupplySnapshotReplay.Run(replay) > 0 ? 1 : 0); }
+            catch (Exception ex) { GD.PrintErr(ex); GetTree().Quit(1); }
+            return;
+        }
         if (OS.GetEnvironment("CW_RUN_TESTS") == "1")
         {
             int fails = AllTestsRunner.RunAll();

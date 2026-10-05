@@ -25,7 +25,8 @@ namespace ColdWarWargame.Systems.Supply
             Dictionary<Vector2I, float> enemyAP = null,
             HashSet<Vector2I> hubs = null,
             HashSet<Vector2I> airports = null,
-            int[,] occupationMap = null)
+            int[,] occupationMap = null,
+            SupplyTrace trace = null)
         {
             int w = map.Width;
             int h = map.Height;
@@ -36,10 +37,12 @@ namespace ColdWarWargame.Systems.Supply
             var primarySources = BuildPrimarySources(map, faction, enemyOccupied);
             var globalCost = BuildInfiniteGrid(w, h);
             var blockedTiles = BuildBlockedTiles(map, enemyOccupied, enemyAP);
+            trace?.Reset(w, h, blockedTiles);
+            var runTrace = trace == null ? null : new SupplyTrace();
 
             MergeBestCost(
                 globalCost,
-                RunBoundedDijkstra(map, primarySources, MAX_SP, blockedTiles));
+                RunBoundedDijkstra(map, primarySources, MAX_SP, blockedTiles, runTrace, "edge"), trace, runTrace);
 
             // Re-activate hubs reached by the strategic (primary) network.
             var activatedHubs = new HashSet<Vector2I>();
@@ -48,8 +51,8 @@ namespace ColdWarWargame.Systems.Supply
 
             while (newHubSources.Count > 0)
             {
-                var hubCost = RunBoundedDijkstra(map, newHubSources, MAX_SP, blockedTiles);
-                MergeBestCost(globalCost, hubCost);
+                var hubCost = RunBoundedDijkstra(map, newHubSources, MAX_SP, blockedTiles, runTrace, "hub");
+                MergeBestCost(globalCost, hubCost, trace, runTrace);
 
                 newHubSources = new List<Vector2I>();
                 CollectNewActivatedHubs(hubs, globalCost, activatedHubs, newHubSources, occupationMap, faction);
@@ -72,7 +75,7 @@ namespace ColdWarWargame.Systems.Supply
 
             if (disconnectedAirports.Count > 0)
             {
-                var secondaryCost = RunBoundedDijkstra(map, disconnectedAirports, SECONDARY_SP, blockedTiles);
+                var secondaryCost = RunBoundedDijkstra(map, disconnectedAirports, SECONDARY_SP, blockedTiles, runTrace, "airport");
                 var secondarySp = BuildSpFromCost(secondaryCost, SECONDARY_SP);
 
                 for (int x = 0; x < w; x++)
@@ -80,7 +83,10 @@ namespace ColdWarWargame.Systems.Supply
                     for (int y = 0; y < h; y++)
                     {
                         if (secondarySp[x, y] > result[x, y])
+                        {
                             result[x, y] = secondarySp[x, y];
+                            if (trace != null) trace.Routes[x, y] = runTrace.Routes[x, y];
+                        }
                     }
                 }
             }
@@ -113,11 +119,13 @@ namespace ColdWarWargame.Systems.Supply
             ColdWarWargame.Systems.Battlefield.GridMap map,
             List<Vector2I> sources,
             float budget,
-            HashSet<Vector2I> blockedTiles)
+            HashSet<Vector2I> blockedTiles,
+            SupplyTrace trace = null, string sourceKind = "edge")
         {
             int w = map.Width;
             int h = map.Height;
             var cost = BuildInfiniteGrid(w, h);
+            trace?.Reset(w, h, blockedTiles);
             var frontier = new List<Vector2I>();
             var movement = new MovementResolver(map);
             Func<Vector2I, bool> isBlocked = pos => !map.IsPassable(pos) || blockedTiles.Contains(pos);
@@ -131,6 +139,7 @@ namespace ColdWarWargame.Systems.Supply
                 {
                     cost[src.X, src.Y] = 0f;
                     frontier.Add(src);
+                    if (trace != null) trace.Routes[src.X, src.Y] = new SupplyRoute(src, sourceKind, budget, 0f, null);
                 }
             }
 
@@ -171,6 +180,7 @@ namespace ColdWarWargame.Systems.Supply
                     {
                         cost[nb.X, nb.Y] = newCost;
                         frontier.Add(nb);
+                        if (trace != null) trace.Routes[nb.X, nb.Y] = new SupplyRoute(nb, sourceKind, budget, newCost, trace.Routes[current.X, current.Y]);
                     }
                 }
             }
@@ -261,7 +271,7 @@ namespace ColdWarWargame.Systems.Supply
             return grid;
         }
 
-        private static void MergeBestCost(float[,] target, float[,] candidate)
+        private static void MergeBestCost(float[,] target, float[,] candidate, SupplyTrace trace = null, SupplyTrace runTrace = null)
         {
             int w = target.GetLength(0);
             int h = target.GetLength(1);
@@ -270,7 +280,10 @@ namespace ColdWarWargame.Systems.Supply
                 for (int y = 0; y < h; y++)
                 {
                     if (candidate[x, y] < target[x, y] - EPS)
+                    {
                         target[x, y] = candidate[x, y];
+                        if (trace != null) trace.Routes[x, y] = runTrace.Routes[x, y];
+                    }
                 }
             }
         }

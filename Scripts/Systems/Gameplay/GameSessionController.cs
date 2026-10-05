@@ -27,6 +27,7 @@ namespace ColdWarWargame.Systems.Gameplay
         private readonly GameplayEventHub _eventHub = new();
         private readonly TurnFlowController _turnFlow;
         private readonly SupplyManager _supplyManager = new();
+        private readonly GameDebugInspector _debug;
         private readonly VictoryTracker _victoryTracker = new();
         private readonly FrontlineResolver _frontlineResolver = new();
         private readonly VisionResolver _visionResolver = new();
@@ -61,7 +62,9 @@ namespace ColdWarWargame.Systems.Gameplay
                 scenario,
                 turnMgr,
                 _resolver);
+            _debug = new GameDebugInspector(scenario, turnMgr, renderer, hud.Canvas);
             RefreshPresentationByVision();
+            if (OS.GetEnvironment("CW_DEBUG_MODE") == "1") _debug.HandleKey(Key.F8);
         }
 
         public string GetStatusText() =>
@@ -182,6 +185,8 @@ namespace ColdWarWargame.Systems.Gameplay
 
         public void OnHoverChanged(Vector2I? pos)
         {
+            _debug.Hover(pos);
+            if (_debug.Enabled) return;
             _renderer.ClearPath();
 
             if (pos == null)
@@ -271,6 +276,7 @@ namespace ColdWarWargame.Systems.Gameplay
         {
             if (!key.Pressed || key.Echo)
                 return;
+            if (_debug.HandleKey(key.Keycode)) return;
 
             if (key.Keycode == Key.Space && _rules.IsActionAllowed(_flow.CurrentState, GameAction.EndTurn))
             {
@@ -367,6 +373,7 @@ _hud.UpdateVPPanel(_victoryTracker, _owner.GetViewport().GetVisibleRect().Size.X
 
         private void ExecuteEndTurnSettlement(int endingFaction)
         {
+            _debug.RecordSettlement(endingFaction, "before");
             var enemyPositions = GetFactionUnits(endingFaction == 1 ? 2 : 1).Select(u => u.pos);
             var enemyOccupied = new HashSet<Vector2I>(enemyPositions);
             var enemyZoc = _scenario.ZOC.GetFactionZOC(enemyPositions);
@@ -382,6 +389,7 @@ _hud.UpdateVPPanel(_victoryTracker, _owner.GetViewport().GetVisibleRect().Size.X
                 airports,
                 _scenario.GetOccupationMap());
 
+            _debug.RecordSettlement(endingFaction, "after_supply_before_control");
             RefreshOccupationFromEntryAndZoc();
             _scenario.SaveOccupationState(_scenario.GetOccupationMap());
             RefreshFrontline();
@@ -431,6 +439,7 @@ _hud.UpdateVPPanel(_victoryTracker, _owner.GetViewport().GetVisibleRect().Size.X
 
             _renderer.SetUnitSupplyStatus(blueOos, redOos);
             _renderer.SetSupplyOverlayData(blueSp, redSp, _supplyOverlayMode);
+            _debug.SetDisplayed(blueSp, redSp);
         }
 
         private float[,] ComputeSupplyMapForFaction(

@@ -8,6 +8,8 @@ using ColdWarWargame.Systems.Supply;
 using ColdWarWargame.Systems.Turns;
 using ColdWarWargame.Systems.Victory;
 using ColdWarWargame.Data;
+using ColdWarWargame.Data.TOE;
+using ColdWarWargame.Scenarios;
 
 namespace ColdWarWargame.Tests.Supply
 {
@@ -15,6 +17,7 @@ namespace ColdWarWargame.Tests.Supply
     {
         static int _fails = 0;
         static bool _unitDbReady = false;
+        static bool _templateDbReady = false;
 
         static void Assert(bool cond, string msg)
         {
@@ -39,6 +42,14 @@ namespace ColdWarWargame.Tests.Supply
             if (_unitDbReady) return;
             UnitDatabase.Initialize("res://Scripts/Data/Units");
             _unitDbReady = true;
+        }
+
+        static void EnsureScenarioDatabases()
+        {
+            EnsureUnitDatabase();
+            if (_templateDbReady) return;
+            TemplateDatabase.Initialize("res://Scripts/Data/Templates");
+            _templateDbReady = true;
         }
 
         static Battalion MakeSupplyBatWithTestUnits(string name, int faction)
@@ -176,27 +187,41 @@ namespace ColdWarWargame.Tests.Supply
             Assert(withAirport[2, 10] <= 18f + 0.01f, "Secondary supply is capped by 18 SP budget");
         }
 
-        static void Test_EnemyControlledHub_DoesNotReactivateSupply()
+        static void Test_HubOwnership_ChangesSupplyAndOOS()
         {
-            var map = new ColdWarWargame.Systems.Battlefield.GridMap(1, 30);
-            var net = new SupplyNetwork();
-            var hubs = new HashSet<Vector2I> { new Vector2I(0, 17) };
-            var occupation = new int[1, 30];
-            for (int y = 0; y < 30; y++)
-                occupation[0, y] = 2;
-            occupation[0, 17] = 1;
+            // Keep the real map dimensions, but remove roads and airports so only
+            // an owned, connected hub can supply the target on the opposite edge.
+            var map = new ColdWarWargame.Systems.Battlefield.GridMap(50, 30);
+            var manager = new SupplyManager();
+            foreach (int faction in new[] { 1, 2 })
+            {
+                var hub = new Vector2I(25, faction == 1 ? 14 : 15);
+                var targetPos = new Vector2I(25, faction == 1 ? 0 : 29);
+                var hubs = new HashSet<Vector2I> { hub };
+                var occupation = new int[50, 30];
+                var target = MakeSupplyBat("Hub-dependent target", faction);
+                var units = new List<(Battalion bat, Vector2I pos)> { (target, targetPos) };
+                var empty = new HashSet<Vector2I>();
 
-            var supply = net.ComputeSupplySP(
-                map,
-                2,
-                new HashSet<Vector2I>(),
-                new HashSet<Vector2I>(),
-                null,
-                hubs,
-                null,
-                occupation);
-
-            AssertFloat(supply[0, 29], 0f, "Enemy-controlled hub must not reactivate supply");
+                // Reuse the manager to also detect stale activation after capture,
+                // neutralization, and recapture of the same hub.
+                foreach (int owner in new[] { faction, 3 - faction, 0, faction })
+                {
+                    occupation[hub.X, hub.Y] = owner;
+                    bool owned = owner == faction;
+                    var supply = manager.ComputeFactionSupplySP(
+                        faction, map, units, empty, empty, hubs, null, occupation);
+                    string label = $"Hub ownership: faction={faction} owner={owner}";
+                    AssertFloat(supply[hub.X, hub.Y], owned ? 36f : 6f,
+                        label + " hub resets SP only for its owner");
+                    AssertFloat(supply[targetPos.X, targetPos.Y], owned ? 8f : 0f,
+                        label + " downstream target SP");
+                    manager.UpdateFactionEndTurn(
+                        faction, map, units, empty, empty, hubs, null, occupation);
+                    Assert(target.WasOOSLastTurn == !owned,
+                        label + " end-turn OOS follows ownership");
+                }
+            }
         }
 
         static void Test_EnemyControlledAirport_DoesNotProvideSecondarySupply()
@@ -460,6 +485,361 @@ namespace ColdWarWargame.Tests.Supply
             AssertFloat(sp[4, 4], 0f, "Tiles beyond a blocked corner remain cut off");
         }
 
+        static void Test_LargeMap_ManagerPath_HighAPFrontlineCausesPersistentOOS()
+        {
+            // Match the campaign map dimensions and exercise SupplyManager's runtime
+            // AP extraction, rather than injecting an AP dictionary into SupplyNetwork.
+            var map = new ColdWarWargame.Systems.Battlefield.GridMap(50, 30);
+            var manager = new SupplyManager();
+            var units = new List<(Battalion bat, Vector2I pos)>();
+            var enemyOccupied = new HashSet<Vector2I>();
+
+            var suppliedRed = MakeSupplyBat("Red rear target", 2);
+            suppliedRed.Fatigue = 3;
+            units.Add((suppliedRed, new Vector2I(25, 12)));
+
+            // Centers spaced three tiles apart make their 3x3 zones a continuous
+            // 50-tile-wide barrier across rows 5-7.
+            for (int x = 0; x < 50; x += 3)
+            {
+                var blocker = MakeSupplyBat("Blue blocker " + x, 1);
+                blocker.CurrentAP = 4f;
+                var pos = new Vector2I(x, 6);
+                units.Add((blocker, pos));
+                enemyOccupied.Add(pos);
+            }
+
+            var sp = manager.ComputeFactionSupplySP(
+                2,
+                map,
+                units,
+                enemyOccupied,
+                new HashSet<Vector2I>());
+
+            Assert(sp[25, 3] > 0f, "Large map: supply reaches the source-side of the frontline");
+            AssertFloat(sp[25, 12], 0f, "Large map: high-AP frontline cuts off the rear target");
+
+            // Re-run end-of-turn settlement for five Red turns. The first OOS turn
+            // establishes the state; every later OOS turn must retain it and add fatigue.
+            for (int redTurn = 1; redTurn <= 5; redTurn++)
+            {
+                manager.UpdateFactionEndTurn(
+                    2,
+                    map,
+                    units,
+                    enemyOccupied,
+                    new HashSet<Vector2I>());
+
+                Assert(suppliedRed.WasOOSLastTurn,
+                    "Large map: rear target remains OOS after Red turn " + redTurn);
+            }
+
+            Assert(suppliedRed.TurnsOOS == 1,
+                "Large map: rear target reaches the persistent OOS state");
+            Assert(suppliedRed.Fatigue == 7,
+                "Large map: five OOS turns add fatigue after the initial grace turn");
+        }
+
+        static void Test_FuldaScenario_FrontlineAndAirportSupplyChain()
+        {
+            EnsureScenarioDatabases();
+
+            var scenario = new FuldaGapScenario();
+            scenario.LoadOOB(
+                "res://Scripts/Data/Scenarios/Fulda_Gap/oob_blue.json",
+                "res://Scripts/Data/Scenarios/Fulda_Gap/oob_red.json");
+
+            // Reposition real Blue OOB battalions as a continuous AP=4 frontline.
+            // This mirrors a player-created blockade while preserving the real map,
+            // road layer, OOB, supply nodes, and control map used by the game.
+            for (int i = 0; i < 17; i++)
+            {
+                var blocker = scenario.BlueBattalions[i].bat;
+                blocker.CurrentAP = 4f;
+                scenario.BlueBattalions[i] = (blocker, new Vector2I(i * 3, 8));
+            }
+
+            var target = scenario.RedBattalions[0].bat;
+            // (36,12) is a Red-controlled airport in the real scenario. The target
+            // remains behind the frontline but within its 12-SP local supply range.
+            var targetPos = new Vector2I(36, 14);
+            target.Fatigue = 3;
+            scenario.RedBattalions[0] = (target, targetPos);
+
+            var allUnits = scenario.BlueBattalions.Concat(scenario.RedBattalions).ToList();
+            var enemyOccupied = scenario.BlueBattalions.Select(u => u.pos).ToHashSet();
+            var enemyZoc = scenario.ZOC.GetFactionZOC(enemyOccupied);
+            var occupationMap = scenario.GetOccupationMap();
+            var (hubs, airports) = scenario.GetSupplySpecialNodes();
+            var manager = new SupplyManager();
+
+            var withoutAirports = manager.ComputeFactionSupplySP(
+                2, scenario.Map, allUnits, enemyOccupied, enemyZoc, hubs, null, occupationMap);
+            AssertFloat(withoutAirports[targetPos.X, targetPos.Y], 0f,
+                "Fulda scenario: frontline cuts supply when airports are removed");
+
+            manager.UpdateFactionEndTurn(
+                2, scenario.Map, allUnits, enemyOccupied, enemyZoc, hubs, null, occupationMap);
+            Assert(target.WasOOSLastTurn,
+                "Fulda scenario: rear target enters OOS when airports are removed");
+
+            var airportSupply = manager.ComputeFactionSupplySP(
+                2, scenario.Map, allUnits, enemyOccupied, enemyZoc, null, airports, occupationMap);
+            Assert(airportSupply[targetPos.X, targetPos.Y] > 0f,
+                "Fulda scenario: controlled disconnected airport resupplies the rear target");
+
+            var fullGameSupply = manager.ComputeFactionSupplySP(
+                2, scenario.Map, allUnits, enemyOccupied, enemyZoc, hubs, airports, occupationMap);
+            Assert(fullGameSupply[targetPos.X, targetPos.Y] > 0f,
+                "Fulda scenario: full game supply inputs keep the airport-supplied target in supply");
+
+            manager.UpdateFactionEndTurn(
+                2, scenario.Map, allUnits, enemyOccupied, enemyZoc, hubs, airports, occupationMap);
+            Assert(!target.WasOOSLastTurn,
+                "Fulda scenario: airport-supplied rear target does not enter OOS");
+            Assert(target.Fatigue == 1,
+                "Fulda scenario: airport supply applies normal fatigue recovery");
+        }
+
+        static void Test_FuldaPrimarySupply_EnemyInterception()
+        {
+            EnsureScenarioDatabases();
+            foreach (int faction in new[] { 1, 2 })
+            {
+                var scenario = new FuldaGapScenario();
+                scenario.LoadOOB(
+                    "res://Scripts/Data/Scenarios/Fulda_Gap/oob_blue.json",
+                    "res://Scripts/Data/Scenarios/Fulda_Gap/oob_red.json");
+                var enemies = faction == 1 ? scenario.RedBattalions : scenario.BlueBattalions;
+                var manager = new SupplyManager();
+                var occupation = scenario.GetOccupationMap();
+                var target = new Vector2I(0, faction == 1 ? 10 : 18);
+                const int lineY = 14;
+
+                float[,] ComputePrimary()
+                {
+                    var allUnits = scenario.BlueBattalions.Concat(scenario.RedBattalions).ToList();
+                    var occupied = enemies.Select(u => u.pos).ToHashSet();
+                    return manager.ComputeFactionSupplySP(faction, scenario.Map, allUnits,
+                        occupied, scenario.ZOC.GetFactionZOC(occupied), null, null, occupation);
+                }
+
+                void PlaceEnemy(int index, Vector2I pos, float ap)
+                {
+                    var bat = enemies[index].bat;
+                    bat.CurrentAP = ap;
+                    enemies[index] = (bat, pos);
+                }
+
+                void AssertRearCutOff(float[,] sp, string label)
+                {
+                    int suppliedRearCells = 0;
+                    for (int x = 0; x < scenario.Map.Width; x++)
+                        for (int y = 0; y < scenario.Map.Height; y++)
+                            if ((faction == 1 ? y < lineY : y > lineY) && sp[x, y] > 0f)
+                                suppliedRearCells++;
+                    Assert(suppliedRearCells == 0,
+                        $"Primary interception faction={faction}: {label}, supplied rear cells={suppliedRearCells}");
+                }
+
+                var baseline = ComputePrimary();
+                Assert(baseline[target.X, target.Y] > 0f,
+                    $"Primary interception faction={faction}: target initially supplied on real highway");
+
+                // A horizontal 3x3 blockade cuts every route from the top/bottom
+                // source edge, including Fulda's cheap, map-spanning highways.
+                for (int i = 0; i < 17; i++)
+                    PlaceEnemy(i, new Vector2I(i * 3, lineY), 4f);
+                var highAP = ComputePrimary();
+                AssertRearCutOff(highAP, "AP=4 continuous blockade");
+
+                // Below 4 AP the same battalions still occupy their own tiles,
+                // but the two-cell gaps between them permit genuine detours.
+                for (int i = 0; i < 17; i++)
+                    enemies[i].bat.CurrentAP = 3.99f;
+                var lowAP = ComputePrimary();
+                Assert(enemies.Take(17).All(u => lowAP[u.pos.X, u.pos.Y] == 0f),
+                    $"Primary interception faction={faction}: AP<4 occupied tiles still block supply");
+                Assert(lowAP[target.X, target.Y] > 0f,
+                    $"Primary interception faction={faction}: AP<4 gaps restore downstream supply");
+                GD.Print($"[SUPPLY DIAG] primary_interception faction={faction} target={target} " +
+                         $"baseline={baseline[target.X, target.Y]:F2} AP4={highAP[target.X, target.Y]:F2} " +
+                         $"AP3.99={lowAP[target.X, target.Y]:F2}");
+
+                // Even exhausted units block propagation when their actual occupied
+                // tiles fill the entire row; this does not rely on the AP threshold.
+                for (int x = 0; x < scenario.Map.Width; x++)
+                    PlaceEnemy(x, new Vector2I(x, lineY), 0f);
+                AssertRearCutOff(ComputePrimary(), "AP=0 solid occupied row");
+
+                // A source inside enemy 3x3 control must not be seeded with 36 SP.
+                int nearSourceY = faction == 1 ? scenario.Map.Height - 2 : 1;
+                for (int i = 0; i < 17; i++)
+                    PlaceEnemy(i, new Vector2I(i * 3, nearSourceY), 4f);
+                Assert(ComputePrimary().Cast<float>().All(v => v == 0f),
+                    $"Primary interception faction={faction}: blocking every source stops all propagation");
+            }
+        }
+
+        static void Test_FuldaScenario_InitialSupplyDiagnostics()
+        {
+            EnsureScenarioDatabases();
+
+            var scenario = new FuldaGapScenario();
+            scenario.LoadOOB(
+                "res://Scripts/Data/Scenarios/Fulda_Gap/oob_blue.json",
+                "res://Scripts/Data/Scenarios/Fulda_Gap/oob_red.json");
+
+            var allUnits = scenario.BlueBattalions.Concat(scenario.RedBattalions).ToList();
+            var (hubs, airports) = scenario.GetSupplySpecialNodes();
+            var occupationMap = scenario.GetOccupationMap();
+            var manager = new SupplyManager();
+
+            foreach (int faction in new[] { 1, 2 })
+            {
+                int enemyFaction = faction == 1 ? 2 : 1;
+                var factionUnits = allUnits.Where(u => u.bat.Faction == faction).ToList();
+                var enemyOccupied = allUnits
+                    .Where(u => u.bat.Faction == enemyFaction)
+                    .Select(u => u.pos)
+                    .ToHashSet();
+                var enemyZoc = scenario.ZOC.GetFactionZOC(enemyOccupied);
+
+                var primaryOnly = manager.ComputeFactionSupplySP(
+                    faction, scenario.Map, allUnits, enemyOccupied, enemyZoc, null, null, occupationMap);
+                var fullSupply = manager.ComputeFactionSupplySP(
+                    faction, scenario.Map, allUnits, enemyOccupied, enemyZoc, hubs, airports, occupationMap);
+
+                var ownedHubs = hubs.Where(p => occupationMap[p.X, p.Y] == faction).ToHashSet();
+                var otherHubs = hubs.Where(p => occupationMap[p.X, p.Y] != faction).ToHashSet();
+                var ownedHubsSupply = manager.ComputeFactionSupplySP(
+                    faction, scenario.Map, allUnits, enemyOccupied, enemyZoc, ownedHubs, airports, occupationMap);
+                var otherHubsOnly = manager.ComputeFactionSupplySP(
+                    faction, scenario.Map, allUnits, enemyOccupied, enemyZoc, otherHubs, null, occupationMap);
+                var hubsOnly = manager.ComputeFactionSupplySP(
+                    faction, scenario.Map, allUnits, enemyOccupied, enemyZoc, hubs, null, occupationMap);
+                var missingOccupation = manager.ComputeFactionSupplySP(
+                    faction, scenario.Map, allUnits, enemyOccupied, enemyZoc, hubs, null, null);
+
+                // Compare all 1,500 SP values, not just whether a few units are supplied.
+                int foreignHubChanges = 0, filteredHubChanges = 0, missingOccupationChanges = 0;
+                int airportChanges = 0;
+                for (int x = 0; x < scenario.Map.Width; x++)
+                {
+                    for (int y = 0; y < scenario.Map.Height; y++)
+                    {
+                        if (Math.Abs(otherHubsOnly[x, y] - primaryOnly[x, y]) > 0.001f)
+                            foreignHubChanges++;
+                        if (Math.Abs(ownedHubsSupply[x, y] - fullSupply[x, y]) > 0.001f)
+                            filteredHubChanges++;
+                        if (Math.Abs(missingOccupation[x, y] - hubsOnly[x, y]) > 0.001f)
+                            missingOccupationChanges++;
+                        if (Math.Abs(fullSupply[x, y] - hubsOnly[x, y]) > 0.001f)
+                            airportChanges++;
+                    }
+                }
+                Assert(foreignHubChanges == 0,
+                    $"Fulda faction={faction}: foreign/neutral hubs change no SP cells ({foreignHubChanges})");
+                Assert(filteredHubChanges == 0,
+                    $"Fulda faction={faction}: all hubs match prefiltered owned hubs ({filteredHubChanges})");
+                // Positive control: deliberately omit ownership. This fixture must
+                // expose the permissive null-map path, or the comparison is vacuous.
+                Assert(missingOccupationChanges > 0,
+                    $"Fulda faction={faction}: fixture detects missing ownership map ({missingOccupationChanges} SP cells)");
+
+                GD.Print($"[SUPPLY DIAG] faction={faction} covered/1500 " +
+                         $"primary={primaryOnly.Cast<float>().Count(v => v > 0f)} " +
+                         $"with_hubs={hubsOnly.Cast<float>().Count(v => v > 0f)} " +
+                         $"full={fullSupply.Cast<float>().Count(v => v > 0f)} " +
+                         $"null_occupation_changed_sp={missingOccupationChanges} airport_changed_sp={airportChanges}");
+                foreach (var hub in hubs.OrderBy(p => p.Y).ThenBy(p => p.X))
+                    GD.Print($"[SUPPLY DIAG] faction={faction} HUB {hub} " +
+                             $"owner={occupationMap[hub.X, hub.Y]} " +
+                             $"primary={primaryOnly[hub.X, hub.Y]:F1} with_hubs={hubsOnly[hub.X, hub.Y]:F1}");
+
+                int sourceY = faction == 1 ? scenario.Map.Height - 1 : 0;
+                int foreignSources = Enumerable.Range(0, scenario.Map.Width).Count(x =>
+                    occupationMap[x, sourceY] != faction && primaryOnly[x, sourceY] == 36f);
+                GD.Print($"[SUPPLY DIAG] faction={faction} non_owned_edge_sources={foreignSources} " +
+                         $"opposite_edge_sp_at_x0={primaryOnly[0, scenario.Map.Height - 1 - sourceY]:F1}");
+
+                var facilitySupported = factionUnits
+                    .Where(u => primaryOnly[u.pos.X, u.pos.Y] <= 0f && fullSupply[u.pos.X, u.pos.Y] > 0f)
+                    .ToList();
+                var oos = factionUnits
+                    .Where(u => fullSupply[u.pos.X, u.pos.Y] <= 0f)
+                    .ToList();
+
+                GD.Print($"[SUPPLY DIAG] faction={faction} units={factionUnits.Count} " +
+                         $"facility_supported={facilitySupported.Count} oos={oos.Count}");
+                foreach (var (bat, pos) in facilitySupported)
+                {
+                    GD.Print($"[SUPPLY DIAG] faction={faction} FACILITY {bat.InstanceId} @ " +
+                             $"({pos.X},{pos.Y}) primary={primaryOnly[pos.X, pos.Y]:F1} " +
+                             $"with_hubs={hubsOnly[pos.X, pos.Y]:F1} full={fullSupply[pos.X, pos.Y]:F1}");
+                }
+                foreach (var (bat, pos) in oos)
+                    GD.Print($"[SUPPLY DIAG] faction={faction} OOS {bat.InstanceId} @ ({pos.X},{pos.Y})");
+            }
+        }
+
+        static void Test_DebugTraceAndSnapshot_RoundTrip()
+        {
+            EnsureScenarioDatabases();
+            var scenario = new FuldaGapScenario();
+            scenario.LoadOOB("res://Scripts/Data/Scenarios/Fulda_Gap/oob_blue.json",
+                "res://Scripts/Data/Scenarios/Fulda_Gap/oob_red.json");
+            var units = scenario.BlueBattalions.Concat(scenario.RedBattalions).ToList();
+            var (hubs, airports) = scenario.GetSupplySpecialNodes();
+            var occupation = scenario.GetOccupationMap();
+            var maps = new float[3][,];
+            for (int faction = 1; faction <= 2; faction++)
+            {
+                var occupied = units.Where(u => u.bat.Faction != faction).Select(u => u.pos).ToHashSet();
+                var manager = new SupplyManager(); var trace = new SupplyTrace();
+                var normal = manager.ComputeFactionSupplySP(faction, scenario.Map, units, occupied,
+                    new HashSet<Vector2I>(), hubs, airports, occupation);
+                maps[faction] = manager.ComputeFactionSupplySP(faction, scenario.Map, units, occupied,
+                    new HashSet<Vector2I>(), hubs, airports, occupation, trace);
+                bool identical = true, pathsValid = true;
+                var movement = new ColdWarWargame.Systems.Battlefield.MovementResolver(scenario.Map);
+                for (int x = 0; x < scenario.Map.Width; x++)
+                    for (int y = 0; y < scenario.Map.Height; y++)
+                    {
+                        identical &= normal[x,y] == maps[faction][x,y];
+                        var route = trace.Routes[x,y];
+                        if (normal[x,y] <= 0) { pathsValid &= route == null; continue; }
+                        if (route == null) { pathsValid = false; continue; }
+                        var path = route.Path(); float cost = 0;
+                        pathsValid &= path[^1] == new Vector2I(x,y);
+                        for (int i = 0; i < path.Count; i++)
+                        {
+                            pathsValid &= !trace.Blocked.Contains(path[i]);
+                            if (i > 0) cost += movement.GetMoveCost(path[i-1], path[i],
+                                p => trace.Blocked.Contains(p) || !scenario.Map.IsPassable(p));
+                        }
+                        pathsValid &= Math.Abs(cost - route.Cost) < 0.001f && Math.Abs(route.Budget-cost-normal[x,y]) < 0.001f;
+                    }
+                Assert(identical, $"Debug trace faction={faction}: all SP unchanged by instrumentation");
+                Assert(pathsValid, $"Debug trace faction={faction}: all winning paths obey blockade and reproduce SP");
+            }
+            var canvas = new CanvasLayer(); var renderer = new ColdWarWargame.Rendering.Grid3DRenderer();
+            var inspector = new ColdWarWargame.Systems.Gameplay.GameDebugInspector(scenario,
+                new TurnManager(), renderer, canvas);
+            inspector.SetDisplayed(maps[1], maps[2]);
+            inspector.HandleKey(Key.F8);
+            inspector.Hover(new Vector2I(0,0));
+            inspector.RecordSettlement(2, "before");
+            using var doc = System.Text.Json.JsonDocument.Parse(System.Text.Json.JsonSerializer.Serialize(inspector.Capture("test")));
+            Assert(SupplySnapshotReplay.Compare(doc.RootElement) == 0,
+                "Debug snapshot: serialized actual scenario inputs replay all 3000 SP values exactly");
+            inspector.HandleKey(Key.F9);
+            Assert(inspector.LastExportPath != null && SupplySnapshotReplay.Run(inspector.LastExportPath) == 0,
+                "Debug snapshot: exported JSON file and settlement history replay exactly");
+            inspector.HandleKey(Key.F8);
+            canvas.Free(); renderer.Free();
+        }
+
         static void Test_DisorganizedInSupply_ForcedToFatigue8NextTurn()
         {
             var map = new ColdWarWargame.Systems.Battlefield.GridMap(5, 5);
@@ -486,7 +866,7 @@ namespace ColdWarWargame.Tests.Supply
             Test_LowAPEnemy_BlocksOnlyOwnTile();
             Test_Hub_Reactivation_ExtendsPrimaryRange();
             Test_DisconnectedAirport_ProvidesSecondarySupply();
-            Test_EnemyControlledHub_DoesNotReactivateSupply();
+            Test_HubOwnership_ChangesSupplyAndOOS();
             Test_EnemyControlledAirport_DoesNotProvideSecondarySupply();
             Test_OOS_Accumulation();
             Test_FatigueRecovery();
@@ -498,6 +878,11 @@ namespace ColdWarWargame.Tests.Supply
             Test_HighAPBlockingRange_CutsOffPathsBeyondBarrier();
             Test_Supply_DiagonalCostMatchesMovementAP();
             Test_Supply_CannotCutBlockedCorners();
+            Test_LargeMap_ManagerPath_HighAPFrontlineCausesPersistentOOS();
+            Test_FuldaScenario_FrontlineAndAirportSupplyChain();
+            Test_FuldaPrimarySupply_EnemyInterception();
+            Test_FuldaScenario_InitialSupplyDiagnostics();
+            Test_DebugTraceAndSnapshot_RoundTrip();
             Test_DisorganizedInSupply_ForcedToFatigue8NextTurn();
 
             if (_fails == 0)

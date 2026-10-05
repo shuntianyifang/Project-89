@@ -17,7 +17,8 @@ namespace ColdWarWargame.Systems.Supply
             HashSet<Vector2I> enemyZOC,
             HashSet<Vector2I> hubs = null,
             HashSet<Vector2I> airports = null,
-            int[,] occupationMap = null)
+            int[,] occupationMap = null,
+            SupplyTrace trace = null)
         {
             return _network.ComputeSupplySP(
                 map,
@@ -27,7 +28,7 @@ namespace ColdWarWargame.Systems.Supply
                 GetEnemyAP(battalions, faction),
                 hubs,
                 airports,
-                occupationMap);
+                occupationMap, trace);
         }
 
         public void UpdateFactionEndTurn(
