@@ -199,6 +199,7 @@ namespace ColdWarWargame.Tests.Supply
                 var targetPos = new Vector2I(25, faction == 1 ? 0 : 29);
                 var hubs = new HashSet<Vector2I> { hub };
                 var occupation = new int[50, 30];
+                for (int x = 0; x < 50; x++) occupation[x, faction == 1 ? 29 : 0] = faction;
                 var target = MakeSupplyBat("Hub-dependent target", faction);
                 var units = new List<(Battalion bat, Vector2I pos)> { (target, targetPos) };
                 var empty = new HashSet<Vector2I>();
@@ -615,6 +616,10 @@ namespace ColdWarWargame.Tests.Supply
                 var occupation = scenario.GetOccupationMap();
                 var target = new Vector2I(0, faction == 1 ? 10 : 18);
                 const int lineY = 14;
+                // This fixture isolates unit interception: explicitly grant the
+                // entire tested source edge, rather than relying on unowned sources.
+                for (int x = 0; x < scenario.Map.Width; x++)
+                    occupation[x, faction == 1 ? scenario.Map.Height - 1 : 0] = faction;
 
                 float[,] ComputePrimary()
                 {
@@ -760,6 +765,7 @@ namespace ColdWarWargame.Tests.Supply
                 int sourceY = faction == 1 ? scenario.Map.Height - 1 : 0;
                 int foreignSources = Enumerable.Range(0, scenario.Map.Width).Count(x =>
                     occupationMap[x, sourceY] != faction && primaryOnly[x, sourceY] == 36f);
+                Assert(foreignSources == 0, $"Fulda faction={faction}: foreign/neutral edge tiles never emit full SP");
                 GD.Print($"[SUPPLY DIAG] faction={faction} non_owned_edge_sources={foreignSources} " +
                          $"opposite_edge_sp_at_x0={primaryOnly[0, scenario.Map.Height - 1 - sourceY]:F1}");
 
@@ -780,6 +786,30 @@ namespace ColdWarWargame.Tests.Supply
                 }
                 foreach (var (bat, pos) in oos)
                     GD.Print($"[SUPPLY DIAG] faction={faction} OOS {bat.InstanceId} @ ({pos.X},{pos.Y})");
+            }
+        }
+
+        static void Test_PrimarySourceOwnership_CaptureAndRecapture()
+        {
+            var map = new ColdWarWargame.Systems.Battlefield.GridMap(1, 8);
+            var manager = new SupplyManager();
+            foreach (int faction in new[] { 1, 2 })
+            {
+                var occupation = new int[1,8];
+                int sourceY = faction == 1 ? 7 : 0;
+                var target = MakeSupplyBat("Edge-dependent", faction);
+                var units = new List<(Battalion bat, Vector2I pos)> { (target, new Vector2I(0,4)) };
+                foreach (int owner in new[] { faction, 3-faction, 0, faction })
+                {
+                    occupation[0,sourceY] = owner;
+                    var empty = new HashSet<Vector2I>();
+                    var sp = manager.ComputeFactionSupplySP(faction,map,units,empty,empty,null,null,occupation);
+                    Assert((sp[0,4] > 0) == (owner == faction),
+                        $"Edge ownership faction={faction} owner={owner}: downstream supply follows source ownership");
+                    manager.UpdateFactionEndTurn(faction,map,units,empty,empty,null,null,occupation);
+                    Assert(target.WasOOSLastTurn == (owner != faction),
+                        $"Edge ownership faction={faction} owner={owner}: settlement follows source ownership");
+                }
             }
         }
 
@@ -886,6 +916,7 @@ namespace ColdWarWargame.Tests.Supply
             Test_FuldaPrimarySupply_EnemyInterception();
             Test_FuldaScenario_InitialSupplyDiagnostics();
             Test_DebugTraceAndSnapshot_RoundTrip();
+            Test_PrimarySourceOwnership_CaptureAndRecapture();
             Test_DisorganizedInSupply_ForcedToFatigue8NextTurn();
 
             if (_fails == 0)

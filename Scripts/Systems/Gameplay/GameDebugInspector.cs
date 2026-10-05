@@ -184,7 +184,7 @@ namespace ColdWarWargame.Systems.Gameplay
                     engine = Engine.GetVersionInfo()["string"].AsString(),
                     assembly_build = typeof(GameDebugInspector).Assembly.ManifestModule.ModuleVersionId.ToString(),
                     rules = new { primary_sp = 36, airport_sp = 12, block_ap = 4,
-                        blue_edge = "bottom", red_edge = "top", ownership_required_for_edge = false },
+                        blue_edge = "bottom", red_edge = "top", ownership_required_for_edge = true },
                     current = Capture("manual_export"), settlements = _settlements.ToArray() };
                 System.IO.File.WriteAllText(path, JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true }));
                 LastExportPath = path;

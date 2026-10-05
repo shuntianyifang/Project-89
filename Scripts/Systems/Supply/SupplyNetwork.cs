@@ -34,7 +34,7 @@ namespace ColdWarWargame.Systems.Supply
             hubs ??= new HashSet<Vector2I>();
             airports ??= new HashSet<Vector2I>();
 
-            var primarySources = BuildPrimarySources(map, faction, enemyOccupied);
+            var primarySources = BuildPrimarySources(map, faction, enemyOccupied, occupationMap);
             var globalCost = BuildInfiniteGrid(w, h);
             var blockedTiles = BuildBlockedTiles(map, enemyOccupied, enemyAP);
             trace?.Reset(w, h, blockedTiles);
@@ -97,7 +97,7 @@ namespace ColdWarWargame.Systems.Supply
         private static List<Vector2I> BuildPrimarySources(
             ColdWarWargame.Systems.Battlefield.GridMap map,
             int faction,
-            HashSet<Vector2I> enemyOccupied)
+            HashSet<Vector2I> enemyOccupied, int[,] occupationMap)
         {
             var sources = new List<Vector2I>();
             int sourceY = faction == 1 ? map.Height - 1 : 0;
@@ -108,7 +108,8 @@ namespace ColdWarWargame.Systems.Supply
             for (int x = 0; x < map.Width; x++)
             {
                 var pos = new Vector2I(x, sourceY);
-                if (map.IsPassable(pos) && !enemyOccupied.Contains(pos))
+                if (map.IsPassable(pos) && !enemyOccupied.Contains(pos) &&
+                    IsControlledByFaction(occupationMap, pos, faction))
                     sources.Add(pos);
             }
 
