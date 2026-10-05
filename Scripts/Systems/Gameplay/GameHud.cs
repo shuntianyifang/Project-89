@@ -38,6 +38,7 @@ namespace ColdWarWargame.Systems.Gameplay
         public CanvasLayer Canvas => _canvasLayer;
         private Button _endCampaignButton;
         private AcceptDialog _resultDialog;
+        private RichTextLabel _resultText;
         private AcceptDialog _missionDialog;
         private RichTextLabel _missionText;
         private Button _exitButton;
@@ -101,6 +102,10 @@ namespace ColdWarWargame.Systems.Gameplay
             loadButton.Pressed += () => loadConfirmation.PopupCentered();
             _canvasLayer.AddChild(loadButton);
             _resultDialog = new AcceptDialog { Title = "Fulda Gap 战役结算", Exclusive = true };
+            _resultText = new RichTextLabel();
+            _resultText.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+            _resultText.OffsetLeft=16; _resultText.OffsetTop=32; _resultText.OffsetRight=-16; _resultText.OffsetBottom=-56;
+            _resultDialog.AddChild(_resultText);
             _resultDialog.GetOkButton().Text = "查看战场";
             _resultDialog.AddButton("重新开局", true, "restart");
             _resultDialog.CustomAction += action => { if (action == "restart") RequestRestart(restart); };
@@ -112,7 +117,7 @@ namespace ColdWarWargame.Systems.Gameplay
             if(_exitButton!=null) _exitButton.Disabled=true;
             _endTurnButton.Disabled = true;
             _endCampaignButton.Disabled = true;
-            _resultDialog.DialogText = result.Summary;
+            _resultText.Text = result.Summary;
             _resultDialog.PopupCentered(new Vector2I(600, 440));
             SetStatusText("战役已结束");
             SetInfoText("对局已结算，可查看战场或重新开局");

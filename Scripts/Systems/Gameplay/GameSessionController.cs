@@ -358,7 +358,7 @@ namespace ColdWarWargame.Systems.Gameplay
             CheckCampaignEnd();
             if (Result != null) return;
             _turnMgr.EndStrategicTurn();
-            if(endingFaction==2) _scenario.Missions.CompleteRound(_turnMgr.TurnNumber-1);
+            if(endingFaction==2) _scenario.Missions.CompleteRound(_turnMgr.TurnNumber-1,_scenario.Map,_scenario.GetOccupationMap());
             RefreshPresentationByVision();
             _hud.SetStatusText(GetStatusText());
             _hud.SetInfoText(GetStatusText());

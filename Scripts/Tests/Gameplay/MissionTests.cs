@@ -72,6 +72,8 @@ namespace ColdWarWargame.Tests.Gameplay
                 host.Session.OnUnitClicked(1,bat,new(0,8)); host.Session.OnExitSelected();
                 Check(host.Scenario.Missions.State.Exits.Count==1 && !host.Scenario.BlueBattalions.Any(u=>u.bat==bat),"Real session removes withdrawn unit from map and records it");
                 host.Session.OnExitSelected(); Check(host.Scenario.Missions.State.Exits.Count==1,"Repeated UI exit action cannot duplicate withdrawal");
+                host.Session.OnEndTurn(); host.Session.OnEndTurn();
+                Check(host.Scenario.Missions.State.RoundHistory.Count==1,"Real session records task situation once per complete round");
                 var save=CampaignSave.Capture(host.Scenario,host.TurnManager,new VictoryTracker());
                 var path="user://mission-test-"+Guid.NewGuid()+".json";
                 try
@@ -79,6 +81,14 @@ namespace ColdWarWargame.Tests.Gameplay
                     save.Write(path); var read=CampaignSave.Read(path);
                     host.Shutdown(); host.Start(); read.Apply(host.Scenario,host.TurnManager,new VictoryTracker());
                     Check(host.Scenario.Missions.State.Exits.Count==1 && host.Scenario.BlueBattalions.Count==3,"File save/load preserves exited roster and active units separately");
+                    Check(host.Scenario.Missions.State.RoundHistory.Count==1 && host.Scenario.Missions.Journal().Contains("有组织撤离"),
+                        "File save/load preserves round situation and withdrawal journal");
+                    var corrupt=CampaignSave.Capture(host.Scenario,host.TurnManager,new VictoryTracker());
+                    corrupt.Missions.RoundHistory[0].ObjectiveOwners[0]=3;
+                    bool badHistory=false;
+                    try { corrupt.Apply(host.Scenario,host.TurnManager,new VictoryTracker()); } catch(InvalidOperationException) { badHistory=true; }
+                    Check(badHistory && host.Scenario.Missions.State.RoundHistory[0].ObjectiveOwners[0]!=3,
+                        "Invalid history rejected without mutating the current campaign");
                     read.Missions.Exits.Add(read.Missions.Exits[0]); bool rejected=false;
                     try { read.Apply(host.Scenario,host.TurnManager,new VictoryTracker()); } catch(InvalidOperationException) { rejected=true; }
                     Check(rejected && host.Scenario.Missions.State.Exits.Count==1,"Duplicate exit save rejected before mutating live mission state");
@@ -88,7 +98,8 @@ namespace ColdWarWargame.Tests.Gameplay
                 Check(host.Session.Result==null,"Living withdrawn faction is not treated as annihilated");
                 host.Session.OnEndCampaign(); Check(host.Session.Result?.MissionSummary!=null,"Manual ending settles actual task outcome");
                 host.Shutdown(); host.Start();
-                Check(host.Scenario.Missions.State.Exits.Count==0 && host.Scenario.Missions.State.CompletedRounds==0,"Restart clears mission ledger and earned points");
+                Check(host.Scenario.Missions.State.Exits.Count==0 && host.Scenario.Missions.State.CompletedRounds==0 &&
+                    host.Scenario.Missions.State.RoundHistory.Count==0,"Restart clears mission ledger, history and earned points");
                 var control=new int[50,30];
                 for(int x=0;x<50;x++) for(int y=0;y<30;y++) control[x,y]=2;
                 host.Scenario.ApplyOccupationState(control);
@@ -103,7 +114,49 @@ namespace ColdWarWargame.Tests.Gameplay
             }
             finally { host.Shutdown(); owner.RemoveChild(node); node.QueueFree(); }
         }
+        private static void RoundHistory()
+        {
+            var tracker=new MissionTracker(MissionConfiguration.Load());
+            var map=new GridMap(50,30); var control=new int[50,30];
+            for(int x=0;x<50;x++) { map.SetTile(new(x,8),new TileData(0,2)); control[x,8]=2; }
+            map.PrimarySupplySources[2]=new(){new(49,8)};
+            tracker.CompleteRound(1,map,control); tracker.CompleteRound(1,map,control);
+            Check(tracker.State.RoundHistory.Count==1 && tracker.State.RoundHistory[0].RedCorridorOpen && tracker.State.DelayRounds==1,
+                "Open road without effective breakthrough still earns approved delay score, once");
+            control[20,8]=1; control[13,28]=1;
+            tracker.CompleteRound(2,map,control);
+            Check(!tracker.State.RoundHistory[1].RedCorridorOpen && tracker.State.RoundHistory[1].ObjectiveOwners[1]==1,
+                "Round history records blocked corridor and key node ownership");
+            control[20,8]=2;
+            map.BlockCrossing(new(20,8),new(21,8));
+            Check(!MissionTracker.HasControlledRoad(map,new(0,8),control,2),"Closed river crossing blocks recorded road corridor");
+            control[0,8]=1;
+            Check(!MissionTracker.HasControlledRoad(map,new(0,8),control,2),"Enemy-controlled exit cannot be an open red corridor");
+            var red=BattalionFactory.CreateFullBattalion("history-red","fg_tank_bn",2);
+            var openMap=new GridMap(50,30);
+            for(int x=0;x<50;x++) openMap.SetTile(new(x,8),new TileData(0,2));
+            openMap.PrimarySupplySources[2]=new(){new(49,8)}; control[0,8]=2;
+            tracker.TryExit(red,new(0,8),3,openMap,control,10);
+            for(int i=3;i<=13;i++) tracker.CompleteRound(i,openMap,control);
+            Check(tracker.State.DelayRounds==2 && !tracker.State.RoundHistory[2].DelayAwarded &&
+                tracker.Journal().Contains("有效突破") && tracker.Journal().Contains("24小时考核窗口结束"),
+                "Journal records breakthrough, frozen income and assessment window without ending play");
+            var saved=tracker.Capture(); var restored=new MissionTracker(tracker.Configuration);
+            restored.Validate(saved,Array.Empty<Battalion>(),14); restored.Restore(saved); restored.CompleteRound(13,openMap,control);
+            Check(restored.Journal()==tracker.Journal() && restored.BlueScore==tracker.BlueScore && restored.State.RoundHistory.Count==13,
+                "History round-trip and repeated settlement cannot duplicate events or points");
+            saved.RoundHistory[2].DelayAwarded=true;
+            bool rejected=false;
+            try { restored.Validate(saved,Array.Empty<Battalion>(),14); } catch(InvalidOperationException) { rejected=true; }
+            Check(rejected,"History cannot award delay in the first breakthrough round");
+            var legacy=tracker.Capture(); legacy.RoundHistory.Clear();
+            restored.Validate(legacy,Array.Empty<Battalion>(),14); restored.Restore(legacy); restored.CompleteRound(14,openMap,control);
+            Check(restored.State.RoundHistory.Count==1 && restored.State.RoundHistory[0].Round==14 &&
+                restored.Journal().Contains("旧存档"),"Early version-2 save resumes history without inventing old situations or scores");
+            Check(restored.Summary(control).Contains("保存") && restored.Summary(control).Contains("节点"),
+                "Task panel and final summary show all four score components");
+        }
         public static int RunAll()
-        { _fails=0; Core(); SaveAndSession(); GD.Print(_fails==0?"All MissionTests passed":_fails+" MissionTests FAILED"); return _fails; }
+        { _fails=0; Core(); RoundHistory(); SaveAndSession(); GD.Print(_fails==0?"All MissionTests passed":_fails+" MissionTests FAILED"); return _fails; }
     }
 }

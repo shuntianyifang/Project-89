@@ -57,6 +57,14 @@ namespace ColdWarWargame.Systems.Victory
         public int DelayRounds { get; set; }
         public int? FirstBreakthroughRound { get; set; }
         public List<MissionExit> Exits { get; set; }=new();
+        public List<MissionRoundRecord> RoundHistory { get; set; }=new();
+    }
+    public sealed class MissionRoundRecord
+    {
+        public int Round { get; set; }
+        public bool RedCorridorOpen { get; set; }
+        public bool DelayAwarded { get; set; }
+        public int[] ObjectiveOwners { get; set; }
     }
     public sealed class MissionTracker
     {
@@ -64,15 +72,24 @@ namespace ColdWarWargame.Systems.Victory
         public MissionState State { get; private set; }=new();
         public MissionTracker(MissionConfiguration config) { Configuration=config; }
         public float BreakthroughEquivalent=>State.Exits.Where(e=>e.Unit.Faction==2).Sum(e=>e.CE);
-        public float BlueScore=>Configuration.DelayPoints*(float)State.DelayRounds/Configuration.WindowRounds +
-            Configuration.PreservationPoints*State.Exits.Where(e=>e.Unit.Faction==1&&Configuration.PreservationUnits.Contains(e.Unit.Id)).Sum(e=>e.CE)/Configuration.PreservationUnits.Length;
-        public float RedScore(int[,] control)=>Configuration.BreakthroughPoints*Math.Min(1,BreakthroughEquivalent/Configuration.BreakthroughTarget)+
-            Configuration.Objectives.Where(o=>control[o.X,o.Y]==2).Sum(o=>o.Points);
-        public void CompleteRound(int round)
+        public float DelayScore=>Configuration.DelayPoints*(float)State.DelayRounds/Configuration.WindowRounds;
+        public float PreservationScore=>Configuration.PreservationPoints*State.Exits.Where(e=>e.Unit.Faction==1&&Configuration.PreservationUnits.Contains(e.Unit.Id)).Sum(e=>e.CE)/Configuration.PreservationUnits.Length;
+        public float BreakthroughScore=>Configuration.BreakthroughPoints*Math.Min(1,BreakthroughEquivalent/Configuration.BreakthroughTarget);
+        public float ObjectiveScore(int[,] control)=>Configuration.Objectives.Where(o=>control[o.X,o.Y]==2).Sum(o=>o.Points);
+        public float BlueScore=>DelayScore+PreservationScore;
+        public float RedScore(int[,] control)=>BreakthroughScore+ObjectiveScore(control);
+        public void CompleteRound(int round,GridMap map=null,int[,] control=null)
         {
             if(round!=State.CompletedRounds+1) return;
             State.CompletedRounds=round;
-            if(round<=Configuration.WindowRounds && !State.FirstBreakthroughRound.HasValue) State.DelayRounds++;
+            bool awarded=round<=Configuration.WindowRounds && !State.FirstBreakthroughRound.HasValue;
+            if(awarded) State.DelayRounds++;
+            if(map!=null && control!=null)
+                State.RoundHistory.Add(new MissionRoundRecord {
+                    Round=round, DelayAwarded=awarded,
+                    RedCorridorOpen=Configuration.RedExits.Any(p=>HasControlledRoad(map,new(p[0],p[1]),control,2)),
+                    ObjectiveOwners=Configuration.Objectives.Select(o=>control[o.X,o.Y]).ToArray()
+                });
         }
         public string TryExit(Battalion unit,Vector2I pos,int round,GridMap map,int[,] control,float supply)
         {
@@ -92,7 +109,8 @@ namespace ColdWarWargame.Systems.Victory
         }
         public static bool HasControlledRoad(GridMap map,Vector2I start,int[,] control,int faction)
         {
-            if(map.GetTile(start).InfraType==0 || !map.PrimarySupplySources.TryGetValue(faction,out var sources)) return false;
+            if(!map.IsInBounds(start) || !map.IsPassable(start) || control[start.X,start.Y]!=faction ||
+                map.GetTile(start).InfraType==0 || !map.PrimarySupplySources.TryGetValue(faction,out var sources)) return false;
             var seen=new HashSet<Vector2I>{start}; var queue=new Queue<Vector2I>(); queue.Enqueue(start);
             while(queue.Count>0)
             {
@@ -123,10 +141,36 @@ namespace ColdWarWargame.Systems.Victory
                 (red.Count>0&&red.Min(e=>e.Round)!=state.FirstBreakthroughRound)) throw new InvalidOperationException("存档首次突破记录无效");
             int expectedDelay=Math.Min(Configuration.WindowRounds,Math.Min(state.CompletedRounds,(state.FirstBreakthroughRound??int.MaxValue)-1));
             if(state.DelayRounds!=expectedDelay) throw new InvalidOperationException("存档迟滞积分记录不一致");
+            if(state.RoundHistory==null) throw new InvalidOperationException("存档任务过程记录无效");
+            int previous=0;
+            foreach(var record in state.RoundHistory)
+            {
+                if(record==null || record.Round<=previous || record.Round>state.CompletedRounds ||
+                    record.ObjectiveOwners==null || record.ObjectiveOwners.Length!=Configuration.Objectives.Length ||
+                    record.ObjectiveOwners.Any(owner=>owner is <0 or >2) ||
+                    record.DelayAwarded!=(record.Round<=Configuration.WindowRounds && record.Round<(state.FirstBreakthroughRound??int.MaxValue)))
+                    throw new InvalidOperationException("存档任务过程记录不一致");
+                previous=record.Round;
+            }
         }
         public void Restore(MissionState state)=>State=JsonSerializer.Deserialize<MissionState>(JsonSerializer.Serialize(state));
+        public string Journal()
+        {
+            var entries=State.Exits.Select(e=>(Round:e.Round,Order:0,Text:
+                $"第 {e.Round} 回合：{(e.Unit.Faction==1?"有组织撤离":"有效突破")} · {e.Unit.Name} · CE {e.CE:P0}")).ToList();
+            entries.AddRange(State.RoundHistory.Select(r=>(Round:r.Round,Order:1,Text:
+                $"第 {r.Round} 回合结束：西向道路通道{(r.RedCorridorOpen?"连通":"阻断")}；"+
+                $"迟滞{(r.DelayAwarded?"计分":"不再计分")}；"+
+                string.Join("、",Configuration.Objectives.Select((o,i)=>$"{o.Name}={OwnerName(r.ObjectiveOwners[i])}"))+
+                (r.Round==Configuration.WindowRounds?"；24小时考核窗口结束":""))));
+            string note=State.RoundHistory.Count<State.CompletedRounds ? "旧存档未记录的回合态势不予推断。\n" : "";
+            return note+(entries.Count==0?"尚无任务事件":string.Join("\n",entries.OrderBy(e=>e.Round).ThenBy(e=>e.Order).Select(e=>e.Text)));
+        }
+        private static string OwnerName(int faction)=>faction==1?"北约":faction==2?"华约":"未控制";
         public string Summary(int[,] control)=>
             $"任务分：北约 {BlueScore:0.0} / 华约 {RedScore(control):0.0}\n"+
+            $"北约：迟滞 {DelayScore:0.0}/{Configuration.DelayPoints} · 保存 {PreservationScore:0.0}/{Configuration.PreservationPoints}\n"+
+            $"华约：突破 {BreakthroughScore:0.0}/{Configuration.BreakthroughPoints} · 节点 {ObjectiveScore(control):0.0}/{Configuration.Objectives.Sum(o=>o.Points)}\n"+
             $"迟滞：{State.DelayRounds}/{Configuration.WindowRounds} 回合（首次有效突破后停止）\n"+
             $"有效突破：{BreakthroughEquivalent:0.00}/{Configuration.BreakthroughTarget:0.00} 营当量 · 首次突破：{(State.FirstBreakthroughRound.HasValue?"第"+State.FirstBreakthroughRound+"回合":"尚未发生")}\n"+
             string.Join("\n",Configuration.Objectives.Select(o=>$"{o.Name} ({o.X},{o.Y})：{(control[o.X,o.Y]==2?"华约控制":"未由华约控制")}，{o.Points} 分"))+"\n"+
@@ -134,6 +178,6 @@ namespace ColdWarWargame.Systems.Victory
             "北约撤离区："+string.Join(" / ",Configuration.BlueExits.Select(p=>$"({p[0]},{p[1]})"))+"\n"+
             $"已退出：{State.Exits.Count} 个单位 · CE≥{Configuration.MinimumCE:P0}、有补给、未溃散；华约还须主战营及连通道路\n"+
             string.Join("\n",State.Exits.Select(e=>$"{(e.Unit.Faction==1?"撤离":"突破")}：{e.Unit.Name}，CE {e.CE:P0}，第 {e.Round} 回合"))+"\n"+
-            "提前手动结束只结算已获得的任务分；战损不计入胜负。";
+            "提前手动结束只结算已获得的任务分；战损不计入胜负。\n\n任务过程\n"+Journal();
     }
 }
