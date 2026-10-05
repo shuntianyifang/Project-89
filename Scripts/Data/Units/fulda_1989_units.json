@@ -1,0 +1,483 @@
+{
+  "fg_m1a1": {
+    "name": "M1A1（1989 场景）",
+    "class_type": "mbt",
+    "visuals": {
+      "icon": "icon_mbt_blue",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 12,
+      "attack": 3,
+      "defense": 2.5
+    },
+    "system_vars": {
+      "cost": 300,
+      "base_weight": 10
+    },
+    "tactical_tags": {
+      "domain": "Ground",
+      "capabilities": [
+        "HeavyAntiTank",
+        "HeavyArmor"
+      ]
+    },
+    "calibration": {
+      "evidence_kind": "model",
+      "version": "fulda-v1",
+      "as_of": "1989-07-01 scenario assumption",
+      "source_ids": [
+        "S02"
+      ],
+      "confidence": "equipment-family reference; all combat parameters are authorized model assumptions",
+      "quantity_semantics": "one vehicle or one dismounted squad; HP is effectiveness, not vehicle count"
+    }
+  },
+  "fg_m1a1_cp": {
+    "name": "M1A1 指挥车（1989 场景）",
+    "class_type": "mbt",
+    "visuals": {
+      "icon": "icon_mbt_blue",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 12,
+      "attack": 3,
+      "defense": 2.5
+    },
+    "system_vars": {
+      "cost": 300,
+      "base_weight": 4
+    },
+    "tactical_tags": {
+      "domain": "Rear",
+      "capabilities": [
+        "HeavyAntiTank",
+        "HeavyArmor",
+        "Command"
+      ]
+    },
+    "calibration": {
+      "evidence_kind": "model",
+      "version": "fulda-v1",
+      "as_of": "1989-07-01 scenario assumption",
+      "source_ids": [
+        "S02"
+      ],
+      "confidence": "equipment-family reference; all combat parameters are authorized model assumptions",
+      "quantity_semantics": "one vehicle or one dismounted squad; HP is effectiveness, not vehicle count"
+    }
+  },
+  "fg_m3a1": {
+    "name": "M3A1 骑兵战车",
+    "class_type": "ifv",
+    "visuals": {
+      "icon": "icon_ifv_blue",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 6,
+      "attack": 1.5,
+      "defense": 2
+    },
+    "system_vars": {
+      "cost": 180,
+      "base_weight": 8
+    },
+    "tactical_tags": {
+      "domain": "Ground",
+      "capabilities": [
+        "Armor",
+        "HeavyAntiTank",
+        "Recon"
+      ]
+    },
+    "calibration": {
+      "evidence_kind": "model",
+      "version": "fulda-v1",
+      "as_of": "1989-07-01 scenario assumption",
+      "source_ids": [
+        "S02"
+      ],
+      "confidence": "equipment-family reference; all combat parameters are authorized model assumptions",
+      "quantity_semantics": "one vehicle or one dismounted squad; HP is effectiveness, not vehicle count"
+    }
+  },
+  "fg_m3a1_cp": {
+    "name": "M3A1 指挥侦察车",
+    "class_type": "ifv",
+    "visuals": {
+      "icon": "icon_ifv_blue",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 6,
+      "attack": 1.5,
+      "defense": 2
+    },
+    "system_vars": {
+      "cost": 180,
+      "base_weight": 8
+    },
+    "tactical_tags": {
+      "domain": "Ground",
+      "capabilities": [
+        "Armor",
+        "HeavyAntiTank",
+        "Recon",
+        "Command"
+      ]
+    },
+    "calibration": {
+      "evidence_kind": "model",
+      "version": "fulda-v1",
+      "as_of": "1989-07-01 scenario assumption",
+      "source_ids": [
+        "S02"
+      ],
+      "confidence": "equipment-family reference; all combat parameters are authorized model assumptions",
+      "quantity_semantics": "one vehicle or one dismounted squad; HP is effectiveness, not vehicle count"
+    }
+  },
+  "fg_scout": {
+    "name": "下车侦察小组（抽象班）",
+    "class_type": "infantry",
+    "visuals": {
+      "icon": "icon_inf_blue",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 6,
+      "attack": 0.5,
+      "defense": 0.8
+    },
+    "system_vars": {
+      "cost": 50,
+      "base_weight": 10
+    },
+    "tactical_tags": {
+      "domain": "Ground",
+      "capabilities": [
+        "AntiTank",
+        "Recon"
+      ]
+    },
+    "calibration": {
+      "evidence_kind": "model",
+      "version": "fulda-v1",
+      "as_of": "1989-07-01 scenario assumption",
+      "source_ids": [
+        "S02"
+      ],
+      "confidence": "equipment-family reference; all combat parameters are authorized model assumptions",
+      "quantity_semantics": "one vehicle or one dismounted squad; HP is effectiveness, not vehicle count"
+    }
+  },
+  "fg_t80b": {
+    "name": "T-80B（装备型号假设）",
+    "class_type": "mbt",
+    "visuals": {
+      "icon": "icon_mbt_red",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 10,
+      "attack": 2.8,
+      "defense": 2.4
+    },
+    "system_vars": {
+      "cost": 280,
+      "base_weight": 10
+    },
+    "tactical_tags": {
+      "domain": "Ground",
+      "capabilities": [
+        "HeavyAntiTank",
+        "HeavyArmor"
+      ]
+    },
+    "calibration": {
+      "evidence_kind": "model",
+      "version": "fulda-v1",
+      "as_of": "1989-07-01 scenario assumption",
+      "source_ids": [
+        "S08"
+      ],
+      "confidence": "equipment-family reference; all combat parameters are authorized model assumptions",
+      "quantity_semantics": "one vehicle or one dismounted squad; HP is effectiveness, not vehicle count"
+    }
+  },
+  "fg_t80b_cp": {
+    "name": "T-80B 指挥车",
+    "class_type": "mbt",
+    "visuals": {
+      "icon": "icon_mbt_red",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 10,
+      "attack": 2.8,
+      "defense": 2.4
+    },
+    "system_vars": {
+      "cost": 280,
+      "base_weight": 10
+    },
+    "tactical_tags": {
+      "domain": "Ground",
+      "capabilities": [
+        "HeavyArmor",
+        "HeavyAntiTank",
+        "Command"
+      ]
+    },
+    "calibration": {
+      "evidence_kind": "model",
+      "version": "fulda-v1",
+      "as_of": "1989-07-01 scenario assumption",
+      "source_ids": [
+        "S08"
+      ],
+      "confidence": "equipment-family reference; all combat parameters are authorized model assumptions",
+      "quantity_semantics": "one vehicle or one dismounted squad; HP is effectiveness, not vehicle count"
+    }
+  },
+  "fg_bmp1": {
+    "name": "BMP-1",
+    "class_type": "ifv",
+    "visuals": {
+      "icon": "icon_ifv_red",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 4,
+      "attack": 1,
+      "defense": 1.2
+    },
+    "system_vars": {
+      "cost": 120,
+      "base_weight": 8
+    },
+    "tactical_tags": {
+      "domain": "Ground",
+      "capabilities": [
+        "AntiTank",
+        "Armor"
+      ]
+    },
+    "calibration": {
+      "evidence_kind": "model",
+      "version": "fulda-v1",
+      "as_of": "1989-07-01 scenario assumption",
+      "source_ids": [
+        "S08"
+      ],
+      "confidence": "equipment-family reference; all combat parameters are authorized model assumptions",
+      "quantity_semantics": "one vehicle or one dismounted squad; HP is effectiveness, not vehicle count"
+    }
+  },
+  "fg_bmp1_cp": {
+    "name": "BMP-1 指挥车",
+    "class_type": "ifv",
+    "visuals": {
+      "icon": "icon_ifv_red",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 4,
+      "attack": 1,
+      "defense": 1.2
+    },
+    "system_vars": {
+      "cost": 120,
+      "base_weight": 8
+    },
+    "tactical_tags": {
+      "domain": "Ground",
+      "capabilities": [
+        "Armor",
+        "AntiTank",
+        "Command"
+      ]
+    },
+    "calibration": {
+      "evidence_kind": "model",
+      "version": "fulda-v1",
+      "as_of": "1989-07-01 scenario assumption",
+      "source_ids": [
+        "S08"
+      ],
+      "confidence": "equipment-family reference; all combat parameters are authorized model assumptions",
+      "quantity_semantics": "one vehicle or one dismounted squad; HP is effectiveness, not vehicle count"
+    }
+  },
+  "fg_rifles": {
+    "name": "摩托步兵班",
+    "class_type": "infantry",
+    "visuals": {
+      "icon": "icon_inf_red",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 9,
+      "attack": 1,
+      "defense": 1
+    },
+    "system_vars": {
+      "cost": 50,
+      "base_weight": 10
+    },
+    "tactical_tags": {
+      "domain": "Ground",
+      "capabilities": [
+        "AntiTank"
+      ]
+    },
+    "calibration": {
+      "evidence_kind": "model",
+      "version": "fulda-v1",
+      "as_of": "1989-07-01 scenario assumption",
+      "source_ids": [
+        "S08"
+      ],
+      "confidence": "equipment-family reference; all combat parameters are authorized model assumptions",
+      "quantity_semantics": "one vehicle or one dismounted squad; HP is effectiveness, not vehicle count"
+    }
+  },
+  "fg_brm1k": {
+    "name": "BRM-1K 侦察指挥车（配属假设）",
+    "class_type": "ifv",
+    "visuals": {
+      "icon": "icon_ifv_red",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 4,
+      "attack": 1,
+      "defense": 1.2
+    },
+    "system_vars": {
+      "cost": 120,
+      "base_weight": 8
+    },
+    "tactical_tags": {
+      "domain": "Ground",
+      "capabilities": [
+        "Armor",
+        "AntiTank",
+        "Recon",
+        "Command"
+      ]
+    },
+    "calibration": {
+      "evidence_kind": "model",
+      "version": "fulda-v1",
+      "as_of": "1989-07-01 scenario assumption",
+      "source_ids": [
+        "S08"
+      ],
+      "confidence": "equipment-family reference; all combat parameters are authorized model assumptions",
+      "quantity_semantics": "one vehicle or one dismounted squad; HP is effectiveness, not vehicle count"
+    }
+  },
+  "fg_red_scout": {
+    "name": "团侦察小组（配属假设）",
+    "class_type": "infantry",
+    "visuals": {
+      "icon": "icon_inf_red",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 6,
+      "attack": 0.5,
+      "defense": 0.8
+    },
+    "system_vars": {
+      "cost": 50,
+      "base_weight": 10
+    },
+    "tactical_tags": {
+      "domain": "Ground",
+      "capabilities": [
+        "AntiTank",
+        "Recon"
+      ]
+    },
+    "calibration": {
+      "evidence_kind": "model",
+      "version": "fulda-v1",
+      "as_of": "1989-07-01 scenario assumption",
+      "source_ids": [
+        "S08"
+      ],
+      "confidence": "equipment-family reference; all combat parameters are authorized model assumptions",
+      "quantity_semantics": "one vehicle or one dismounted squad; HP is effectiveness, not vehicle count"
+    }
+  },
+  "fg_m109a2": {
+    "name": "M109A2（常规弹）",
+    "class_type": "spa_arty",
+    "visuals": {
+      "icon": "icon_spa_arty_blue",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 4,
+      "attack": 2,
+      "defense": 2
+    },
+    "arty_area": 9,
+    "system_vars": {
+      "cost": 180,
+      "base_weight": 4
+    },
+    "tactical_tags": {
+      "domain": "Rear",
+      "capabilities": [
+        ""
+      ]
+    },
+    "calibration": {
+      "evidence_kind": "model",
+      "version": "fulda-v1",
+      "as_of": "1989-07-01 scenario assumption",
+      "source_ids": [
+        "S02"
+      ],
+      "confidence": "equipment-family reference; all combat parameters are authorized model assumptions",
+      "quantity_semantics": "one vehicle or one dismounted squad; HP is effectiveness, not vehicle count"
+    }
+  },
+  "fg_2s1": {
+    "name": "2S1（常规弹）",
+    "class_type": "spa_arty",
+    "visuals": {
+      "icon": "icon_spa_arty_red",
+      "model_scale": 1.0
+    },
+    "combat_stats": {
+      "max_hp": 4,
+      "attack": 1.5,
+      "defense": 1.5
+    },
+    "arty_area": 7,
+    "system_vars": {
+      "cost": 150,
+      "base_weight": 4
+    },
+    "tactical_tags": {
+      "domain": "Rear",
+      "capabilities": []
+    },
+    "calibration": {
+      "evidence_kind": "model",
+      "version": "fulda-v1",
+      "as_of": "1989-07-01 scenario assumption",
+      "source_ids": [
+        "S08"
+      ],
+      "confidence": "equipment-family reference; all combat parameters are authorized model assumptions",
+      "quantity_semantics": "one vehicle or one dismounted squad; HP is effectiveness, not vehicle count"
+    }
+  }
+}

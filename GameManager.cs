@@ -23,8 +23,8 @@ public partial class GameManager : Node
         }
         if (OS.GetEnvironment("CW_RUN_TESTS") == "1")
         {
-            int fails = AllTestsRunner.RunAll();
-            GetTree().Quit(fails > 0 ? 1 : 0);
+            try { GetTree().Quit(AllTestsRunner.RunAll() > 0 ? 1 : 0); }
+            catch (Exception ex) { GD.PrintErr(ex); GetTree().Quit(1); }
             return;
         }
 

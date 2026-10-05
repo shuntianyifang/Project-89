@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using Godot;
 using ColdWarWargame.Systems.Battlefield;
@@ -100,6 +101,9 @@ namespace ColdWarWargame.Systems.Supply
             HashSet<Vector2I> enemyOccupied, int[,] occupationMap)
         {
             var sources = new List<Vector2I>();
+            if (map.PrimarySupplySources.TryGetValue(faction, out var configured))
+                return configured.Where(p => map.IsInBounds(p) && map.IsPassable(p) &&
+                    !enemyOccupied.Contains(p) && IsControlledByFaction(occupationMap,p,faction)).ToList();
             int sourceY = faction == 1 ? map.Height - 1 : 0;
 
             if (faction != 1 && faction != 2)
@@ -166,6 +170,7 @@ namespace ColdWarWargame.Systems.Supply
 
                 foreach (var nb in map.GetAllNeighbors(current))
                 {
+                    if (!map.CanCross(current,nb)) continue;
                     if (!map.IsPassable(nb) || blockedTiles.Contains(nb))
                         continue;
 

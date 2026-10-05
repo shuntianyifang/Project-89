@@ -157,6 +157,8 @@ namespace ColdWarWargame.Systems.Gameplay
             return new { reason, turn = _turn.TurnNumber, active_faction = _turn.CurrentFaction,
                 phase = _turn.PhaseName(), width = _scenario.Map.Width, height = _scenario.Map.Height,
                 hovered = _hover.HasValue ? Point(_hover.Value) : null, inspecting_faction = _faction,
+                primary_sources = _scenario.Map.PrimarySupplySources.Select(kv => new { faction = kv.Key, points = kv.Value.Select(Point).ToArray() }).ToArray(),
+                blocked_crossings = _scenario.Map.BlockedCrossings.Select(e => new { a = Point(e.a), b = Point(e.b) }).ToArray(),
                 cells, units = Units().Select(u => new { id = u.bat.InstanceId, name = u.bat.Name,
                     template = u.bat.TemplateId, faction = u.bat.Faction, x = u.pos.X, y = u.pos.Y,
                     ap = u.bat.CurrentAP, fatigue = u.bat.Fatigue, turns_oos = u.bat.TurnsOOS,
@@ -184,7 +186,7 @@ namespace ColdWarWargame.Systems.Gameplay
                     engine = Engine.GetVersionInfo()["string"].AsString(),
                     assembly_build = typeof(GameDebugInspector).Assembly.ManifestModule.ModuleVersionId.ToString(),
                     rules = new { primary_sp = 36, airport_sp = 12, block_ap = 4,
-                        blue_edge = "bottom", red_edge = "top", ownership_required_for_edge = true },
+                        blue_edge = "configured_west", red_edge = "configured_east", ownership_required_for_edge = true },
                     current = Capture("manual_export"), settlements = _settlements.ToArray() };
                 System.IO.File.WriteAllText(path, JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true }));
                 LastExportPath = path;

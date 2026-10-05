@@ -928,6 +928,17 @@ namespace ColdWarWargame.Rendering
             float roadY = RoadElevation;
             var highwayMat = new StandardMaterial3D { AlbedoColor = HighwayColor, ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded };
             var branchMat = new StandardMaterial3D { AlbedoColor = BranchRoadColor, ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded };
+            var riverMat = new StandardMaterial3D { AlbedoColor = new Color(.1f,.5f,.9f), ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded };
+            foreach (var (a,b) in _map.BlockedCrossings)
+            {
+                if (a.X>b.X || (a.X==b.X && a.Y>b.Y)) continue;
+                var mesh = new MeshInstance3D {
+                    Mesh = new BoxMesh { Size = a.X!=b.X ? new Vector3(.06f,.04f,CellSize) : new Vector3(CellSize,.04f,.06f) },
+                    MaterialOverride = riverMat,
+                    Position = new Vector3((a.X+b.X+1)*CellSize/2,.06f,(a.Y+b.Y+1)*CellSize/2)
+                };
+                _roadRoot.AddChild(mesh);
+            }
             var hubSet = new HashSet<Vector2I>();
             for (int x = 0; x < w; x++)
                 for (int y = 0; y < h; y++)

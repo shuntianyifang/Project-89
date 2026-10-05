@@ -26,6 +26,7 @@ namespace ColdWarWargame.Models
         public string TemplateRole { get; set; } = "main";
         /// <summary>编制模板ID（用于规则判定与调试）</summary>
         public string TemplateId { get; set; } = string.Empty;
+        public int? ScenarioVisionRange { get; set; }
         /// <summary>是否为专业侦察营（PRD §2.7 Advanced Vision）</summary>
         public bool IsAdvancedReconBattalion { get; set; } = false;
         /// <summary>营级标签（如 Engineer, Heli_Battalion）</summary>
@@ -114,6 +115,7 @@ namespace ColdWarWargame.Models
         {
             var aliveUnits = GetAllSubUnits().Where(u => u.SurvivalState == 1).ToList();
             if (aliveUnits.Count == 0) return (0, "全灭");
+            if (ScenarioVisionRange.HasValue) return (ScenarioVisionRange.Value, "场景情报范围（非目视射程）");
 
             // 专业侦察营：Advanced Vision = 12
             if (IsAdvancedReconBattalion) return (12, "专业侦察营");

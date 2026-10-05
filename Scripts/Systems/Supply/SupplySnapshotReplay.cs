@@ -16,6 +16,16 @@ namespace ColdWarWargame.Systems.Supply
         {
             int w = state.GetProperty("width").GetInt32(), h = state.GetProperty("height").GetInt32();
             var map = new GridMap(w,h); var owners = new int[w,h];
+            Vector2I ReadPoint(JsonElement p) => new(p.GetProperty("x").GetInt32(),p.GetProperty("y").GetInt32());
+            if (state.TryGetProperty("primary_sources",out var sources))
+                foreach(var entry in sources.EnumerateArray())
+                {
+                    var points=new HashSet<Vector2I>();
+                    foreach(var p in entry.GetProperty("points").EnumerateArray()) points.Add(ReadPoint(p));
+                    map.PrimarySupplySources[entry.GetProperty("faction").GetInt32()] = points;
+                }
+            if (state.TryGetProperty("blocked_crossings",out var crossings))
+                foreach(var edge in crossings.EnumerateArray()) map.BlockCrossing(ReadPoint(edge.GetProperty("a")),ReadPoint(edge.GetProperty("b")));
             var hubs = new HashSet<Vector2I>(); var airports = new HashSet<Vector2I>();
             foreach (var cell in state.GetProperty("cells").EnumerateArray())
             {

@@ -1,6 +1,5 @@
 """Read-only structural audit; counts data entries, not historical vehicles."""
 import json
-import re
 from collections import Counter
 from pathlib import Path
 
@@ -53,11 +52,10 @@ def audit():
             if not (0 <= row["x"] < 50 and 0 <= row["y"] < 30):
                 issues.append(f"{uid}: out of bounds")
         factions[side] = {"instances": len(rows), "templates": dict(Counter(r["template_id"] for r in rows))}
-    source = (ROOT / "Scripts/Scenarios/FuldaGapScenario.cs").read_text(encoding="utf-8-sig")
+    map_data = read(ROOT / "Scripts/Data/Scenarios/Fulda_Gap/historical_map.json")
     layers = {}
-    for name in ["TerrainRows", "InfraRows"]:
-        block = re.search(rf"{name}\s*=\s*\{{(.*?)\}};", source, re.S).group(1)
-        rows = re.findall(r'"([0-9]+)"', block)
+    for name in ["terrain_rows", "infra_rows"]:
+        rows = map_data[name]
         layers[name] = {"rows": len(rows), "row_lengths": dict(Counter(map(len, rows)))}
         if len(rows) != 30 or any(len(row) != 50 for row in rows):
             issues.append(f"{name}: expected 30 rows of 50 cells")

@@ -22,6 +22,7 @@ namespace ColdWarWargame.Factories
                 Fatigue = 0,
                 TemplateRole = template.Role ?? "main",
                 TemplateId = templateId,
+                ScenarioVisionRange = template.VisionRange,
                 IsAdvancedReconBattalion = IsAdvancedReconTemplate(templateId, template.Name),
                 BattalionTags = template.BattalionTags != null
                     ? new HashSet<string>(template.BattalionTags, StringComparer.OrdinalIgnoreCase)

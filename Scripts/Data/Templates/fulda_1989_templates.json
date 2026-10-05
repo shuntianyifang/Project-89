@@ -1,0 +1,1251 @@
+{
+  "fg_cav_squadron": {
+    "name": "第11 ACR 骑兵中队（主战营）",
+    "role": "main",
+    "vision_range": 4,
+    "companies": {
+      "HQ": {
+        "name": "HQ",
+        "platoons": {
+          "ScoutHQ": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_m3a1_cp",
+                "max_hp": 6
+              },
+              "u2": {
+                "unit_id": "fg_m3a1_cp",
+                "max_hp": 6
+              }
+            }
+          }
+        }
+      },
+      "Troop1": {
+        "name": "Troop1",
+        "platoons": {
+          "Tank1": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              },
+              "u2": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              },
+              "u3": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              },
+              "u4": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              }
+            }
+          },
+          "Tank2": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              },
+              "u2": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              },
+              "u3": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              },
+              "u4": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              }
+            }
+          },
+          "HQ_Tank": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_m1a1_cp",
+                "max_hp": 12
+              }
+            }
+          },
+          "Scout1": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u2": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u3": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u4": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u5": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u6": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              }
+            }
+          },
+          "Scout2": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u2": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u3": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u4": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u5": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u6": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              }
+            }
+          },
+          "Dismount": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_scout",
+                "max_hp": 6
+              },
+              "u2": {
+                "unit_id": "fg_scout",
+                "max_hp": 6
+              },
+              "u3": {
+                "unit_id": "fg_scout",
+                "max_hp": 6
+              },
+              "u4": {
+                "unit_id": "fg_scout",
+                "max_hp": 6
+              },
+              "u5": {
+                "unit_id": "fg_scout",
+                "max_hp": 6
+              },
+              "u6": {
+                "unit_id": "fg_scout",
+                "max_hp": 6
+              }
+            }
+          }
+        }
+      },
+      "Troop2": {
+        "name": "Troop2",
+        "platoons": {
+          "Tank1": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              },
+              "u2": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              },
+              "u3": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              },
+              "u4": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              }
+            }
+          },
+          "Tank2": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              },
+              "u2": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              },
+              "u3": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              },
+              "u4": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              }
+            }
+          },
+          "HQ_Tank": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_m1a1_cp",
+                "max_hp": 12
+              }
+            }
+          },
+          "Scout1": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u2": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u3": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u4": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u5": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u6": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              }
+            }
+          },
+          "Scout2": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u2": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u3": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u4": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u5": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u6": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              }
+            }
+          },
+          "Dismount": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_scout",
+                "max_hp": 6
+              },
+              "u2": {
+                "unit_id": "fg_scout",
+                "max_hp": 6
+              },
+              "u3": {
+                "unit_id": "fg_scout",
+                "max_hp": 6
+              },
+              "u4": {
+                "unit_id": "fg_scout",
+                "max_hp": 6
+              },
+              "u5": {
+                "unit_id": "fg_scout",
+                "max_hp": 6
+              },
+              "u6": {
+                "unit_id": "fg_scout",
+                "max_hp": 6
+              }
+            }
+          }
+        }
+      },
+      "Troop3": {
+        "name": "Troop3",
+        "platoons": {
+          "Tank1": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              },
+              "u2": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              },
+              "u3": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              },
+              "u4": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              }
+            }
+          },
+          "Tank2": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              },
+              "u2": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              },
+              "u3": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              },
+              "u4": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              }
+            }
+          },
+          "HQ_Tank": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_m1a1_cp",
+                "max_hp": 12
+              }
+            }
+          },
+          "Scout1": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u2": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u3": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u4": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u5": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u6": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              }
+            }
+          },
+          "Scout2": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u2": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u3": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u4": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u5": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              },
+              "u6": {
+                "unit_id": "fg_m3a1",
+                "max_hp": 6
+              }
+            }
+          },
+          "Dismount": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_scout",
+                "max_hp": 6
+              },
+              "u2": {
+                "unit_id": "fg_scout",
+                "max_hp": 6
+              },
+              "u3": {
+                "unit_id": "fg_scout",
+                "max_hp": 6
+              },
+              "u4": {
+                "unit_id": "fg_scout",
+                "max_hp": 6
+              },
+              "u5": {
+                "unit_id": "fg_scout",
+                "max_hp": 6
+              },
+              "u6": {
+                "unit_id": "fg_scout",
+                "max_hp": 6
+              }
+            }
+          }
+        }
+      },
+      "TankCompany": {
+        "name": "TankCompany",
+        "platoons": {
+          "TankHQ": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_m1a1_cp",
+                "max_hp": 12
+              },
+              "u2": {
+                "unit_id": "fg_m1a1_cp",
+                "max_hp": 12
+              }
+            }
+          },
+          "TankPlatoons": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              },
+              "u2": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              },
+              "u3": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              },
+              "u4": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              },
+              "u5": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              },
+              "u6": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              },
+              "u7": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              },
+              "u8": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              },
+              "u9": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              },
+              "u10": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              },
+              "u11": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              },
+              "u12": {
+                "unit_id": "fg_m1a1",
+                "max_hp": 12
+              }
+            }
+          }
+        }
+      }
+    },
+    "provenance": {
+      "evidence_kind": "model",
+      "source_ids": [
+        "S02"
+      ],
+      "as_of": "1989-07-01 scenario assumption",
+      "confidence": "doctrinal abstraction, not actual daily strength",
+      "quantity_basis": "source-informed authorized TOE assumption; not daily actual strength"
+    }
+  },
+  "fg_m109_battery": {
+    "name": "骑兵中队属 M109 炮兵连（分离支援）",
+    "role": "artillery",
+    "vision_range": 2,
+    "companies": {
+      "Battery": {
+        "name": "Battery",
+        "platoons": {
+          "Guns": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_m109a2",
+                "max_hp": 4
+              },
+              "u2": {
+                "unit_id": "fg_m109a2",
+                "max_hp": 4
+              },
+              "u3": {
+                "unit_id": "fg_m109a2",
+                "max_hp": 4
+              },
+              "u4": {
+                "unit_id": "fg_m109a2",
+                "max_hp": 4
+              },
+              "u5": {
+                "unit_id": "fg_m109a2",
+                "max_hp": 4
+              },
+              "u6": {
+                "unit_id": "fg_m109a2",
+                "max_hp": 4
+              }
+            }
+          }
+        }
+      }
+    },
+    "provenance": {
+      "evidence_kind": "model",
+      "source_ids": [
+        "S02"
+      ],
+      "as_of": "1989-07-01 scenario assumption",
+      "confidence": "doctrinal abstraction, not actual daily strength",
+      "quantity_basis": "source-informed authorized TOE assumption; not daily actual strength"
+    }
+  },
+  "fg_tank_bn": {
+    "name": "苏军坦克模拟营（31 辆）",
+    "role": "main",
+    "vision_range": 2,
+    "companies": {
+      "HQ": {
+        "name": "HQ",
+        "platoons": {
+          "Command": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_t80b_cp",
+                "max_hp": 10
+              }
+            }
+          }
+        }
+      },
+      "Company1": {
+        "name": "Company1",
+        "platoons": {
+          "Tanks": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              },
+              "u2": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              },
+              "u3": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              },
+              "u4": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              },
+              "u5": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              },
+              "u6": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              },
+              "u7": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              },
+              "u8": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              },
+              "u9": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              },
+              "u10": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              }
+            }
+          }
+        }
+      },
+      "Company2": {
+        "name": "Company2",
+        "platoons": {
+          "Tanks": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              },
+              "u2": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              },
+              "u3": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              },
+              "u4": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              },
+              "u5": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              },
+              "u6": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              },
+              "u7": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              },
+              "u8": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              },
+              "u9": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              },
+              "u10": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              }
+            }
+          }
+        }
+      },
+      "Company3": {
+        "name": "Company3",
+        "platoons": {
+          "Tanks": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              },
+              "u2": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              },
+              "u3": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              },
+              "u4": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              },
+              "u5": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              },
+              "u6": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              },
+              "u7": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              },
+              "u8": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              },
+              "u9": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              },
+              "u10": {
+                "unit_id": "fg_t80b",
+                "max_hp": 10
+              }
+            }
+          }
+        }
+      }
+    },
+    "provenance": {
+      "evidence_kind": "model",
+      "source_ids": [
+        "S08"
+      ],
+      "as_of": "1989-07-01 scenario assumption",
+      "confidence": "doctrinal abstraction, not actual daily strength",
+      "quantity_basis": "source-informed authorized TOE assumption; not daily actual strength"
+    }
+  },
+  "fg_mrb": {
+    "name": "苏军 BMP 摩步模拟营",
+    "role": "main",
+    "vision_range": 2,
+    "companies": {
+      "HQ": {
+        "name": "HQ",
+        "platoons": {
+          "Command": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_bmp1_cp",
+                "max_hp": 4
+              }
+            }
+          },
+          "Rifles": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_rifles",
+                "max_hp": 9
+              }
+            }
+          }
+        }
+      },
+      "Company1": {
+        "name": "Company1",
+        "platoons": {
+          "Vehicles": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              },
+              "u2": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              },
+              "u3": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              },
+              "u4": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              },
+              "u5": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              },
+              "u6": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              },
+              "u7": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              },
+              "u8": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              },
+              "u9": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              },
+              "u10": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              }
+            }
+          },
+          "Rifles": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_rifles",
+                "max_hp": 9
+              },
+              "u2": {
+                "unit_id": "fg_rifles",
+                "max_hp": 9
+              },
+              "u3": {
+                "unit_id": "fg_rifles",
+                "max_hp": 9
+              },
+              "u4": {
+                "unit_id": "fg_rifles",
+                "max_hp": 9
+              },
+              "u5": {
+                "unit_id": "fg_rifles",
+                "max_hp": 9
+              },
+              "u6": {
+                "unit_id": "fg_rifles",
+                "max_hp": 9
+              },
+              "u7": {
+                "unit_id": "fg_rifles",
+                "max_hp": 9
+              },
+              "u8": {
+                "unit_id": "fg_rifles",
+                "max_hp": 9
+              },
+              "u9": {
+                "unit_id": "fg_rifles",
+                "max_hp": 9
+              }
+            }
+          }
+        }
+      },
+      "Company2": {
+        "name": "Company2",
+        "platoons": {
+          "Vehicles": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              },
+              "u2": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              },
+              "u3": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              },
+              "u4": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              },
+              "u5": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              },
+              "u6": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              },
+              "u7": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              },
+              "u8": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              },
+              "u9": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              },
+              "u10": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              }
+            }
+          },
+          "Rifles": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_rifles",
+                "max_hp": 9
+              },
+              "u2": {
+                "unit_id": "fg_rifles",
+                "max_hp": 9
+              },
+              "u3": {
+                "unit_id": "fg_rifles",
+                "max_hp": 9
+              },
+              "u4": {
+                "unit_id": "fg_rifles",
+                "max_hp": 9
+              },
+              "u5": {
+                "unit_id": "fg_rifles",
+                "max_hp": 9
+              },
+              "u6": {
+                "unit_id": "fg_rifles",
+                "max_hp": 9
+              },
+              "u7": {
+                "unit_id": "fg_rifles",
+                "max_hp": 9
+              },
+              "u8": {
+                "unit_id": "fg_rifles",
+                "max_hp": 9
+              },
+              "u9": {
+                "unit_id": "fg_rifles",
+                "max_hp": 9
+              }
+            }
+          }
+        }
+      },
+      "Company3": {
+        "name": "Company3",
+        "platoons": {
+          "Vehicles": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              },
+              "u2": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              },
+              "u3": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              },
+              "u4": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              },
+              "u5": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              },
+              "u6": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              },
+              "u7": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              },
+              "u8": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              },
+              "u9": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              },
+              "u10": {
+                "unit_id": "fg_bmp1",
+                "max_hp": 4
+              }
+            }
+          },
+          "Rifles": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_rifles",
+                "max_hp": 9
+              },
+              "u2": {
+                "unit_id": "fg_rifles",
+                "max_hp": 9
+              },
+              "u3": {
+                "unit_id": "fg_rifles",
+                "max_hp": 9
+              },
+              "u4": {
+                "unit_id": "fg_rifles",
+                "max_hp": 9
+              },
+              "u5": {
+                "unit_id": "fg_rifles",
+                "max_hp": 9
+              },
+              "u6": {
+                "unit_id": "fg_rifles",
+                "max_hp": 9
+              },
+              "u7": {
+                "unit_id": "fg_rifles",
+                "max_hp": 9
+              },
+              "u8": {
+                "unit_id": "fg_rifles",
+                "max_hp": 9
+              },
+              "u9": {
+                "unit_id": "fg_rifles",
+                "max_hp": 9
+              }
+            }
+          }
+        }
+      }
+    },
+    "provenance": {
+      "evidence_kind": "model",
+      "source_ids": [
+        "S08"
+      ],
+      "as_of": "1989-07-01 scenario assumption",
+      "confidence": "doctrinal abstraction, not actual daily strength",
+      "quantity_basis": "source-informed authorized TOE assumption; not daily actual strength"
+    }
+  },
+  "fg_2s1_bn": {
+    "name": "团属 2S1 炮兵模拟营",
+    "role": "artillery",
+    "vision_range": 2,
+    "companies": {
+      "Battery1": {
+        "name": "Battery1",
+        "platoons": {
+          "Guns": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_2s1",
+                "max_hp": 4
+              },
+              "u2": {
+                "unit_id": "fg_2s1",
+                "max_hp": 4
+              },
+              "u3": {
+                "unit_id": "fg_2s1",
+                "max_hp": 4
+              },
+              "u4": {
+                "unit_id": "fg_2s1",
+                "max_hp": 4
+              },
+              "u5": {
+                "unit_id": "fg_2s1",
+                "max_hp": 4
+              },
+              "u6": {
+                "unit_id": "fg_2s1",
+                "max_hp": 4
+              }
+            }
+          }
+        }
+      },
+      "Battery2": {
+        "name": "Battery2",
+        "platoons": {
+          "Guns": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_2s1",
+                "max_hp": 4
+              },
+              "u2": {
+                "unit_id": "fg_2s1",
+                "max_hp": 4
+              },
+              "u3": {
+                "unit_id": "fg_2s1",
+                "max_hp": 4
+              },
+              "u4": {
+                "unit_id": "fg_2s1",
+                "max_hp": 4
+              },
+              "u5": {
+                "unit_id": "fg_2s1",
+                "max_hp": 4
+              },
+              "u6": {
+                "unit_id": "fg_2s1",
+                "max_hp": 4
+              }
+            }
+          }
+        }
+      },
+      "Battery3": {
+        "name": "Battery3",
+        "platoons": {
+          "Guns": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_2s1",
+                "max_hp": 4
+              },
+              "u2": {
+                "unit_id": "fg_2s1",
+                "max_hp": 4
+              },
+              "u3": {
+                "unit_id": "fg_2s1",
+                "max_hp": 4
+              },
+              "u4": {
+                "unit_id": "fg_2s1",
+                "max_hp": 4
+              },
+              "u5": {
+                "unit_id": "fg_2s1",
+                "max_hp": 4
+              },
+              "u6": {
+                "unit_id": "fg_2s1",
+                "max_hp": 4
+              }
+            }
+          }
+        }
+      }
+    },
+    "provenance": {
+      "evidence_kind": "model",
+      "source_ids": [
+        "S08"
+      ],
+      "as_of": "1989-07-01 scenario assumption",
+      "confidence": "doctrinal abstraction, not actual daily strength",
+      "quantity_basis": "source-informed authorized TOE assumption; not daily actual strength"
+    }
+  },
+  "fg_regimental_recon": {
+    "name": "团侦察连（营级支援棋子）",
+    "role": "support",
+    "vision_range": 4,
+    "companies": {
+      "ReconCompany": {
+        "name": "ReconCompany",
+        "platoons": {
+          "Vehicles": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_brm1k",
+                "max_hp": 4
+              },
+              "u2": {
+                "unit_id": "fg_brm1k",
+                "max_hp": 4
+              },
+              "u3": {
+                "unit_id": "fg_brm1k",
+                "max_hp": 4
+              }
+            }
+          },
+          "Scouts": {
+            "type": "standard",
+            "units": {
+              "u1": {
+                "unit_id": "fg_red_scout",
+                "max_hp": 6
+              },
+              "u2": {
+                "unit_id": "fg_red_scout",
+                "max_hp": 6
+              },
+              "u3": {
+                "unit_id": "fg_red_scout",
+                "max_hp": 6
+              }
+            }
+          }
+        }
+      }
+    },
+    "provenance": {
+      "evidence_kind": "model",
+      "source_ids": [
+        "S08"
+      ],
+      "as_of": "1989-07-01 scenario assumption",
+      "confidence": "doctrinal abstraction, not actual daily strength",
+      "quantity_basis": "source-informed authorized TOE assumption; not daily actual strength"
+    }
+  }
+}

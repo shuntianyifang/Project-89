@@ -65,6 +65,8 @@ GameManager → GameApplication → GameSessionHost
 
 ## 当前规则文档
 
+默认场景现为基于历史材料的富尔达—巴德赫斯费尔德假想战：2 公里/格、2 小时/完整回合；蓝军两支骑兵中队，红军两个团的先头 / 后续模型。地图与装备数量经过首版抽象，不宣称当日实有实力或精确地形复原。参见 [历史基线](docs/current/Fulda_Gap_Historical_Baseline.md)、[编制与校准](docs/current/Fulda_Gap_Calibration.md)。地图 / OOB 可用 `tools/build_fulda_historical.py` 重新生成（需要 Pillow），结构审计使用 `tools/audit_fulda_scenario.py`；更改后需重跑 `tools/validate.ps1`。
+
 `docs/current/` 是当前生效的规则与技术设计依据。修改机制、数值或数据前，请阅读相关文档：
 
 - [PRD 与技术设计](docs/current/Cold_War_Wargame_PRD_TDD.md)

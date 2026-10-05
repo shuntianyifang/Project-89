@@ -62,6 +62,8 @@ namespace ColdWarWargame.Systems.Battlefield
             int dy = to.Y - from.Y;
 
             float baseCost;
+            if ((mover == null || !mover.HasBattalionTag("Heli_Battalion")) && !_map.CanCross(from,to))
+                return float.PositiveInfinity;
         
 
             if (Mathf.Abs(dx) == 1 && dy == 0)

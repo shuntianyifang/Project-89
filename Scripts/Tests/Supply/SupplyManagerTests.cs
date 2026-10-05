@@ -545,13 +545,13 @@ namespace ColdWarWargame.Tests.Supply
         {
             EnsureScenarioDatabases();
 
-            var scenario = new FuldaGapScenario();
+            var scenario = new FuldaGapScenario("res://Scripts/Tests/Fixtures/legacy_supply_map.json", "res://Scripts/Tests/Fixtures/legacy_supply_occupation_state.json");
             scenario.LoadOOB(
-                "res://Scripts/Data/Scenarios/Fulda_Gap/oob_blue.json",
-                "res://Scripts/Data/Scenarios/Fulda_Gap/oob_red.json");
+                "res://Scripts/Tests/Fixtures/legacy_supply_oob_blue.json",
+                "res://Scripts/Tests/Fixtures/legacy_supply_oob_red.json");
 
-            // Reposition real Blue OOB battalions as a continuous AP=4 frontline.
-            // This mirrors a player-created blockade while preserving the real map,
+            // Reposition legacy Blue OOB battalions as a continuous AP=4 frontline.
+            // This mirrors a player-created blockade while preserving the legacy synthetic map,
             // road layer, OOB, supply nodes, and control map used by the game.
             for (int i = 0; i < 17; i++)
             {
@@ -561,7 +561,7 @@ namespace ColdWarWargame.Tests.Supply
             }
 
             var target = scenario.RedBattalions[0].bat;
-            // (36,12) is a Red-controlled airport in the real scenario. The target
+            // (36,12) is a Red-controlled airport in the legacy fixture. The target
             // remains behind the frontline but within its 12-SP local supply range.
             var targetPos = new Vector2I(36, 14);
             target.Fatigue = 3;
@@ -607,10 +607,10 @@ namespace ColdWarWargame.Tests.Supply
             EnsureScenarioDatabases();
             foreach (int faction in new[] { 1, 2 })
             {
-                var scenario = new FuldaGapScenario();
+                var scenario = new FuldaGapScenario("res://Scripts/Tests/Fixtures/legacy_supply_map.json", "res://Scripts/Tests/Fixtures/legacy_supply_occupation_state.json");
                 scenario.LoadOOB(
-                    "res://Scripts/Data/Scenarios/Fulda_Gap/oob_blue.json",
-                    "res://Scripts/Data/Scenarios/Fulda_Gap/oob_red.json");
+                    "res://Scripts/Tests/Fixtures/legacy_supply_oob_blue.json",
+                    "res://Scripts/Tests/Fixtures/legacy_supply_oob_red.json");
                 var enemies = faction == 1 ? scenario.RedBattalions : scenario.BlueBattalions;
                 var manager = new SupplyManager();
                 var occupation = scenario.GetOccupationMap();
@@ -649,7 +649,7 @@ namespace ColdWarWargame.Tests.Supply
 
                 var baseline = ComputePrimary();
                 Assert(baseline[target.X, target.Y] > 0f,
-                    $"Primary interception faction={faction}: target initially supplied on real highway");
+                    $"Primary interception faction={faction}: target initially supplied on fixture highway");
 
                 // A horizontal 3x3 blockade cuts every route from the top/bottom
                 // source edge, including Fulda's cheap, map-spanning highways.
@@ -690,10 +690,10 @@ namespace ColdWarWargame.Tests.Supply
         {
             EnsureScenarioDatabases();
 
-            var scenario = new FuldaGapScenario();
+            var scenario = new FuldaGapScenario("res://Scripts/Tests/Fixtures/legacy_supply_map.json", "res://Scripts/Tests/Fixtures/legacy_supply_occupation_state.json");
             scenario.LoadOOB(
-                "res://Scripts/Data/Scenarios/Fulda_Gap/oob_blue.json",
-                "res://Scripts/Data/Scenarios/Fulda_Gap/oob_red.json");
+                "res://Scripts/Tests/Fixtures/legacy_supply_oob_blue.json",
+                "res://Scripts/Tests/Fixtures/legacy_supply_oob_red.json");
 
             var allUnits = scenario.BlueBattalions.Concat(scenario.RedBattalions).ToList();
             var (hubs, airports) = scenario.GetSupplySpecialNodes();

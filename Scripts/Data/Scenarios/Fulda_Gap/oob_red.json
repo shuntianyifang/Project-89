@@ -1,538 +1,218 @@
 {
   "faction_red": [
     {
-      "instance_id": "79GTD_1TkR_1Bn",
-      "template_id": "sov_heavy_tank_battalion",
-      "x": 30,
-      "y": 13
-    },
-    {
-      "instance_id": "79GTD_1TkR_2Bn",
-      "template_id": "sov_heavy_tank_battalion",
-      "x": 31,
-      "y": 13
-    },
-    {
-      "instance_id": "79GTD_1TkR_3Bn",
-      "template_id": "sov_heavy_tank_battalion",
-      "x": 32,
-      "y": 13
-    },
-    {
-      "instance_id": "79GTD_1TkR_MRBn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 31,
-      "y": 14
-    },
-    {
-      "instance_id": "79GTD_2TkR_1Bn",
-      "template_id": "sov_heavy_tank_battalion",
-      "x": 33,
-      "y": 14
-    },
-    {
-      "instance_id": "79GTD_2TkR_2Bn",
-      "template_id": "sov_heavy_tank_battalion",
-      "x": 32,
-      "y": 14
-    },
-    {
-      "instance_id": "79GTD_2TkR_3Bn",
-      "template_id": "sov_heavy_tank_battalion",
-      "x": 33,
-      "y": 13
-    },
-    {
-      "instance_id": "79GTD_2TkR_MRBn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 32,
-      "y": 15
-    },
-    {
-      "instance_id": "79GTD_3TkR_1Bn",
-      "template_id": "sov_heavy_tank_battalion",
-      "x": 30,
-      "y": 14
-    },
-    {
-      "instance_id": "79GTD_3TkR_2Bn",
-      "template_id": "sov_heavy_tank_battalion",
-      "x": 30,
-      "y": 15
-    },
-    {
-      "instance_id": "79GTD_3TkR_3Bn",
-      "template_id": "sov_heavy_tank_battalion",
-      "x": 31,
-      "y": 15
-    },
-    {
-      "instance_id": "79GTD_3TkR_MRBn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 32,
-      "y": 16
-    },
-    {
-      "instance_id": "79GTD_MRR_1Bn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 33,
-      "y": 15
-    },
-    {
-      "instance_id": "79GTD_MRR_2Bn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 34,
-      "y": 14
-    },
-    {
-      "instance_id": "79GTD_MRR_3Bn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 34,
-      "y": 15
-    },
-    {
-      "instance_id": "79GTD_MRR_TkBn",
-      "template_id": "sov_heavy_tank_battalion",
-      "x": 33,
-      "y": 16
-    },
-    {
-      "instance_id": "79GTD_Recon",
-      "template_id": "sov_recon_battalion",
-      "x": 30,
-      "y": 12
-    },
-    {
-      "instance_id": "79GTD_Avn",
-      "template_id": "sov_aviation_battalion",
-      "x": 34,
-      "y": 16
-    },
-    {
-      "instance_id": "79GTD_Arty_1Bn",
-      "template_id": "sov_arty_group",
-      "x": 32,
-      "y": 12
-    },
-    {
-      "instance_id": "79GTD_Arty_2Bn",
-      "template_id": "sov_arty_group",
-      "x": 33,
-      "y": 12
-    },
-    {
-      "instance_id": "79GTD_Arty_3Bn",
-      "template_id": "sov_heavy_arty_battalion",
-      "x": 34,
-      "y": 13
-    },
-    {
-      "instance_id": "39GMRD_1MRR_1Bn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 30,
-      "y": 4
-    },
-    {
-      "instance_id": "39GMRD_1MRR_2Bn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 31,
-      "y": 4
-    },
-    {
-      "instance_id": "39GMRD_1MRR_3Bn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 30,
-      "y": 5
-    },
-    {
-      "instance_id": "39GMRD_1MRR_TkBn",
-      "template_id": "sov_heavy_tank_battalion",
-      "x": 31,
-      "y": 5
-    },
-    {
-      "instance_id": "39GMRD_2MRR_1Bn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 32,
-      "y": 4
-    },
-    {
-      "instance_id": "39GMRD_2MRR_2Bn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 33,
-      "y": 3
-    },
-    {
-      "instance_id": "39GMRD_2MRR_3Bn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 32,
-      "y": 5
-    },
-    {
-      "instance_id": "39GMRD_2MRR_TkBn",
-      "template_id": "sov_heavy_tank_battalion",
-      "x": 33,
-      "y": 5
-    },
-    {
-      "instance_id": "39GMRD_3MRR_1Bn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 34,
-      "y": 4
-    },
-    {
-      "instance_id": "39GMRD_3MRR_2Bn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 35,
-      "y": 3
-    },
-    {
-      "instance_id": "39GMRD_3MRR_3Bn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 34,
-      "y": 5
-    },
-    {
-      "instance_id": "39GMRD_3MRR_TkBn",
-      "template_id": "sov_heavy_tank_battalion",
-      "x": 35,
-      "y": 5
-    },
-    {
-      "instance_id": "39GMRD_TkR_1Bn",
-      "template_id": "sov_heavy_tank_battalion",
-      "x": 29,
-      "y": 6
-    },
-    {
-      "instance_id": "39GMRD_TkR_2Bn",
-      "template_id": "sov_heavy_tank_battalion",
-      "x": 30,
-      "y": 6
-    },
-    {
-      "instance_id": "39GMRD_TkR_3Bn",
-      "template_id": "sov_heavy_tank_battalion",
-      "x": 31,
-      "y": 6
-    },
-    {
-      "instance_id": "39GMRD_TkR_MRBn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 32,
-      "y": 6
-    },
-    {
-      "instance_id": "39GMRD_Recon",
-      "template_id": "sov_recon_battalion",
-      "x": 29,
-      "y": 4
-    },
-    {
-      "instance_id": "39GMRD_Avn",
-      "template_id": "sov_aviation_battalion",
-      "x": 35,
-      "y": 6
-    },
-    {
-      "instance_id": "39GMRD_Arty_1Bn",
-      "template_id": "sov_arty_group",
-      "x": 30,
-      "y": 3
-    },
-    {
-      "instance_id": "39GMRD_Arty_2Bn",
-      "template_id": "sov_arty_group",
-      "x": 32,
-      "y": 3
-    },
-    {
-      "instance_id": "39GMRD_Arty_3Bn",
-      "template_id": "sov_heavy_arty_battalion",
-      "x": 34,
-      "y": 3
-    },
-    {
-      "instance_id": "57GMRD_1MRR_1Bn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 31,
-      "y": 20
-    },
-    {
-      "instance_id": "57GMRD_1MRR_2Bn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 32,
-      "y": 20
-    },
-    {
-      "instance_id": "57GMRD_1MRR_3Bn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 31,
-      "y": 21
-    },
-    {
-      "instance_id": "57GMRD_1MRR_TkBn",
-      "template_id": "sov_heavy_tank_battalion",
-      "x": 32,
-      "y": 21
-    },
-    {
-      "instance_id": "57GMRD_2MRR_1Bn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 33,
-      "y": 20
-    },
-    {
-      "instance_id": "57GMRD_2MRR_2Bn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 34,
-      "y": 19
-    },
-    {
-      "instance_id": "57GMRD_2MRR_3Bn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 33,
-      "y": 21
-    },
-    {
-      "instance_id": "57GMRD_2MRR_TkBn",
-      "template_id": "sov_heavy_tank_battalion",
-      "x": 34,
-      "y": 21
-    },
-    {
-      "instance_id": "57GMRD_3MRR_1Bn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 35,
-      "y": 20
-    },
-    {
-      "instance_id": "57GMRD_3MRR_2Bn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 36,
-      "y": 19
-    },
-    {
-      "instance_id": "57GMRD_3MRR_3Bn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 35,
-      "y": 21
-    },
-    {
-      "instance_id": "57GMRD_3MRR_TkBn",
-      "template_id": "sov_heavy_tank_battalion",
-      "x": 36,
-      "y": 21
-    },
-    {
-      "instance_id": "57GMRD_TkR_1Bn",
-      "template_id": "sov_heavy_tank_battalion",
-      "x": 30,
-      "y": 22
-    },
-    {
-      "instance_id": "57GMRD_TkR_2Bn",
-      "template_id": "sov_heavy_tank_battalion",
-      "x": 31,
-      "y": 22
-    },
-    {
-      "instance_id": "57GMRD_TkR_3Bn",
-      "template_id": "sov_heavy_tank_battalion",
-      "x": 32,
-      "y": 22
-    },
-    {
-      "instance_id": "57GMRD_TkR_MRBn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 33,
-      "y": 22
-    },
-    {
-      "instance_id": "57GMRD_Recon",
-      "template_id": "sov_recon_battalion",
-      "x": 30,
-      "y": 20
-    },
-    {
-      "instance_id": "57GMRD_Avn",
-      "template_id": "sov_aviation_battalion",
-      "x": 36,
-      "y": 22
-    },
-    {
-      "instance_id": "57GMRD_Arty_1Bn",
-      "template_id": "sov_arty_group",
-      "x": 31,
-      "y": 19
-    },
-    {
-      "instance_id": "57GMRD_Arty_2Bn",
-      "template_id": "sov_arty_group",
-      "x": 33,
-      "y": 19
-    },
-    {
-      "instance_id": "57GMRD_Arty_3Bn",
-      "template_id": "sov_heavy_arty_battalion",
-      "x": 35,
-      "y": 19
-    },
-    {
-      "instance_id": "27GMRD_1MRR_1Bn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 36,
-      "y": 16
-    },
-    {
-      "instance_id": "27GMRD_1MRR_2Bn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 37,
-      "y": 16
-    },
-    {
-      "instance_id": "27GMRD_1MRR_3Bn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 36,
-      "y": 17
-    },
-    {
-      "instance_id": "27GMRD_1MRR_TkBn",
-      "template_id": "sov_heavy_tank_battalion",
-      "x": 37,
-      "y": 17
-    },
-    {
-      "instance_id": "27GMRD_2MRR_1Bn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 38,
-      "y": 16
-    },
-    {
-      "instance_id": "27GMRD_2MRR_2Bn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 39,
-      "y": 17
-    },
-    {
-      "instance_id": "27GMRD_2MRR_TkBn",
-      "template_id": "sov_heavy_tank_battalion",
-      "x": 39,
-      "y": 16
-    },
-    {
-      "instance_id": "27GMRD_3MRR_1Bn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 40,
-      "y": 17
-    },
-    {
-      "instance_id": "27GMRD_3MRR_2Bn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 42,
-      "y": 18
-    },
-    {
-      "instance_id": "27GMRD_TkR_1Bn",
-      "template_id": "sov_heavy_tank_battalion",
-      "x": 38,
-      "y": 18
-    },
-    {
-      "instance_id": "27GMRD_TkR_2Bn",
-      "template_id": "sov_heavy_tank_battalion",
-      "x": 39,
-      "y": 18
-    },
-    {
-      "instance_id": "27GMRD_Recon",
-      "template_id": "sov_recon_battalion",
-      "x": 37,
-      "y": 15
-    },
-    {
-      "instance_id": "27GMRD_Avn",
-      "template_id": "sov_aviation_battalion",
-      "x": 42,
-      "y": 19
-    },
-    {
-      "instance_id": "27GMRD_Arty_1Bn",
-      "template_id": "sov_arty_group",
-      "x": 38,
-      "y": 15
-    },
-    {
-      "instance_id": "27GMRD_Arty_2Bn",
-      "template_id": "sov_arty_group",
-      "x": 40,
-      "y": 16
-    },
-    {
-      "instance_id": "119ITR_1Bn",
-      "template_id": "sov_heavy_tank_battalion",
-      "x": 35,
-      "y": 12
-    },
-    {
-      "instance_id": "119ITR_2Bn",
-      "template_id": "sov_heavy_tank_battalion",
-      "x": 36,
-      "y": 13
-    },
-    {
-      "instance_id": "119ITR_3Bn",
-      "template_id": "sov_heavy_tank_battalion",
-      "x": 37,
-      "y": 12
-    },
-    {
-      "instance_id": "119ITR_MRBn",
-      "template_id": "sov_motorifle_battalion",
-      "x": 36,
-      "y": 14
-    },
-    {
-      "instance_id": "8CAA_Arty_1",
-      "template_id": "sov_arty_group",
-      "x": 34,
-      "y": 12
-    },
-    {
-      "instance_id": "8CAA_Arty_2",
-      "template_id": "sov_heavy_arty_battalion",
-      "x": 35,
-      "y": 11
-    },
-    {
-      "instance_id": "8CAA_Avn",
-      "template_id": "sov_aviation_battalion",
-      "x": 44,
-      "y": 10
-    },
-    {
-      "instance_id": "GDR_9PzD_1TkB",
-      "template_id": "gdr_tank_battalion",
+      "instance_id": "39GMRD_117GMRR_ModelMRB1",
+      "template_id": "fg_mrb",
+      "x": 24,
+      "y": 15,
+      "name": "117近卫摩步团 第1模拟营",
+      "parent": "39GMRD_117GMRR",
+      "provenance": {
+        "source_ids": [
+          "S05",
+          "S08"
+        ],
+        "evidence_kind": "assumed",
+        "as_of": "1989-07-01 scenario assumption",
+        "confidence": "formation sourced; strength and combat deployment modeled",
+        "notes": "leading echelon; modeled battalion numbering"
+      }
+    },
+    {
+      "instance_id": "39GMRD_117GMRR_ModelMRB2",
+      "template_id": "fg_mrb",
+      "x": 25,
+      "y": 12,
+      "name": "117近卫摩步团 第2模拟营",
+      "parent": "39GMRD_117GMRR",
+      "provenance": {
+        "source_ids": [
+          "S05",
+          "S08"
+        ],
+        "evidence_kind": "assumed",
+        "as_of": "1989-07-01 scenario assumption",
+        "confidence": "formation sourced; strength and combat deployment modeled",
+        "notes": "leading echelon; modeled battalion numbering"
+      }
+    },
+    {
+      "instance_id": "39GMRD_117GMRR_ModelMRB3",
+      "template_id": "fg_mrb",
+      "x": 27,
+      "y": 14,
+      "name": "117近卫摩步团 第3模拟营",
+      "parent": "39GMRD_117GMRR",
+      "provenance": {
+        "source_ids": [
+          "S05",
+          "S08"
+        ],
+        "evidence_kind": "assumed",
+        "as_of": "1989-07-01 scenario assumption",
+        "confidence": "formation sourced; strength and combat deployment modeled",
+        "notes": "leading echelon; modeled battalion numbering"
+      }
+    },
+    {
+      "instance_id": "39GMRD_117GMRR_ModelTB",
+      "template_id": "fg_tank_bn",
       "x": 28,
-      "y": 2
+      "y": 15,
+      "name": "117近卫摩步团 坦克模拟营",
+      "parent": "39GMRD_117GMRR",
+      "provenance": {
+        "source_ids": [
+          "S05",
+          "S08"
+        ],
+        "evidence_kind": "assumed",
+        "as_of": "1989-07-01 scenario assumption",
+        "confidence": "formation sourced; strength and combat deployment modeled",
+        "notes": "31-tank variant selected as assumption"
+      }
     },
     {
-      "instance_id": "GDR_9PzD_2TkB",
-      "template_id": "gdr_tank_battalion",
-      "x": 30,
-      "y": 1
-    },
-    {
-      "instance_id": "GDR_9PzD_1MRB",
-      "template_id": "gdr_motorifle_battalion",
+      "instance_id": "39GMRD_117GMRR_ModelArty",
+      "template_id": "fg_2s1_bn",
       "x": 29,
-      "y": 3
+      "y": 13,
+      "name": "117近卫摩步团 炮兵模拟营",
+      "parent": "39GMRD_117GMRR",
+      "provenance": {
+        "source_ids": [
+          "S05",
+          "S08"
+        ],
+        "evidence_kind": "assumed",
+        "as_of": "1989-07-01 scenario assumption",
+        "confidence": "formation sourced; strength and combat deployment modeled",
+        "notes": "18-gun doctrinal model"
+      }
     },
     {
-      "instance_id": "GDR_9PzD_2MRB",
-      "template_id": "gdr_motorifle_battalion",
-      "x": 31,
-      "y": 3
+      "instance_id": "79GTD_17GTR_ModelTB1",
+      "template_id": "fg_tank_bn",
+      "x": 36,
+      "y": 3,
+      "name": "17近卫坦克团 第1坦克模拟营",
+      "parent": "79GTD_17GTR",
+      "provenance": {
+        "source_ids": [
+          "S04",
+          "S08"
+        ],
+        "evidence_kind": "assumed",
+        "as_of": "1989-07-01 scenario assumption",
+        "confidence": "formation sourced; strength and combat deployment modeled",
+        "notes": "following echelon already on eastern rear road; no timed spawn"
+      }
+    },
+    {
+      "instance_id": "79GTD_17GTR_ModelTB2",
+      "template_id": "fg_tank_bn",
+      "x": 38,
+      "y": 4,
+      "name": "17近卫坦克团 第2坦克模拟营",
+      "parent": "79GTD_17GTR",
+      "provenance": {
+        "source_ids": [
+          "S04",
+          "S08"
+        ],
+        "evidence_kind": "assumed",
+        "as_of": "1989-07-01 scenario assumption",
+        "confidence": "formation sourced; strength and combat deployment modeled",
+        "notes": "following echelon already on eastern rear road; no timed spawn"
+      }
+    },
+    {
+      "instance_id": "79GTD_17GTR_ModelTB3",
+      "template_id": "fg_tank_bn",
+      "x": 40,
+      "y": 3,
+      "name": "17近卫坦克团 第3坦克模拟营",
+      "parent": "79GTD_17GTR",
+      "provenance": {
+        "source_ids": [
+          "S04",
+          "S08"
+        ],
+        "evidence_kind": "assumed",
+        "as_of": "1989-07-01 scenario assumption",
+        "confidence": "formation sourced; strength and combat deployment modeled",
+        "notes": "following echelon already on eastern rear road; no timed spawn"
+      }
+    },
+    {
+      "instance_id": "79GTD_17GTR_ModelMRB",
+      "template_id": "fg_mrb",
+      "x": 40,
+      "y": 5,
+      "name": "17近卫坦克团 摩步模拟营",
+      "parent": "79GTD_17GTR",
+      "provenance": {
+        "source_ids": [
+          "S04",
+          "S08"
+        ],
+        "evidence_kind": "assumed",
+        "as_of": "1989-07-01 scenario assumption",
+        "confidence": "formation sourced; strength and combat deployment modeled",
+        "notes": "BMP-1-only simplified mix; not CFE actual count"
+      }
+    },
+    {
+      "instance_id": "79GTD_17GTR_ModelArty",
+      "template_id": "fg_2s1_bn",
+      "x": 42,
+      "y": 3,
+      "name": "17近卫坦克团 炮兵模拟营",
+      "parent": "79GTD_17GTR",
+      "provenance": {
+        "source_ids": [
+          "S04",
+          "S08"
+        ],
+        "evidence_kind": "assumed",
+        "as_of": "1989-07-01 scenario assumption",
+        "confidence": "formation sourced; strength and combat deployment modeled",
+        "notes": "18-gun doctrinal model"
+      }
+    },
+    {
+      "instance_id": "39GMRD_117GMRR_ModelRecon",
+      "template_id": "fg_regimental_recon",
+      "x": 26,
+      "y": 13,
+      "name": "117近卫摩步团 侦察连",
+      "parent": "39GMRD_117GMRR",
+      "provenance": {
+        "source_ids": [
+          "S08"
+        ],
+        "evidence_kind": "assumed",
+        "as_of": "1989-07-01 scenario assumption",
+        "confidence": "formation sourced; strength and combat deployment modeled",
+        "notes": "regimental reconnaissance attachment; three vehicles modeled, not historical count"
+      }
+    },
+    {
+      "instance_id": "79GTD_17GTR_ModelRecon",
+      "template_id": "fg_regimental_recon",
+      "x": 35,
+      "y": 3,
+      "name": "17近卫坦克团 侦察连",
+      "parent": "79GTD_17GTR",
+      "provenance": {
+        "source_ids": [
+          "S08"
+        ],
+        "evidence_kind": "assumed",
+        "as_of": "1989-07-01 scenario assumption",
+        "confidence": "formation sourced; strength and combat deployment modeled",
+        "notes": "regimental reconnaissance attachment; three vehicles modeled, not historical count"
+      }
     }
   ]
 }

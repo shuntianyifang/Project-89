@@ -12,7 +12,7 @@ namespace ColdWarWargame.Scenarios
     public sealed class CampaignSave
     {
         public int Version { get; set; } = 1;
-        public string ScenarioId { get; set; } = "fulda_gap_1989";
+        public string ScenarioId { get; set; } = "fulda_gap_1989_historical_v1";
         public int Faction { get; set; }
         public int Turn { get; set; }
         public int Width { get; set; }
@@ -50,7 +50,7 @@ namespace ColdWarWargame.Scenarios
 
         public void Apply(FuldaGapScenario scenario, TurnManager turns, VictoryTracker victory)
         {
-            if (Version != 1 || ScenarioId != "fulda_gap_1989" || Width != scenario.Map.Width || Height != scenario.Map.Height ||
+            if (Version != 1 || ScenarioId != "fulda_gap_1989_historical_v1" || Width != scenario.Map.Width || Height != scenario.Map.Height ||
                 Control == null || Control.Length != Width * Height || Control.Any(v => v < 0 || v > 2) ||
                 Faction is not (1 or 2) || Turn < 1 || Statistics == null || Statistics.Length != 7 || Statistics.Any(v => v < 0) || Units == null)
                 throw new InvalidOperationException("存档版本、场景或状态不匹配");
@@ -108,10 +108,11 @@ namespace ColdWarWargame.Scenarios
             if (string.IsNullOrWhiteSpace(Id) || Faction is not (1 or 2) || !float.IsFinite(AP) || AP < 0 || AP > 12 ||
                 Fatigue < 0 || Fatigue > Battalion.FatigueOverflowCap || OOS < 0 || Companies == null || Tags == null)
                 throw new InvalidOperationException("存档营状态无效");
-            ColdWarWargame.Data.TOE.TemplateDatabase.GetTemplate(Template);
+            var template = ColdWarWargame.Data.TOE.TemplateDatabase.GetTemplate(Template);
             var b = new Battalion { InstanceId = Id, Name = Name, TemplateId = Template, TemplateRole = Role,
                 Faction = Faction, CurrentAP = AP, Fatigue = Fatigue, TurnsOOS = OOS, WasOOSLastTurn = WasOOS,
-                IsAdvancedReconBattalion = Recon, BattalionTags = new HashSet<string>(Tags, StringComparer.OrdinalIgnoreCase) };
+                IsAdvancedReconBattalion = Recon, ScenarioVisionRange = template.VisionRange,
+                BattalionTags = new HashSet<string>(Tags, StringComparer.OrdinalIgnoreCase) };
             foreach (var c in Companies)
             {
                 var company = new Company { CompanyId = c.Id, Name = c.Name };

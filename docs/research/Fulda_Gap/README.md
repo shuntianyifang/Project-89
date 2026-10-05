@@ -1,5 +1,7 @@
 # 历史地图候选参考
 
+首版运行地图与部署预览为 `historical_grid_preview.png`；校准结果为 `calibration_results.json`。运行数据由 `tools/build_fulda_historical.py` 生成。预览包含人工粗化的道路、河流与边境，不能作为精确历史桥梁或图幅年代的核验证据。蓝点为北约棋子，红点为华约棋子，黑线为边境模型。
+
 `tk200_candidate.png` 是德国 BKG TK200-DDR 的 `staat` 图层请求结果，配套 `.pgw` 为像素中心定位的 world file。EPSG:25832，50 米/像素，100×60 公里矩形；两者用于地图研究，尚未成为游戏地图。
 
 来源：[BKG 产品说明](https://gdz.bkg.bund.de/index.php/default/webdienste/digitale-topographische-karten-dienste/wms-topographische-karte-1-200-000-ddr-wms-tk200-ddr.html)。署名：© GeoBasis-DE / BKG；许可：[数据许可德国—署名—2.0](https://www.govdata.de/dl-de/by-2-0)。请求与范围见 `map_source.json`。

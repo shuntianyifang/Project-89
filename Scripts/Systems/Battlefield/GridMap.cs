@@ -12,6 +12,26 @@ namespace ColdWarWargame.Systems.Battlefield
         public int Height { get; private set; }
 
         private TileData[,] _tiles;
+        public Dictionary<int, HashSet<Vector2I>> PrimarySupplySources { get; } = new();
+        private HashSet<(Vector2I, Vector2I)> _blockedCrossings = new();
+        public IEnumerable<(Vector2I a, Vector2I b)> BlockedCrossings => _blockedCrossings;
+        public void BlockCrossing(Vector2I a, Vector2I b)
+        {
+            if (!IsInBounds(a) || !IsInBounds(b)) throw new ArgumentOutOfRangeException(nameof(a));
+            _blockedCrossings.Add((a,b)); _blockedCrossings.Add((b,a));
+        }
+        public bool CanCross(Vector2I a, Vector2I b)
+        {
+            if (_blockedCrossings.Contains((a,b))) return false;
+            if (a.X != b.X && a.Y != b.Y)
+            {
+                var horizontal = new Vector2I(b.X,a.Y); var vertical = new Vector2I(a.X,b.Y);
+                // Neither diagonal corner route may bypass a blocked river edge.
+                if (_blockedCrossings.Contains((a,horizontal)) || _blockedCrossings.Contains((horizontal,b)) ||
+                    _blockedCrossings.Contains((a,vertical)) || _blockedCrossings.Contains((vertical,b))) return false;
+            }
+            return true;
+        }
 
         /// <summary>
         /// 构造空网格（默认填充平原/无基础设施）

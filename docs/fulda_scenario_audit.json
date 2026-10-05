@@ -3,46 +3,33 @@
   "note": "Structural entries are not a historical equipment census; unresolved findings do not mean tests failed.",
   "factions": {
     "blue": {
-      "instances": 54,
+      "instances": 4,
       "templates": {
-        "us_cav_squadron": 3,
-        "us_aviation_battalion": 5,
-        "us_armor_battalion": 11,
-        "us_mech_battalion_standard": 9,
-        "us_div_recon_squadron": 2,
-        "us_div_arty_battalion": 8,
-        "us_airborne_battalion": 1,
-        "frg_tank_battalion": 7,
-        "frg_panzergrenadier_battalion": 4,
-        "frg_recon_battalion": 1,
-        "frg_arty_battalion": 3
+        "fg_cav_squadron": 2,
+        "fg_m109_battery": 2
       }
     },
     "red": {
-      "instances": 89,
+      "instances": 12,
       "templates": {
-        "sov_heavy_tank_battalion": 29,
-        "sov_motorifle_battalion": 34,
-        "sov_recon_battalion": 4,
-        "sov_aviation_battalion": 5,
-        "sov_arty_group": 9,
-        "sov_heavy_arty_battalion": 4,
-        "gdr_tank_battalion": 2,
-        "gdr_motorifle_battalion": 2
+        "fg_mrb": 4,
+        "fg_tank_bn": 4,
+        "fg_2s1_bn": 2,
+        "fg_regimental_recon": 2
       }
     }
   },
   "map_layers": {
-    "TerrainRows": {
+    "terrain_rows": {
       "rows": 30,
       "row_lengths": {
         "50": 30
       }
     },
-    "InfraRows": {
+    "infra_rows": {
       "rows": 30,
       "row_lengths": {
-        "52": 30
+        "50": 30
       }
     }
   },
@@ -63,6 +50,32 @@
     },
     "frg_arty_battalion": {
       "us_m109a2": 24
+    },
+    "fg_cav_squadron": {
+      "fg_m1a1": 36,
+      "fg_m1a1_cp": 5,
+      "fg_m3a1": 36,
+      "fg_m3a1_cp": 2,
+      "fg_scout": 18
+    },
+    "fg_m109_battery": {
+      "fg_m109a2": 6
+    },
+    "fg_tank_bn": {
+      "fg_t80b": 30,
+      "fg_t80b_cp": 1
+    },
+    "fg_mrb": {
+      "fg_bmp1": 30,
+      "fg_bmp1_cp": 1,
+      "fg_rifles": 28
+    },
+    "fg_2s1_bn": {
+      "fg_2s1": 18
+    },
+    "fg_regimental_recon": {
+      "fg_brm1k": 3,
+      "fg_red_scout": 3
     },
     "gdr_tank_battalion": {
       "gdr_t55a": 30
@@ -127,7 +140,5 @@
       "us_m1a1_acav": 20
     }
   },
-  "issues": [
-    "InfraRows: expected 30 rows of 50 cells"
-  ]
+  "issues": []
 }

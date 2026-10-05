@@ -2,6 +2,8 @@
 
 ## 一、 设计原则
 
+Fulda Gap 历史地图使用现有四类地形与本表加成。另有河流关闭边，只限制地面移动与补给传播，不增加战斗优势分修正；道路模型桥梁处开放，不支持桥梁破坏与架桥。斜向不能绕过关闭边，直升机不受地面河流限制。详见 [场景校准](Fulda_Gap_Calibration.md)。
+
 地形效果在战斗结算中以 **绝对值修正（additive modifier）** 的形式作用于战斗优势分 V。
 
 $$ V = \frac{A_{base} \cdot M_{atk\_org}}{D_{base} \cdot M_{def\_org}} + M_{attr} + E $$

@@ -26,6 +26,7 @@ namespace ColdWarWargame.Tests
 
             fails += OobOverridesTests.RunAll();
             fails += Gameplay.CampaignTests.RunAll();
+            fails += Gameplay.HistoricalScenarioTests.RunAll();
 
             GD.Print("========== TEST RUN FINISHED ==========");
             return fails;

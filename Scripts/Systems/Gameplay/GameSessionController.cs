@@ -137,7 +137,8 @@ namespace ColdWarWargame.Systems.Gameplay
         }
 
         public string GetStatusText() =>
-            "第 " + _turnMgr.TurnNumber + " 回合 · " + (_turnMgr.CurrentFaction == 1 ? "北约" : "华约") + " · " + _turnMgr.PhaseName();
+            "1989-07-01 起 · 已过 " + ((_turnMgr.TurnNumber - 1) * 2) + " 小时 · 第 " + _turnMgr.TurnNumber +
+            " 回合 · " + (_turnMgr.CurrentFaction == 1 ? "北约" : "华约") + " · " + _turnMgr.PhaseName() + " · 2公里/格";
 
         public void OnUnitClicked(int faction, Battalion bat, Vector2I pos)
         {

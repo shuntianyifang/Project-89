@@ -9,6 +9,8 @@ namespace ColdWarWargame.Data.TOE
         public string Name { get; init; }
         [JsonPropertyName("role")]
         public string Role { get; init; }
+        [JsonPropertyName("vision_range")]
+        public int? VisionRange { get; init; }
         [JsonPropertyName("battalion_tags")]
         public List<string> BattalionTags { get; init; }
         
