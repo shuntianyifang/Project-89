@@ -1,0 +1,7 @@
+{
+  "Id": "fulda_gap_1989",
+  "Title": "Fulda Gap 1989",
+  "BlueOob": "res://Scripts/Data/Scenarios/Fulda_Gap/oob_blue.json",
+  "RedOob": "res://Scripts/Data/Scenarios/Fulda_Gap/oob_red.json",
+  "Occupation": "res://Scripts/Data/Scenarios/Fulda_Gap/occupation_state.json"
+}

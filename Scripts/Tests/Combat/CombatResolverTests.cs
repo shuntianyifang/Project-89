@@ -192,7 +192,37 @@ namespace ColdWarWargame.Tests.Combat
             Assert(surviving.Count == 0, "All sub-units in an eliminated battalion should be removed from active state");
         }
 
-        public static void RunAll()
+        static void Test_OnlyLivingCombatTraitsAndSupport()
+        {
+            var resolver = new CombatResolver();
+            var lead = MakeBatWithUnitIds("us_mech_rifles");
+            var support = MakeBatWithUnitIds("us_m1a1_abrams_cp");
+            var defender = MakeBatWithUnitIds("us_mech_rifles");
+            var live = resolver.PreviewCombat(new() { lead, support }, new() { defender }, new());
+            Assert(!live.Advantage.Modifiers.Any(m => m.Source == "CommandNetworkMissing" && m.Target == "attacker"),
+                "Living support Command unit prevents no-command penalty in multi-battalion combat");
+            support.GetAllSubUnits().Single().CurrentHp = 0;
+            var dead = resolver.PreviewCombat(new() { lead, support }, new() { defender }, new());
+            Assert(dead.Advantage.Modifiers.Any(m => m.Source == "CommandNetworkMissing" && m.Target == "attacker"),
+                "Destroyed support Command unit no longer prevents no-command penalty");
+            Assert(!CombatUtils.HasAnyCapability(support, "HeavyArmor") && CombatUtils.CountCapability(support, "Command") == 0,
+                "Destroyed units no longer supply Armor or Command capabilities");
+            var infantry = MakeBatWithUnitIds("us_m1a1_abrams", "us_mech_rifles");
+            infantry.GetAllSubUnits().Last().CurrentHp = 0;
+            Assert(resolver.ComputeAdvantage(infantry, defender, new()).Modifiers.Any(m => m.Source == "NoInfantry" && m.Target == "attacker"),
+                "Destroyed infantry no longer prevents no-infantry penalty");
+            var heli = MakeBatWithUnitIds("us_ah64a_apache"); heli.GetAllSubUnits().Single().CurrentHp = 0;
+            Assert(!CombatUtils.HasHeliDomain(heli), "Destroyed helicopters do not activate heli traits");
+            var recon = MakeBatWithUnitIds("us_m1a1_acav"); recon.GetAllSubUnits().Single().CurrentHp = 0;
+            Assert(!CombatUtils.HasAnyCapability(recon, "Recon"), "Destroyed recon does not activate reconnaissance");
+            var aa = MakeBatWithUnitIds("us_stinger"); aa.GetAllSubUnits().Single().CurrentHp = 0;
+            Assert(!CombatUtils.HasAnyAA(aa), "Destroyed AA does not protect against helicopters");
+            var artillery = MakeBatWithUnitIds("us_m109a2"); artillery.GetAllSubUnits().Single().CurrentHp = 0;
+            Assert(!resolver.ComputeAdvantage(artillery, defender, new()).Modifiers.Any(m => m.Source == "NoArtilleryAgainstArtillery"),
+                "Destroyed artillery does not activate artillery pressure");
+        }
+
+        public static int RunAll()
         {
             fails = 0;
             var resolver = new CombatResolver();
@@ -205,6 +235,7 @@ namespace ColdWarWargame.Tests.Combat
             Test_EngineerHalvesTerrainBonus_ForceCombat();
             Test_ForceCombat_OosAppliedPerBattalionPower();
             Test_BattalionEliminationThreshold_CascadesToOtherUnits();
+            Test_OnlyLivingCombatTraitsAndSupport();
 
             // ---- Existing tests ----
             var defHeavy = MakeBatWithUnitIds("us_m1a1_abrams");
@@ -242,6 +273,7 @@ namespace ColdWarWargame.Tests.Combat
             // Report
             if (fails == 0) GD.Print("All CombatResolverTests passed");
             else GD.PrintErr(fails + " CombatResolverTests failed");
+            return fails;
         }
     }
 }

@@ -63,7 +63,7 @@ namespace ColdWarWargame.Systems.Gameplay
             eligible.InsertRange(0, artySupports);
 
             float terrainBonus = _scenario.Map.GetTile(defenderPos).TerrainType switch { 1 => 0.1f, 2 => 0.3f, 3 => 0.4f, _ => 0f };
-            string[] terrainNames = { "Plains", "Forest", "Semi-Urban", "Urban" };
+            string[] terrainNames = { "平原", "森林", "半城镇", "城镇" };
             int terrainType = _scenario.Map.GetTile(defenderPos).TerrainType;
             string terrainName = terrainType >= 0 && terrainType < terrainNames.Length ? terrainNames[terrainType] : "??";
 

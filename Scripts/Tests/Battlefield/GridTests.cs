@@ -300,7 +300,7 @@ namespace ColdWarWargame.Tests.Battlefield
             Assert(!zocMgr.IsInEnemyZOC(new Vector2I(0, 0), enemyPositions), "Far tile (0,0) not in ZOC");
         }
 
-        public static void RunAll()
+        public static int RunAll()
         {
             _fails = 0;
             _passes = 0;
@@ -330,6 +330,7 @@ namespace ColdWarWargame.Tests.Battlefield
                 GD.Print("All GridTests passed (" + _passes + " tests)");
             else
                 GD.PrintErr(_fails + "/" + (_passes + _fails) + " GridTests FAILED (" + _passes + " passed)");
+            return _fails;
         }
     }
 }

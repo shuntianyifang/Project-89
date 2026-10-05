@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
@@ -60,7 +60,7 @@ namespace ColdWarWargame.Tests.Battlefield
             Assert(advancedInfo.reason == "专业侦察营", "Advanced vision reason => 专业侦察营");
         }
 
-        public static void RunAll()
+        public static int RunAll()
         {
             _fails = 0; GD.Print("--- Vision 测试 ---");
             var pos = new Vector2I(5, 5);
@@ -72,6 +72,7 @@ namespace ColdWarWargame.Tests.Battlefield
             Test_BattalionVisionTiers();
             if (_fails == 0) GD.Print("All VisionTests passed");
             else GD.PrintErr(_fails + " VisionTests FAILED");
+            return _fails;
         }
     }
 }

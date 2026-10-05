@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using Godot;
+using System.Linq;
+using ColdWarWargame.Models;
 
 namespace ColdWarWargame.Systems.Battlefield
 {
@@ -37,6 +39,10 @@ namespace ColdWarWargame.Systems.Battlefield
             }
             return zocTiles;
         }
+
+        public HashSet<Vector2I> GetFactionZOC(IEnumerable<(Battalion bat, Vector2I pos)> units) =>
+            GetFactionZOC(units.Where(u => u.bat.HasSurvivingSubUnits &&
+                !u.bat.IsEliminatedByThreshold() && u.bat.Fatigue <= 8).Select(u => u.pos));
 
         /// <summary>检查某个网格是否在任一敌方单位的 ZOC 中</summary>
         public bool IsInEnemyZOC(Vector2I tile, IEnumerable<Vector2I> enemyPositions)

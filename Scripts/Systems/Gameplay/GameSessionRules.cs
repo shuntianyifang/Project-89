@@ -33,7 +33,7 @@ namespace ColdWarWargame.Systems.Gameplay
             _ => "未知状态"
         };
 
-        public bool IsActionAllowed(GameFlowController.GameState state, GameAction action) => action switch
+        public bool IsActionAllowed(GameFlowController.GameState state, GameAction action) => _situationRules.IsInProgress() && action switch
         {
             GameAction.SelectUnit => CanSelectUnit(state),
             GameAction.MoveUnit => CanMove(state),

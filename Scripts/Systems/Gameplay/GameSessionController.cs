@@ -1,4 +1,4 @@
-﻿using Godot;
+using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,6 +33,75 @@ namespace ColdWarWargame.Systems.Gameplay
         private readonly VisionResolver _visionResolver = new();
 
         private Vector2 _lastMouseScreenPos;
+        public CampaignResult Result { get; private set; }
+        private float[,] _blueSupply;
+        private float[,] _redSupply;
+
+        public void InitializeCampaignPresentation()
+        {
+            RefreshOccupationFromEntryAndZoc();
+            _hud.UpdateVPPanel(_victoryTracker, _owner.GetViewport().GetVisibleRect().Size.X, _turnMgr.TurnNumber);
+            CheckCampaignEnd();
+        }
+
+        public void OnSaveCampaign()
+        {
+            if (!_rules.IsActionAllowed(_flow.CurrentState, GameAction.EndTurn))
+            { _hud.SetInfoText("只能在进行中的战略阶段保存，请先完成移动或战斗"); return; }
+            try
+            {
+                CampaignSave.Capture(_scenario, _turnMgr, _victoryTracker).Write();
+                _hud.SetInfoText("对局已保存");
+            }
+            catch (Exception ex) { _hud.SetInfoText("保存失败：" + ex.Message); }
+        }
+
+        public void OnLoadCampaign()
+        {
+            if (_flow.IsMoving || _combatFlow.IsActive)
+            { _hud.SetInfoText("请先完成移动或关闭战斗面板，再读取对局"); return; }
+            try
+            {
+                CampaignSave.Read().Apply(_scenario, _turnMgr, _victoryTracker);
+                Result = null;
+                _rules.StartMatch(); _rules.FinishPhase(); _flow.StartTurn();
+                ClearSelection();
+                _hud.ResetCampaignResult();
+                RefreshOccupationFromEntryAndZoc();
+                RefreshPresentationByVision();
+                _hud.UpdateVPPanel(_victoryTracker, _owner.GetViewport().GetVisibleRect().Size.X, _turnMgr.TurnNumber);
+                _hud.SetStatusText(GetStatusText());
+                _hud.SetInfoText("已恢复保存的对局");
+                RefreshCampaignCasualtyPanel();
+                CheckCampaignEnd();
+            }
+            catch (Exception ex) { _hud.SetInfoText("读取失败：" + ex.Message); }
+        }
+
+        public void OnEndCampaign()
+        {
+            if (!_rules.IsActionAllowed(_flow.CurrentState, GameAction.EndTurn))
+            { if (Result == null) _hud.SetInfoText("请先完成移动或关闭战斗面板，再结束战役"); return; }
+            FinishCampaign("双方手动结束战役");
+        }
+
+        private void FinishCampaign(string reason)
+        {
+            if (Result != null) return;
+            RefreshOccupationFromEntryAndZoc();
+            Result = new CampaignResult(_victoryTracker, _turnMgr.TurnNumber, reason);
+            _eventHub.Publish(new GameplayEvent(Result.EndEvent));
+            ClearSelection();
+            _hud.ShowCampaignResult(Result);
+        }
+
+        private void CheckCampaignEnd()
+        {
+            bool blueAlive = CampaignResult.HasLivingBattalions(_scenario.BlueBattalions.Select(u => u.bat));
+            bool redAlive = CampaignResult.HasLivingBattalions(_scenario.RedBattalions.Select(u => u.bat));
+            if (!blueAlive || !redAlive)
+                FinishCampaign(!blueAlive && !redAlive ? "双方均无存活营" : !blueAlive ? "北约已无存活营" : "华约已无存活营");
+        }
         private SupplyOverlayDisplayMode _supplyOverlayMode = SupplyOverlayDisplayMode.Off;
         private ControlOverlayDisplayMode _controlOverlayMode = ControlOverlayDisplayMode.Off;
 
@@ -68,7 +137,7 @@ namespace ColdWarWargame.Systems.Gameplay
         }
 
         public string GetStatusText() =>
-            "Turn " + _turnMgr.TurnNumber + " - " + (_turnMgr.CurrentFaction == 1 ? "NATO" : "Warsaw Pact") + " - " + _turnMgr.PhaseName();
+            "第 " + _turnMgr.TurnNumber + " 回合 · " + (_turnMgr.CurrentFaction == 1 ? "北约" : "华约") + " · " + _turnMgr.PhaseName();
 
         public void OnUnitClicked(int faction, Battalion bat, Vector2I pos)
         {
@@ -81,9 +150,14 @@ namespace ColdWarWargame.Systems.Gameplay
 
             if (!_flow.HasSelection) return;
             if (!_rules.IsActionAllowed(_flow.CurrentState, GameAction.EnterCombat)) return;
+            if (!_flow.CurrentSelection.Unit.CanFillMain())
+            {
+                _hud.SetInfoText("无法发起战斗：只有主力营可以主动进攻");
+                return;
+            }
             if (_flow.CurrentSelection.Unit.CurrentAP < 4f)
             {
-                _hud.SetInfoText("AP too low, need 4");
+                _hud.SetInfoText("无法发起战斗：至少需要 4 AP");
                 return;
             }
 
@@ -91,7 +165,7 @@ namespace ColdWarWargame.Systems.Gameplay
             int dy = Math.Abs(_flow.CurrentSelection.Pos.Y - pos.Y);
             if (Math.Max(dx, dy) > 2)
             {
-                _hud.SetInfoText("Target too far, max 2");
+                _hud.SetInfoText("无法发起战斗：目标须在 2 格内");
                 return;
             }
 
@@ -105,7 +179,7 @@ namespace ColdWarWargame.Systems.Gameplay
             {
                 float cost = _flow.ReachableTiles[pos];
                 var enemyFaction = _turnMgr.CurrentFaction == 1 ? 2 : 1;
-                var enemyPositions = (enemyFaction == 1 ? _scenario.BlueBattalions : _scenario.RedBattalions).Select(u => u.Item2);
+                var enemyPositions = (enemyFaction == 1 ? _scenario.BlueBattalions : _scenario.RedBattalions);
                 var enemyZOC = _scenario.ZOC.GetFactionZOC(enemyPositions);
                 bool isEnemyZOC(Vector2I t) => enemyZOC.Contains(t);
                 bool occ(Vector2I t) => _scenario.BlueBattalions.Concat(_scenario.RedBattalions).Any(u => u.Item2 == t && u.Item1 != _flow.CurrentSelection.Unit);
@@ -113,7 +187,7 @@ namespace ColdWarWargame.Systems.Gameplay
                 if (path == null || path.Count < 2)
                 {
                     ClearSelection();
-                    _hud.SetInfoText("Click to select");
+                    _hud.SetInfoText("点击选择己方单位");
                     return;
                 }
 
@@ -155,7 +229,7 @@ namespace ColdWarWargame.Systems.Gameplay
                     RefreshPresentationByVision();
 
                     var enemyFaction3 = _turnMgr.CurrentFaction == 1 ? 2 : 1;
-                    var enemyPositions3 = (enemyFaction3 == 1 ? _scenario.BlueBattalions : _scenario.RedBattalions).Select(u => u.Item2);
+                    var enemyPositions3 = (enemyFaction3 == 1 ? _scenario.BlueBattalions : _scenario.RedBattalions);
                     var enemyZOC3 = _scenario.ZOC.GetFactionZOC(enemyPositions3);
                     bool isEnemyZOC3(Vector2I t) => enemyZOC3.Contains(t);
                     bool occ3(Vector2I t) => _scenario.BlueBattalions.Concat(_scenario.RedBattalions).Any(u => u.Item2 == t && u.Item1 != _flow.CurrentSelection.Unit);
@@ -171,8 +245,13 @@ namespace ColdWarWargame.Systems.Gameplay
             }
             else
             {
+                if (_flow.HasSelection)
+                {
+                    _hud.SetInfoText("无法到达：检查 AP、敌方控制区、单位占位或地形阻挡");
+                    return;
+                }
                 ClearSelection();
-                _hud.SetInfoText("Click to select");
+                _hud.SetInfoText("点击选择己方单位");
             }
         }
 
@@ -180,11 +259,12 @@ namespace ColdWarWargame.Systems.Gameplay
         {
             if (!_rules.IsActionAllowed(_flow.CurrentState, GameAction.SelectUnit)) return;
             ClearSelection();
-            _hud.SetInfoText("Click to select");
+            _hud.SetInfoText("点击选择己方单位");
         }
 
         public void OnHoverChanged(Vector2I? pos)
         {
+            if (Result != null) return;
             _debug.Hover(pos);
             if (_debug.Enabled) return;
             _renderer.ClearPath();
@@ -195,7 +275,7 @@ namespace ColdWarWargame.Systems.Gameplay
                 if (_flow.HasSelection)
                     _hud.SetInfoText(BuildSelectedUnitInfo(_flow.CurrentSelection.Unit, _flow.ReachableTiles.Count));
                 else
-                    _hud.SetInfoText("Click to select");
+                    _hud.SetInfoText("点击选择己方单位");
                 return;
             }
 
@@ -237,7 +317,7 @@ namespace ColdWarWargame.Systems.Gameplay
             if (_flow.HasSelection && _flow.ReachableTiles.ContainsKey(p))
             {
                 var enemyFaction = _turnMgr.CurrentFaction == 1 ? 2 : 1;
-                var enemyPositions = (enemyFaction == 1 ? _scenario.BlueBattalions : _scenario.RedBattalions).Select(u => u.Item2);
+                var enemyPositions = (enemyFaction == 1 ? _scenario.BlueBattalions : _scenario.RedBattalions);
                 var enemyZOC = _scenario.ZOC.GetFactionZOC(enemyPositions);
                 bool isEnemyZOC(Vector2I t) => enemyZOC.Contains(t);
                 bool occ(Vector2I t) => _scenario.BlueBattalions.Concat(_scenario.RedBattalions).Any(u => u.Item2 == t && u.Item1 != _flow.CurrentSelection.Unit);
@@ -256,10 +336,12 @@ namespace ColdWarWargame.Systems.Gameplay
             _flow.EndTurn();
             _turnFlow.EndTurn();
             ExecuteEndTurnSettlement(endingFaction);
+            CheckCampaignEnd();
+            if (Result != null) return;
             _turnMgr.EndStrategicTurn();
             RefreshPresentationByVision();
             _hud.SetStatusText(GetStatusText());
-            _hud.SetInfoText("Turn " + _turnMgr.TurnNumber + " - " + (_turnMgr.CurrentFaction == 1 ? "NATO" : "Warsaw Pact"));
+            _hud.SetInfoText(GetStatusText());
             RefreshCampaignCasualtyPanel();
         }
 
@@ -302,7 +384,7 @@ namespace ColdWarWargame.Systems.Gameplay
             _eventHub.Publish(new GameplayEvent(GameplayEventType.UnitSelected, new SelectionEventData(bat, pos)));
             _renderer.SetSel(pos);
             var enemyFaction = _turnMgr.CurrentFaction == 1 ? 2 : 1;
-            var enemyPositions = (enemyFaction == 1 ? _scenario.BlueBattalions : _scenario.RedBattalions).Select(u => u.Item2);
+            var enemyPositions = (enemyFaction == 1 ? _scenario.BlueBattalions : _scenario.RedBattalions);
             var enemyZOC = _scenario.ZOC.GetFactionZOC(enemyPositions);
             bool isEnemyZOC(Vector2I p) => enemyZOC.Contains(p);
             bool occ(Vector2I p) => _scenario.BlueBattalions.Concat(_scenario.RedBattalions).Any(u => u.Item2 == p && u.Item1 != bat);
@@ -315,12 +397,16 @@ namespace ColdWarWargame.Systems.Gameplay
             UpdateArtilleryOverlay(bat, pos);
         }
 
-        private static string BuildSelectedUnitInfo(Battalion bat, int reachableCount)
+        private string BuildSelectedUnitInfo(Battalion bat, int reachableCount)
         {
             var (visionRange, visionReason) = bat.GetVisionRuleInfo();
-            return "Selected: " + bat.Name +
-                   " reachable " + reachableCount + " tiles" +
-                   " | Vision " + visionRange + " (" + visionReason + ")";
+            var supply = bat.Faction == 1 ? _blueSupply : _redSupply;
+            var unit = GetAllUnits().FirstOrDefault(u => u.bat == bat);
+            string supplyStatus = supply != null && unit.bat != null
+                ? (supply[unit.pos.X, unit.pos.Y] > 0 ? "畅通" : "断供") : "未计算";
+            return $"已选择：{bat.Name} | AP {bat.CurrentAP:0.0}/{bat.GetMaxAP():0.0} | 疲劳 {bat.Fatigue}" +
+                   $" | 当前补给：{supplyStatus} | 连续断供 {bat.TurnsOOS} | 可达 {reachableCount} 格" +
+                   $" | 视野 {visionRange}（{visionReason}）";
         }
 
         private void StartCombat(Battalion defBat, Vector2I defPos)
@@ -352,14 +438,15 @@ _hud.UpdateVPPanel(_victoryTracker, _owner.GetViewport().GetVisibleRect().Size.X
                     _flow.ExitCombat();
                     _turnFlow.CancelCombat();
                     _hud.HideOrgPanel();
-            _hud.SetInfoText("Combat cancelled");
+            _hud.SetInfoText("战斗已取消");
                 },
                 () =>
                 {
                     _flow.ExitCombat();
                     _turnFlow.FinishPhase();
                     RefreshPresentationByVision();
-                    _hud.SetInfoText("Click to select");
+                    _hud.SetInfoText("点击选择己方单位");
+                    CheckCampaignEnd();
                 });
         }
 
@@ -374,9 +461,10 @@ _hud.UpdateVPPanel(_victoryTracker, _owner.GetViewport().GetVisibleRect().Size.X
         private void ExecuteEndTurnSettlement(int endingFaction)
         {
             _debug.RecordSettlement(endingFaction, "before");
-            var enemyPositions = GetFactionUnits(endingFaction == 1 ? 2 : 1).Select(u => u.pos);
+            var enemyUnits = GetFactionUnits(endingFaction == 1 ? 2 : 1).ToList();
+            var enemyPositions = enemyUnits.Select(u => u.pos);
             var enemyOccupied = new HashSet<Vector2I>(enemyPositions);
-            var enemyZoc = _scenario.ZOC.GetFactionZOC(enemyPositions);
+            var enemyZoc = _scenario.ZOC.GetFactionZOC(enemyUnits);
             var (hubs, airports) = _scenario.GetSupplySpecialNodes();
 
             _supplyManager.UpdateFactionEndTurn(
@@ -397,7 +485,7 @@ _hud.UpdateVPPanel(_victoryTracker, _owner.GetViewport().GetVisibleRect().Size.X
 
             var assessment = _victoryTracker.Evaluate(_turnMgr.TurnNumber);
             _hud.UpdateVPPanel(_victoryTracker, _owner.GetViewport().GetVisibleRect().Size.X, _turnMgr.TurnNumber);
-            _hud.SetInfoText("VP Blue:" + assessment.BlueVP + " Red:" + assessment.RedVP + " 结果:" + assessment.BlueLevel.DisplayName());
+            _hud.SetInfoText("北约 VP：" + assessment.BlueVP + " 华约 VP：" + assessment.RedVP + " 北约态势：" + assessment.BlueLevel.DisplayName());
         }
 
         private void RefreshPresentationByVision()
@@ -428,6 +516,8 @@ _hud.UpdateVPPanel(_victoryTracker, _owner.GetViewport().GetVisibleRect().Size.X
             _renderer.SetSupplySpecialNodes(hubs, airports);
             float[,] blueSp = ComputeSupplyMapForFaction(1, allUnits, hubs, airports);
             float[,] redSp = ComputeSupplyMapForFaction(2, allUnits, hubs, airports);
+            _blueSupply = blueSp;
+            _redSupply = redSp;
 
             var blueOos = new HashSet<Vector2I>(_scenario.BlueBattalions
                 .Where(u => blueSp[u.pos.X, u.pos.Y] <= 0f)
@@ -451,7 +541,7 @@ _hud.UpdateVPPanel(_victoryTracker, _owner.GetViewport().GetVisibleRect().Size.X
             int enemyFaction = faction == 1 ? 2 : 1;
             var enemyUnits = allUnits.Where(u => u.bat.Faction == enemyFaction).ToList();
             var enemyOccupied = enemyUnits.Select(u => u.pos).ToHashSet();
-            var enemyZoc = _scenario.ZOC.GetFactionZOC(enemyOccupied);
+            var enemyZoc = _scenario.ZOC.GetFactionZOC(enemyUnits);
 
             return _supplyManager.ComputeFactionSupplySP(
                 faction,
@@ -475,7 +565,7 @@ _hud.UpdateVPPanel(_victoryTracker, _owner.GetViewport().GetVisibleRect().Size.X
             };
 
             _renderer.SetSupplyOverlayMode(_supplyOverlayMode);
-            _hud.SetInfoText("Supply Overlay [F6]: " + DescribeSupplyOverlayMode(_supplyOverlayMode));
+            _hud.SetInfoText("补给覆盖 [F6]：" + DescribeSupplyOverlayMode(_supplyOverlayMode));
         }
 
         private void RefreshControlVisualization()
@@ -490,19 +580,19 @@ _hud.UpdateVPPanel(_victoryTracker, _owner.GetViewport().GetVisibleRect().Size.X
                 : ControlOverlayDisplayMode.Off;
 
             _renderer.SetControlOverlayMode(_controlOverlayMode);
-            _hud.SetInfoText("Control Overlay [F7]: " +
-                (_controlOverlayMode == ControlOverlayDisplayMode.On ? "ON" : "OFF"));
+            _hud.SetInfoText("控制区域 [F7]：" +
+                (_controlOverlayMode == ControlOverlayDisplayMode.On ? "开启" : "关闭"));
         }
 
         private string DescribeSupplyOverlayMode(SupplyOverlayDisplayMode mode)
         {
             return mode switch
             {
-                SupplyOverlayDisplayMode.Off => "OFF",
-                SupplyOverlayDisplayMode.Friendly => "Friendly",
-                SupplyOverlayDisplayMode.Enemy => "Enemy",
-                SupplyOverlayDisplayMode.Both => "Both",
-                _ => "OFF"
+                SupplyOverlayDisplayMode.Off => "关闭",
+                SupplyOverlayDisplayMode.Friendly => "己方",
+                SupplyOverlayDisplayMode.Enemy => "敌方",
+                SupplyOverlayDisplayMode.Both => "双方",
+                _ => "关闭"
             };
         }
 
@@ -529,7 +619,9 @@ _hud.UpdateVPPanel(_victoryTracker, _owner.GetViewport().GetVisibleRect().Size.X
                 blueEnteredTiles,
                 redEnteredTiles,
                 bluePathZocTiles,
-                redPathZocTiles);
+                redPathZocTiles,
+                _scenario.ZOC.GetFactionZOC(_scenario.BlueBattalions),
+                _scenario.ZOC.GetFactionZOC(_scenario.RedBattalions));
             _scenario.ApplyOccupationState(updated);
             RefreshControlVisualization();
         }

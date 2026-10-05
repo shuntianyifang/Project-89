@@ -36,7 +36,7 @@ namespace ColdWarWargame.Tests.Battlefield
             Assert(restored[5, 3] == 2, "Round-trip should preserve PACT cell");
         }
 
-        public static void RunAll()
+        public static int RunAll()
         {
             _fails = 0;
 
@@ -47,6 +47,7 @@ namespace ColdWarWargame.Tests.Battlefield
                 GD.Print("All OccupationStateCodecTests passed");
             else
                 GD.PrintErr(_fails + " OccupationStateCodecTests FAILED");
+            return _fails;
         }
     }
 }

@@ -889,7 +889,7 @@ namespace ColdWarWargame.Tests.Supply
             Assert(bat.Fatigue == 8, "Disorganized+in supply: fatigue forced to 8 for next turn");
         }
 
-        public static void RunAll()
+        public static int RunAll()
         {
             _fails = 0;
             GD.Print("--- Supply 系统测试 ---");
@@ -923,6 +923,7 @@ namespace ColdWarWargame.Tests.Supply
                 GD.Print("All SupplyManagerTests passed");
             else
                 GD.PrintErr(_fails + " SupplyManagerTests FAILED");
+            return _fails;
         }
     }
 }

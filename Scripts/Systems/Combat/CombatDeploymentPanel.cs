@@ -1,4 +1,4 @@
-﻿using Godot;
+using Godot;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -28,10 +28,10 @@ namespace ColdWarWargame.UI
         // ===== 槽位定义 =====
         private static readonly (string label, string desc, Color color)[] SlotDefs = new[]
         {
-            ("MAIN 1", "主力营（必需）", new Color(0.9f, 0.4f, 0.2f)),  // 主战插槽1
-            ("MAIN 2", "主力营（可选）", new Color(0.9f, 0.6f, 0.2f)),  // 主战插槽2
-            ("SUPPORT", "辅助营（可选）", new Color(0.3f, 0.7f, 0.3f)), // 辅助插槽
-            ("ARTILLERY", "炮兵营（可选）", new Color(0.4f, 0.4f, 0.8f)), // 炮兵插槽
+            ("主力一", "主力营（必需）", new Color(0.9f, 0.4f, 0.2f)),  // 主战插槽1
+            ("主力二", "主力营（可选）", new Color(0.9f, 0.6f, 0.2f)),  // 主战插槽2
+            ("辅助", "辅助营（可选）", new Color(0.3f, 0.7f, 0.3f)), // 辅助插槽
+            ("炮兵", "炮兵营（可选）", new Color(0.4f, 0.4f, 0.8f)), // 炮兵插槽
         };
 
         // ===== 回调 =====
@@ -128,10 +128,10 @@ namespace ColdWarWargame.UI
 
             // ---- Header ----
             bool isDefenderPhase = _currentSide == DeploymentSide.Defender;
-            string phaseText = isDefenderPhase ? "DEFENDER DEPLOYMENT" : "ATTACKER DEPLOYMENT";
+            string phaseText = isDefenderPhase ? "防守方部署" : "进攻方部署";
 
             var header = new Label();
-            header.Text = "BATTLE ENGAGEMENT — " + phaseText + " — Terrain: " + _terrainName + " (+" + _terrainBonus + " def)";
+            header.Text = "战斗部署 · " + phaseText + " · 地形：" + _terrainName + " (+" + _terrainBonus + " 防守加成)";
             header.AddThemeFontSizeOverride("font_size", 20);
             header.AddThemeColorOverride("font_color", new Color(1, 0.85f, 0.4f));
             header.HorizontalAlignment = HorizontalAlignment.Center;
@@ -144,8 +144,8 @@ namespace ColdWarWargame.UI
 
             string atkName = _leadAttacker != null ? _leadAttacker.Name : "???";
             string defName = _leadDefender != null ? _leadDefender.Name : "???";
-            string atkFaction = _leadAttacker?.Faction == 1 ? "NATO" : "WP";
-            string defFaction = _leadDefender?.Faction == 1 ? "NATO" : "WP";
+            string atkFaction = _leadAttacker?.Faction == 1 ? "北约" : "华约";
+            string defFaction = _leadDefender?.Faction == 1 ? "北约" : "华约";
 
             var atkLbl = new Label();
             atkLbl.Text = "[" + atkFaction + "]  " + atkName;
@@ -167,7 +167,7 @@ namespace ColdWarWargame.UI
 
             // ---- 可用单位列表 ----
             var availLabel = new Label();
-            availLabel.Text = "Available Forces — drag battalion cards into slots (or click-select then click slot)";
+            availLabel.Text = "候选部队：拖入插槽，或先点部队再点插槽";
             availLabel.AddThemeFontSizeOverride("font_size", 13);
             availLabel.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.7f));
             vbox.AddChild(availLabel);
@@ -199,7 +199,7 @@ namespace ColdWarWargame.UI
             if (isDefenderPhase && _lockedAttackerForce != null)
             {
                 var lockedLabel = new Label();
-                lockedLabel.Text = "Locked Attacker Deployment";
+                lockedLabel.Text = "进攻方部署已锁定";
                 lockedLabel.AddThemeFontSizeOverride("font_size", 13);
                 lockedLabel.AddThemeColorOverride("font_color", new Color(0.4f, 0.8f, 1.0f));
                 vbox.AddChild(lockedLabel);
@@ -216,7 +216,7 @@ namespace ColdWarWargame.UI
 
             // ---- 插槽行 ----
             var slotLabel = new Label();
-            slotLabel.Text = "Your Deployment — click a filled slot to remove unit";
+            slotLabel.Text = "己方部署：点击已填充的插槽可移除部队";
             slotLabel.AddThemeFontSizeOverride("font_size", 13);
             slotLabel.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.7f));
             vbox.AddChild(slotLabel);
@@ -256,11 +256,11 @@ namespace ColdWarWargame.UI
                         btnRow.AddThemeConstantOverride("separation", 20);
             vbox.AddChild(btnRow);
 
-            _cancelBtn = MakeActionButton("Cancel", new Color(0.5f, 0.2f, 0.2f));
+            _cancelBtn = MakeActionButton("取消", new Color(0.5f, 0.2f, 0.2f));
             _cancelBtn.Pressed += () => { _selectedUnit = null; OnCancel?.Invoke(); };
             btnRow.AddChild(_cancelBtn);
 
-            _confirmBtn = MakeActionButton(isDefenderPhase ? "Confirm Defense" : "Confirm Attack", new Color(0.2f, 0.6f, 0.3f));
+            _confirmBtn = MakeActionButton(isDefenderPhase ? "确认防守部署" : "确认进攻部署", new Color(0.2f, 0.6f, 0.3f));
             _confirmBtn.Pressed += OnConfirmPressed;
             btnRow.AddChild(_confirmBtn);
 
@@ -279,7 +279,7 @@ namespace ColdWarWargame.UI
            string atkStr = bat.GetActualAttack().ToString("0.0");
             string defStr = bat.GetActualDefense().ToString("0.0");
             string hpStr = bat.GetTotalCurrentHp() + "/" + bat.GetTotalMaxHp();
-            btn.Text = bat.Name + "\nATK " + atkStr + "  DEF " + defStr + "  HP " + hpStr;
+            btn.Text = bat.Name + "\n攻 " + atkStr + "  防 " + defStr + "  HP " + hpStr;
             btn.AddThemeFontSizeOverride("font_size", 11);
 
             var flatStyle = new StyleBoxFlat();
@@ -329,7 +329,7 @@ namespace ColdWarWargame.UI
             btn.AddThemeStyleboxOverride("hover", hoverStyle);
 
             btn.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.6f));
-            btn.Text = label + "\n" + desc + "\n(empty)";
+            btn.Text = label + "\n" + desc + "\n（空）";
 
             var lbl = new Label(); // hidden label to store current unit name
             lbl.Text = "";
@@ -547,12 +547,12 @@ namespace ColdWarWargame.UI
                     string atkStr = bat.GetActualAttack().ToString("0.0");
                     string defStr = bat.GetActualDefense().ToString("0.0");
                     string lockTag = (i == 0 && IsLeadSlotLocked()) ? " [LOCKED]" : "";
-                    _slotButtons[i].Text = label + lockTag + "\n" + bat.Name + "\nATK " + atkStr + "  DEF " + defStr;
+                    _slotButtons[i].Text = label + lockTag + "\n" + bat.Name + "\n攻 " + atkStr + "  防 " + defStr;
                     _slotButtons[i].AddThemeColorOverride("font_color", Colors.White);
                 }
                 else
                 {
-                    _slotButtons[i].Text = label + "\n" + desc + "\n(empty)";
+                    _slotButtons[i].Text = label + "\n" + desc + "\n（空）";
                     _slotButtons[i].AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.6f));
                 }
             }
@@ -623,7 +623,7 @@ namespace ColdWarWargame.UI
             if (previewLabel == null) return;
 
             string sideText = isDefenderPhase ? "B" : "A";
-            previewLabel.Text = "Preview (" + sideText + " view): V=" + preview.Advantage.Value.ToString("+0.00;-0.00") +
+            previewLabel.Text = "战果预估（" + sideText + "视角）：V=" + preview.Advantage.Value.ToString("+0.00;-0.00") +
                                 " | A损失 " + preview.AttackerHpLost +
                                 " | B损失 " + preview.DefenderHpLost;
         }
@@ -662,10 +662,10 @@ namespace ColdWarWargame.UI
 
         private static IEnumerable<string> FormatForceLines(CombatForce force)
         {
-            yield return "MAIN 1: " + (force.LeadBattalion?.Name ?? "(empty)");
-            yield return "MAIN 2: " + (force.MainSlot2?.Name ?? "(empty)");
-            yield return "SUPPORT: " + (force.SupportSlot?.Name ?? "(empty)");
-            yield return "ARTILLERY: " + (force.ArtillerySlot?.Name ?? "(empty)");
+            yield return "主力一：" + (force.LeadBattalion?.Name ?? "（空）");
+            yield return "主力二：" + (force.MainSlot2?.Name ?? "（空）");
+            yield return "辅助：" + (force.SupportSlot?.Name ?? "（空）");
+            yield return "炮兵：" + (force.ArtillerySlot?.Name ?? "（空）");
         }
 
         // ===== 结算结果展示 =====
@@ -686,14 +686,18 @@ namespace ColdWarWargame.UI
             _resultRoot = outer;
             var vbox = new VBoxContainer();
             vbox.Size = new Vector2(660, 480);
-            vbox.Position = new Vector2(20, 20);
+            var scroll = new ScrollContainer { Size = new Vector2(660, 480), Position = new Vector2(20, 20),
+                HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
+            outer.AddChild(scroll);
+            vbox.CustomMinimumSize = new Vector2(630, 0);
+            vbox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
             vbox.AddThemeConstantOverride("separation", 6);
-            outer.AddChild(vbox);
+            scroll.AddChild(vbox);
 
             // Result header
             string vicLevel = GetVictoryLevelName(result.Advantage.Value);
             var hl = new Label();
-            hl.Text = "COMBAT RESULT  —  V = " + result.Advantage.Value.ToString("+0.00;-0.00") + "  (" + vicLevel + ")";
+            hl.Text = "战斗结果 · V = " + result.Advantage.Value.ToString("+0.00;-0.00") + "  (" + vicLevel + ")";
             hl.AddThemeFontSizeOverride("font_size", 20);
             hl.AddThemeColorOverride("font_color", result.Advantage.Value >= 0 ? new Color(0.3f, 1.0f, 0.3f) : new Color(1.0f, 0.3f, 0.3f));
             hl.HorizontalAlignment = HorizontalAlignment.Center;
@@ -701,13 +705,13 @@ namespace ColdWarWargame.UI
 
             // Casualties
             var casHeader = new Label();
-            casHeader.Text = "Casualties";
+            casHeader.Text = "伤亡";
             casHeader.AddThemeFontSizeOverride("font_size", 14);
             casHeader.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.7f));
             vbox.AddChild(casHeader);
 
             var tactHeader = new Label();
-            tactHeader.Text = "Tactical Casualty Numbers";
+            tactHeader.Text = "战术伤亡统计";
             tactHeader.AddThemeFontSizeOverride("font_size", 14);
             tactHeader.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.7f));
             vbox.AddChild(tactHeader);
@@ -716,46 +720,46 @@ namespace ColdWarWargame.UI
             var defLosses = CombatUtils.CountDestroyedUnitLosses(result.DefenderCasualties);
 
             var tactLine = new Label();
-            tactLine.Text = "  A soldiers " + atkLosses.soldiers + ", vehicles " + atkLosses.vehicles +
-                " | D soldiers " + defLosses.soldiers + ", vehicles " + defLosses.vehicles;
+            tactLine.Text = "进攻方人员损失 " + atkLosses.soldiers + "，载具 " + atkLosses.vehicles +
+                " | 防守方人员损失 " + defLosses.soldiers + "，载具 " + defLosses.vehicles;
             tactLine.AddThemeFontSizeOverride("font_size", 12);
             tactLine.AddThemeColorOverride("font_color", new Color(0.9f, 0.95f, 1f));
             vbox.AddChild(tactLine);
 
-            string atkFaction = _leadAttacker?.Faction == 1 ? "NATO" : "WP";
-            string defFaction = _leadDefender?.Faction == 1 ? "NATO" : "WP";
+            string atkFaction = _leadAttacker?.Faction == 1 ? "北约" : "华约";
+            string defFaction = _leadDefender?.Faction == 1 ? "北约" : "华约";
 
             var atkCas = new Label();
-            atkCas.Text = atkFaction + " loses soldiers " + atkLosses.soldiers + ", vehicles " + atkLosses.vehicles + " (fatigue +" + result.AttackerFatigueGained + ")";
+            atkCas.Text = atkFaction + "人员损失 " + atkLosses.soldiers + "，载具 " + atkLosses.vehicles + "（疲劳 +" + result.AttackerFatigueGained + ")";
             atkCas.AddThemeFontSizeOverride("font_size", 13);
             atkCas.AddThemeColorOverride("font_color", new Color(1.0f, 0.6f, 0.4f));
             vbox.AddChild(atkCas);
 
             int atkDestroyed = atkLosses.soldiers + atkLosses.vehicles;
             var atkDet = new Label();
-            atkDet.Text = "  " + atkDestroyed + " sub-units destroyed, " +
-                (result.AttackerCasualties.Count - atkDestroyed) + " damaged";
+            atkDet.Text = "  " + atkDestroyed + " 个子单位阵亡，" +
+                (result.AttackerCasualties.Count - atkDestroyed) + " 个受损";
             atkDet.AddThemeFontSizeOverride("font_size", 11);
             atkDet.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.5f));
             vbox.AddChild(atkDet);
 
             var defCas = new Label();
-            defCas.Text = defFaction + " loses soldiers " + defLosses.soldiers + ", vehicles " + defLosses.vehicles + " (fatigue +" + result.DefenderFatigueGained + ")";
+            defCas.Text = defFaction + "人员损失 " + defLosses.soldiers + "，载具 " + defLosses.vehicles + "（疲劳 +" + result.DefenderFatigueGained + ")";
             defCas.AddThemeFontSizeOverride("font_size", 13);
             defCas.AddThemeColorOverride("font_color", new Color(0.4f, 0.6f, 1.0f));
             vbox.AddChild(defCas);
 
             int defDestroyed = defLosses.soldiers + defLosses.vehicles;
             var defDet = new Label();
-            defDet.Text = "  " + defDestroyed + " sub-units destroyed, " +
-                (result.DefenderCasualties.Count - defDestroyed) + " damaged";
+            defDet.Text = "  " + defDestroyed + " 个子单位阵亡，" +
+                (result.DefenderCasualties.Count - defDestroyed) + " 个受损";
             defDet.AddThemeFontSizeOverride("font_size", 11);
             defDet.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.5f));
             vbox.AddChild(defDet);
 
             // Modifiers
             var modHeader = new Label();
-            modHeader.Text = "Modifiers Applied";
+            modHeader.Text = "已应用修正";
             modHeader.AddThemeFontSizeOverride("font_size", 14);
             modHeader.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.7f));
             vbox.AddChild(modHeader);
@@ -766,7 +770,8 @@ namespace ColdWarWargame.UI
                 if (Math.Abs(m.Value) < 0.01f) continue;
                 var ml = new Label();
                 string sign = m.Value > 0 ? "+" : "";
-                ml.Text = "  " + m.Source + ": " + sign + m.Value.ToString("0.00") + "  (" + m.Reason + ")";
+                ml.Text = "  " + (m.Target == "attacker" ? "进攻方：" : "防守方：") + ModifierName(m.Source) + ": " + sign + m.Value.ToString("0.00") +
+                    "（对进攻方优势分的影响）";
                 ml.AddThemeFontSizeOverride("font_size", 11);
                 ml.AddThemeColorOverride("font_color", m.Value >= 0 ? new Color(0.5f, 1.0f, 0.5f) : new Color(1.0f, 0.5f, 0.5f));
                 vbox.AddChild(ml);
@@ -783,20 +788,34 @@ namespace ColdWarWargame.UI
 
             vbox.AddChild(new Control { Size = new Vector2(0, 8) });
 
-            var dismissBtn = MakeActionButton("Dismiss — Press Esc", new Color(0.15f, 0.6f, 0.3f));
+            var dismissBtn = MakeActionButton("关闭 [Esc]", new Color(0.15f, 0.6f, 0.3f));
             dismissBtn.Pressed += () => OnResultDismissed?.Invoke();
             vbox.AddChild(dismissBtn);
         }
 
+        private static string ModifierName(string source) => source switch
+        {
+            "CommandNetworkMissing" => "缺少存活指挥单位",
+            "NoInfantry" => "缺少存活步兵",
+            "NoRecon" => "缺少存活侦察单位",
+            "NoArtilleryAgainstArtillery" => "缺少炮兵应对敌方炮兵",
+            "NoAAAgainstHeli" => "缺少防空应对直升机",
+            "TerrainDefenderBonus" => "防御地形加成（含工兵削减）",
+            "HeavyArmorOverride" => "缺少反甲应对重装甲",
+            "ArmorOverride" => "缺少轻型反甲应对装甲",
+            "AntiTankVsHeavyArmor" => "中型反甲对重装甲能力不足",
+            _ => source
+        };
+
         string GetVictoryLevelName(float v)
         {
-            if (v >= 1.5f) return "Decisive Victory";
-            if (v >= 1.0f) return "Major Victory";
-            if (v >= 0.5f) return "Marginal Victory";
-            if (v >= 0.0f) return "Stalemate";
-            if (v >= -0.5f) return "Marginal Defeat";
-            if (v >= -1.0f) return "Major Defeat";
-            return "Crushing Defeat";
+            if (v >= 1.5f) return "大获全胜";
+            if (v >= 1.0f) return "酣畅大捷";
+            if (v >= 0.5f) return "略占上风";
+            if (v >= 0.0f) return "僵持";
+            if (v >= -0.5f) return "血战惨败";
+            if (v >= -1.0f) return "重大失败";
+            return "全军覆没";
         }
 
         Button MakeActionButton(string text, Color color)

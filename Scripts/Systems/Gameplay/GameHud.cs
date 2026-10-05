@@ -1,4 +1,4 @@
-﻿using Godot;
+using Godot;
 using System;
 using ColdWarWargame.Models;
 using ColdWarWargame.Systems.Victory;
@@ -36,23 +36,71 @@ namespace ColdWarWargame.Systems.Gameplay
         }
 
         public CanvasLayer Canvas => _canvasLayer;
+        private Button _endCampaignButton;
+        private AcceptDialog _resultDialog;
+
+        public void ConfigureCampaignActions(Action endCampaign, Action restart, Action save, Action load)
+        {
+            _endCampaignButton = new Button { Text = "结束战役并结算", Position = new Vector2(10, 124) };
+            _endCampaignButton.Pressed += () => endCampaign();
+            _canvasLayer.AddChild(_endCampaignButton);
+            var restartButton = new Button { Text = "重新开局", Position = new Vector2(10, 156) };
+            var confirmation = new ConfirmationDialog { Title = "重新开局", DialogText = "放弃当前对局并恢复初始部署？" };
+            confirmation.Confirmed += () => restart();
+            _canvasLayer.AddChild(confirmation);
+            restartButton.Pressed += () => confirmation.PopupCentered();
+            _canvasLayer.AddChild(restartButton);
+            var saveButton = new Button { Text = "保存对局", Position = new Vector2(10, 188) };
+            saveButton.Pressed += () => save();
+            _canvasLayer.AddChild(saveButton);
+            var loadButton = new Button { Text = "读取对局", Position = new Vector2(10, 220) };
+            var loadConfirmation = new ConfirmationDialog { Title = "读取对局", DialogText = "用存档替换当前对局？" };
+            loadConfirmation.Confirmed += () => load();
+            _canvasLayer.AddChild(loadConfirmation);
+            loadButton.Pressed += () => loadConfirmation.PopupCentered();
+            _canvasLayer.AddChild(loadButton);
+            _resultDialog = new AcceptDialog { Title = "Fulda Gap 战役结算", Exclusive = true };
+            _resultDialog.GetOkButton().Text = "查看战场";
+            _resultDialog.AddButton("重新开局", true, "restart");
+            _resultDialog.CustomAction += action => { if (action == "restart") restart(); };
+            _canvasLayer.AddChild(_resultDialog);
+        }
+
+        public void ShowCampaignResult(CampaignResult result)
+        {
+            _endTurnButton.Disabled = true;
+            _endCampaignButton.Disabled = true;
+            _resultDialog.DialogText = result.Summary;
+            _resultDialog.PopupCentered(new Vector2I(600, 440));
+            SetStatusText("战役已结束");
+            SetInfoText("对局已结算，可查看战场或重新开局");
+        }
+
+        public void ResetCampaignResult()
+        {
+            _endTurnButton.Disabled = false;
+            _endCampaignButton.Disabled = false;
+            _resultDialog.Hide();
+        }
 
         public void Initialize()
         {
             _infoLabel = new Label();
-            _infoLabel.Position = new Vector2(10, 10);
+            _infoLabel.Position = new Vector2(10, 264);
+            _infoLabel.Size = new Vector2(720, 90);
+            _infoLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
             _infoLabel.AddThemeFontSizeOverride("font_size", 16);
-            _infoLabel.Text = "Fulda Gap 1989 - Click to select, reachable tile to move | Supply Overlay [F6]";
+            _infoLabel.Text = "点击己方营，再点击可达格移动或敌方营交战。F6：补给覆盖；F7：控制区域。";
             _canvasLayer.AddChild(_infoLabel);
 
             _statusLabel = new Label();
-            _statusLabel.Position = new Vector2(10, 34);
+            _statusLabel.Position = new Vector2(10, 40);
             _statusLabel.AddThemeFontSizeOverride("font_size", 14);
             _canvasLayer.AddChild(_statusLabel);
 
             _endTurnButton = new Button();
             _endTurnButton.Position = new Vector2(10, 60);
-            _endTurnButton.Text = "End Turn [Space]";
+            _endTurnButton.Text = "结束回合 [空格]";
             _endTurnButton.Pressed += () => _onEndTurnPressed?.Invoke();
             _endTurnButton.FocusMode = Control.FocusModeEnum.None;
             _canvasLayer.AddChild(_endTurnButton);
@@ -60,7 +108,7 @@ namespace ColdWarWargame.Systems.Gameplay
             _casualtyStatsButton = new Button();
             _casualtyStatsButton.Position = new Vector2(10, 92);
             _casualtyStatsButton.Size = new Vector2(160, 24);
-            _casualtyStatsButton.Text = "Campaign Losses";
+            _casualtyStatsButton.Text = "战役战损";
             _casualtyStatsButton.Pressed += () => _onCasualtyStatsPressed?.Invoke();
             _casualtyStatsButton.FocusMode = Control.FocusModeEnum.None;
             _canvasLayer.AddChild(_casualtyStatsButton);
@@ -72,17 +120,17 @@ namespace ColdWarWargame.Systems.Gameplay
             vpStyle.SetCornerRadiusAll(6);
             _vpPanel.AddThemeStyleboxOverride("panel", vpStyle);
             _vpPanel.MouseFilter = Control.MouseFilterEnum.Ignore;
-            _vpPanel.Size = new Vector2(560, 38);
+            _vpPanel.Size = new Vector2(780, 38);
             _vpPanel.Position = new Vector2(400, 4);
             _canvasLayer.AddChild(_vpPanel);
 
-            _vpNatoLabel = MakeVPLabel("NATO  0 VP  (0 tiles)", new Color(0.36f, 0.61f, 0.84f), new Vector2(12, 8));
+            _vpNatoLabel = MakeVPLabel("北约 0 VP（0 格）", new Color(0.36f, 0.61f, 0.84f), new Vector2(12, 8));
             _vpPanel.AddChild(_vpNatoLabel);
-            _vpSepLabel = MakeVPLabel("|", new Color(0.5f, 0.5f, 0.5f), new Vector2(200, 8));
+            _vpSepLabel = MakeVPLabel("|", new Color(0.5f, 0.5f, 0.5f), new Vector2(230, 8));
             _vpPanel.AddChild(_vpSepLabel);
-            _vpPactLabel = MakeVPLabel("PACT  0 VP  (0 tiles)", new Color(0.88f, 0.44f, 0.38f), new Vector2(216, 8));
+            _vpPactLabel = MakeVPLabel("华约 0 VP（0 格）", new Color(0.88f, 0.44f, 0.38f), new Vector2(246, 8));
             _vpPanel.AddChild(_vpPactLabel);
-            _vpTurnLabel = MakeVPLabel("T1  Stalemate (R=1.00)", new Color(0.7f, 0.7f, 0.7f), new Vector2(412, 8));
+            _vpTurnLabel = MakeVPLabel("第1回合 僵持（R=1.00）", new Color(0.7f, 0.7f, 0.7f), new Vector2(495, 8));
             _vpPanel.AddChild(_vpTurnLabel);
 
             // Casualty panel
@@ -107,7 +155,7 @@ namespace ColdWarWargame.Systems.Gameplay
             _casualtyStatsCloseButton = new Button();
             _casualtyStatsCloseButton.Position = new Vector2(12, 138);
             _casualtyStatsCloseButton.Size = new Vector2(120, 24);
-            _casualtyStatsCloseButton.Text = "Close";
+            _casualtyStatsCloseButton.Text = "关闭";
             _casualtyStatsCloseButton.Pressed += () => _casualtyStatsPanel.Visible = false;
             _casualtyStatsCloseButton.FocusMode = Control.FocusModeEnum.None;
             _casualtyStatsPanel.AddChild(_casualtyStatsCloseButton);
@@ -183,10 +231,10 @@ namespace ColdWarWargame.Systems.Gameplay
         {
             if (vt == null) return;
             var a = vt.Evaluate(turn);
-            _vpNatoLabel.Text = "NATO  " + a.BlueVP + " VP  (" + vt.BlueControlledCount + " tiles)";
-            _vpPactLabel.Text = "PACT  " + a.RedVP + " VP  (" + vt.RedControlledCount + " tiles)";
-            _vpTurnLabel.Text = "T" + turn + "  " + a.BlueLevel.DisplayName() + " (R=" + a.Ratio.ToString("F2") + ")";
-            float panelW = 560f;
+            _vpNatoLabel.Text = "北约 " + a.BlueVP + " VP（" + vt.BlueControlledCount + " 格）";
+            _vpPactLabel.Text = "华约 " + a.RedVP + " VP（" + vt.RedControlledCount + " 格）";
+            _vpTurnLabel.Text = "第" + turn + "回合 " + a.BlueLevel.DisplayName() + "（R=" + a.Ratio.ToString("F2") + "）";
+            float panelW = 780f;
             float w = viewportWidth > 100f ? viewportWidth : (float)DisplayServer.WindowGetSize().X;
             if (w < 100f) w = 1920f;
             _vpPanel.Position = new Vector2((w - panelW) / 2f, 4);

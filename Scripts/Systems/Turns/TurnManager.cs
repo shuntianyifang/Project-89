@@ -37,6 +37,19 @@ namespace ColdWarWargame.Systems.Turns
 
         /// <summary>注册战场上的营（用于 AP 重置）</summary>
         public void RegisterBattalion(Battalion b) => _battalions.Add(b);
+        public void ReplaceBattalions(IEnumerable<Battalion> battalions) => _battalions = battalions.ToList();
+
+        public void RestoreStrategicState(int faction, int turn)
+        {
+            if (faction is not (1 or 2) || turn < 1)
+                throw new ArgumentException("Invalid saved turn state");
+            CurrentFaction = faction;
+            TurnNumber = turn;
+            CurrentPhase = GamePhase.StrategicMovement;
+            _combatAttacker = null;
+            _combatDefender = null;
+            _combatCtx = null;
+        }
 
         /// <summary>结束当前阵营的机动阶段，切换为对方</summary>
         public void EndStrategicTurn()

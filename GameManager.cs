@@ -47,6 +47,8 @@ public partial class GameManager : Node
 
     private void OnEndTurn() => _application?.Session?.OnEndTurn();
 
+    public void RestartGame() => _application?.RestartCurrentGame();
+
     public override void _Input(InputEvent @event)
     {
         if (@event is InputEventMouseMotion mm)

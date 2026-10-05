@@ -30,6 +30,15 @@ godot4 --headless --path .
 
 若 `godot4` 未加入 `PATH`，请改为本机 Godot .NET 可执行文件的完整路径。构建与无界面测试还依赖本机已配置 Godot .NET SDK、NuGet 访问权限和兼容的渲染环境。
 
+## 热座对局操作与验证
+
+- 点击己方营，再点击可达格移动；选择主力营后点击两格内敌方营进入双方部署与战斗结算。
+- 空格结束当前阵营回合；F6 切换补给覆盖，F7 切换控制区域。
+- “结束战役并结算”按累计 VP 比值显示双方结果；一方无存活营时自动结束。战斗全灭先显示战术战果，关闭后显示战役结果。
+- “重新开局”恢复初始部署、回合和 VP。“保存对局”与“读取对局”恢复完整编制与战役状态；移动和战斗期间不可存读档。
+- 完整存档使用 Godot 用户目录内的 `Fulda_Gap_campaign.json`，场景数据引用配置位于 `Scripts/Data/Scenarios/Fulda_Gap/scenario.json`。
+- 执行 `powershell -ExecutionPolicy Bypass -File tools/validate.ps1` 可依次构建并运行全部回归测试；必要时通过 `-GodotPath` 指定 Godot .NET 程序。
+
 ## 启动与数据流
 
 主场景的启动链路为：

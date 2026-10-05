@@ -45,8 +45,9 @@ namespace ColdWarWargame.Systems.Gameplay
             GD.Print("System initialized.");
 
             Scenario = new FuldaGapScenario();
-            Scenario.LoadOOB("res://Scripts/Data/Scenarios/Fulda_Gap/oob_blue.json", "res://Scripts/Data/Scenarios/Fulda_Gap/oob_red.json");
-            Scenario.LoadOccupationState();
+            var config = ColdWarWargame.Scenarios.ScenarioConfiguration.Load();
+            Scenario.LoadOOB(config.BlueOob, config.RedOob);
+            Scenario.LoadOccupationState(config.Occupation);
             Scenario.PrintSummary();
 
             TurnManager = new TurnManager();
@@ -58,7 +59,10 @@ namespace ColdWarWargame.Systems.Gameplay
             Renderer = _bootstrapper.Renderer;
             Camera = _bootstrapper.Camera;
             Session = new GameSessionController(_owner, Scenario, TurnManager, Renderer, _hud);
+            _hud.ConfigureCampaignActions(() => Session?.OnEndCampaign(), () => _owner.RestartGame(),
+                () => Session?.OnSaveCampaign(), () => Session?.OnLoadCampaign());
             _hud.SetStatusText(GetStatusText());
+            Session.InitializeCampaignPresentation();
             IsStarted = true;
             GD.Print("3D scene ready.");
         }

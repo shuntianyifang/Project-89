@@ -13,14 +13,14 @@ namespace ColdWarWargame.Systems.Combat
         public static bool HasCommandNetwork(Battalion b)
         {
             if (b == null) return false;
-            return b.GetAllSubUnits().Any(u => u.Template?.TacticalTags?.Capabilities?.Any(cap => Normalize(cap) == "command") == true);
+            return b.GetAllSubUnits().Where(u => u.SurvivalState == 1).Any(u => u.Template?.TacticalTags?.Capabilities?.Any(cap => Normalize(cap) == "command") == true);
         }
 
         public static int CountCapability(Battalion b, string cap)
         {
             if (b == null || string.IsNullOrEmpty(cap)) return 0;
             string want = Normalize(cap);
-            return b.GetAllSubUnits()
+            return b.GetAllSubUnits().Where(u => u.SurvivalState == 1)
                     .Count(u => u.Template?.TacticalTags?.Capabilities?.Any(c => Normalize(c) == want) == true);
         }
 
@@ -28,7 +28,7 @@ namespace ColdWarWargame.Systems.Combat
         {
             if (b == null || caps == null || caps.Length == 0) return false;
             var lowers = caps.Select(c => Normalize(c)).ToHashSet();
-            return b.GetAllSubUnits().Any(u =>
+            return b.GetAllSubUnits().Where(u => u.SurvivalState == 1).Any(u =>
                 u.Template?.TacticalTags?.Capabilities?.Any(c => lowers.Contains(Normalize(c))) == true);
         }
 
@@ -99,13 +99,13 @@ namespace ColdWarWargame.Systems.Combat
 
         public static bool HasHeliDomain(Battalion b)
         {
-            return b.GetAllSubUnits().Any(u => Normalize(u.Template?.TacticalTags?.Domain) == "heli");
+            return b.GetAllSubUnits().Where(u => u.SurvivalState == 1).Any(u => Normalize(u.Template?.TacticalTags?.Domain) == "heli");
         }
 
         public static bool HasAnyAA(Battalion b)
         {
             // detect AA by class_type keywords (spaag, sam) or capabilities if provided
-            return b.GetAllSubUnits().Any(u =>
+            return b.GetAllSubUnits().Where(u => u.SurvivalState == 1).Any(u =>
             {
                 var ct = Normalize(u.Template?.ClassType);
                 if (ct.Contains("spaag") || ct.Contains("sam") || ct.Contains("inf_aa")) return true;

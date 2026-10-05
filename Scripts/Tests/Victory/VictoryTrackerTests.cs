@@ -110,8 +110,8 @@ namespace ColdWarWargame.Tests.Victory
             Assert(vt.RedVehicleLossTotal == 1, "Red vehicle loss total accumulates defender vehicle losses when Blue attacked");
 
             var summary = vt.BuildCampaignCasualtySummary();
-            Assert(summary.Contains("Blue losses: soldiers 1, vehicles 1"), "Summary includes blue casualty breakdown");
-            Assert(summary.Contains("Red losses: soldiers 2, vehicles 1"), "Summary includes red casualty breakdown");
+            Assert(summary.Contains("北约损失：人员 1，载具 1"), "Summary includes blue casualty breakdown");
+            Assert(summary.Contains("华约损失：人员 2，载具 1"), "Summary includes red casualty breakdown");
             Assert(!summary.Contains("ratio", StringComparison.OrdinalIgnoreCase), "Summary contains no ratio text");
         }
 
@@ -296,7 +296,7 @@ namespace ColdWarWargame.Tests.Victory
             AssertLevel(10, 2, VictoryLevel.DecisiveVictory);  // R=5.0
         }
 
-        public static void RunAll()
+        public static int RunAll()
         {
             _fails = 0;
             GD.Print("--- Victory 绯荤粺娴嬭瘯 ---");
@@ -317,6 +317,7 @@ namespace ColdWarWargame.Tests.Victory
                 GD.Print("All VictoryTrackerTests passed");
             else
                 GD.PrintErr(_fails + " VictoryTrackerTests FAILED");
+            return _fails;
         }
     }
 }

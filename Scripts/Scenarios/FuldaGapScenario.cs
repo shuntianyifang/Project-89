@@ -251,9 +251,9 @@ namespace ColdWarWargame.Scenarios
             GD.Print("场景 OOB 加载完成：蓝军 " + BlueBattalions.Count + " 个营，红军 " + RedBattalions.Count + " 个营");
         }
 
-        public void LoadOccupationState()
+        public void LoadOccupationState(string path = DefaultOccupationStatePath)
         {
-            if (OccupationStateCodec.TryLoad(DefaultOccupationStatePath, MAP_W, MAP_H, out var savedMap))
+            if (OccupationStateCodec.TryLoad(path, MAP_W, MAP_H, out var savedMap))
             {
                 OccupationMap = savedMap;
                 return;

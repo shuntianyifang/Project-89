@@ -89,12 +89,14 @@ namespace ColdWarWargame.Systems.Combat
         List<CasualtyRecord> ApplyDamageToBattalions(List<Battalion> battalions, int damagePool, System.Random rng)
         {
             var casualties = new List<CasualtyRecord>();
-            if (damagePool <= 0 || battalions == null || !battalions.Any()) return casualties;
+            if (battalions == null || !battalions.Any()) return casualties;
 
             var allUnits = battalions.SelectMany(b => b.GetAllSubUnits()).ToList();
             if (!allUnits.Any()) return casualties;
 
             var recordByUnit = new Dictionary<SubUnitInstance, CasualtyRecord>();
+            foreach (var battalion in battalions)
+                CascadeEliminateBattalion(battalion, recordByUnit, casualties);
             while (damagePool > 0)
             {
                 var alive = allUnits.Where(u => u.SurvivalState == 1).ToList();
@@ -129,7 +131,7 @@ namespace ColdWarWargame.Systems.Combat
                 }
 
                 entry.HpLost += lost;
-                entry.IsDestroyed = target.SurvivalState == 0;  // destroyed when HP < 30% of MaxHp (PRD §2.9)
+                entry.IsDestroyed = target.SurvivalState == 0;  // 子单位 HP=0 阵亡；全营另行执行 30% 歼灭检定
                 entry.RemainingHp = target.CurrentHp;
                 damagePool--;
             }
@@ -214,7 +216,7 @@ namespace ColdWarWargame.Systems.Combat
         List<CasualtyRecord> ApplyDamagePool(Battalion battalion, int damagePool, System.Random rng)
         {
             var casualties = new List<CasualtyRecord>();
-            if (battalion == null || damagePool <= 0) return casualties;
+            if (battalion == null) return casualties;
 
             var aliveUnits = battalion.GetAllSubUnits().Where(u => u.SurvivalState == 1).ToList();
             if (!aliveUnits.Any()) return casualties;
@@ -261,7 +263,7 @@ namespace ColdWarWargame.Systems.Combat
                 }
 
                 entry.HpLost += hpLost;
-                entry.IsDestroyed = target.SurvivalState == 0;  // destroyed when HP < 30% of MaxHp (PRD §2.9)
+                entry.IsDestroyed = target.SurvivalState == 0;  // 子单位 HP=0 阵亡；全营另行执行 30% 歼灭检定
                 entry.RemainingHp = target.CurrentHp;
                 CascadeEliminateBattalion(battalion, recordByUnit, casualties);
                 damagePool--;
@@ -301,9 +303,9 @@ namespace ColdWarWargame.Systems.Combat
                 defenderMods.Add(new ModifierEntry { Source = "CommandNetworkMissing", Value = -2.0f, Reason = "No Command units", Target = "defender" });
 
             // Infantry
-            if (!attacker.GetAllSubUnits().Any(u => CombatUtils.IsInfantry(u)))
+            if (!attacker.GetAllSubUnits().Any(u => u.SurvivalState == 1 && CombatUtils.IsInfantry(u)))
                 attackerMods.Add(new ModifierEntry { Source = "NoInfantry", Value = -1.0f, Reason = "No infantry present", Target = "attacker" });
-            if (!defender.GetAllSubUnits().Any(u => CombatUtils.IsInfantry(u)))
+            if (!defender.GetAllSubUnits().Any(u => u.SurvivalState == 1 && CombatUtils.IsInfantry(u)))
                 defenderMods.Add(new ModifierEntry { Source = "NoInfantry", Value = -1.0f, Reason = "No infantry present", Target = "defender" });
 
             // Recon
@@ -313,8 +315,8 @@ namespace ColdWarWargame.Systems.Combat
                 defenderMods.Add(new ModifierEntry { Source = "NoRecon", Value = -1.0f, Reason = "No Recon units", Target = "defender" });
 
             // Artillery difference
-            bool aHasArt = attacker.GetAllSubUnits().Any(u => CombatUtils.IsArtillery(u));
-            bool dHasArt = defender.GetAllSubUnits().Any(u => CombatUtils.IsArtillery(u));
+            bool aHasArt = attacker.GetAllSubUnits().Any(u => u.SurvivalState == 1 && CombatUtils.IsArtillery(u));
+            bool dHasArt = defender.GetAllSubUnits().Any(u => u.SurvivalState == 1 && CombatUtils.IsArtillery(u));
             if (aHasArt && !dHasArt) defenderMods.Add(new ModifierEntry { Source = "NoArtilleryAgainstArtillery", Value = -1.0f, Reason = "Opponent has artillery", Target = "defender" });
             if (dHasArt && !aHasArt) attackerMods.Add(new ModifierEntry { Source = "NoArtilleryAgainstArtillery", Value = -1.0f, Reason = "Opponent has artillery", Target = "attacker" });
 
@@ -385,6 +387,8 @@ namespace ColdWarWargame.Systems.Combat
             var attackerMods = new List<ModifierEntry>();
             var defenderMods = new List<ModifierEntry>();
 
+            leadA = CombineCombatTraits(attackerBattalions);
+            leadD = CombineCombatTraits(defenderBattalions);
             EvaluateArmorRules(leadA, leadD, attackerMods, defenderMods);
             EvaluateAntiTankVsHeavyArmor(leadA, leadD, attackerMods, defenderMods);
 
@@ -393,9 +397,9 @@ namespace ColdWarWargame.Systems.Combat
             if (!CombatUtils.HasCommandNetwork(leadD))
                 defenderMods.Add(new ModifierEntry { Source = "CommandNetworkMissing", Value = -2.0f, Reason = "No Command units", Target = "defender" });
 
-            if (!leadA.GetAllSubUnits().Any(u => CombatUtils.IsInfantry(u)))
+            if (!leadA.GetAllSubUnits().Any(u => u.SurvivalState == 1 && CombatUtils.IsInfantry(u)))
                 attackerMods.Add(new ModifierEntry { Source = "NoInfantry", Value = -1.0f, Reason = "No infantry present", Target = "attacker" });
-            if (!leadD.GetAllSubUnits().Any(u => CombatUtils.IsInfantry(u)))
+            if (!leadD.GetAllSubUnits().Any(u => u.SurvivalState == 1 && CombatUtils.IsInfantry(u)))
                 defenderMods.Add(new ModifierEntry { Source = "NoInfantry", Value = -1.0f, Reason = "No infantry present", Target = "defender" });
 
             if (!CombatUtils.HasAnyCapability(leadA, "Recon"))
@@ -403,8 +407,8 @@ namespace ColdWarWargame.Systems.Combat
             if (!CombatUtils.HasAnyCapability(leadD, "Recon"))
                 defenderMods.Add(new ModifierEntry { Source = "NoRecon", Value = -1.0f, Reason = "No Recon units", Target = "defender" });
 
-            bool aHasArt = leadA.GetAllSubUnits().Any(u => CombatUtils.IsArtillery(u));
-            bool dHasArt = leadD.GetAllSubUnits().Any(u => CombatUtils.IsArtillery(u));
+            bool aHasArt = leadA.GetAllSubUnits().Any(u => u.SurvivalState == 1 && CombatUtils.IsArtillery(u));
+            bool dHasArt = leadD.GetAllSubUnits().Any(u => u.SurvivalState == 1 && CombatUtils.IsArtillery(u));
             if (aHasArt && !dHasArt) defenderMods.Add(new ModifierEntry { Source = "NoArtilleryAgainstArtillery", Value = -1.0f, Reason = "Opponent has artillery", Target = "defender" });
             if (dHasArt && !aHasArt) attackerMods.Add(new ModifierEntry { Source = "NoArtilleryAgainstArtillery", Value = -1.0f, Reason = "Opponent has artillery", Target = "attacker" });
 
@@ -431,6 +435,13 @@ namespace ColdWarWargame.Systems.Combat
             res.Modifiers.AddRange(defenderMods);
             return res;
         }
+
+        private static Battalion CombineCombatTraits(IEnumerable<Battalion> battalions) => new Battalion
+        {
+            Companies = new List<Company> { new Company { Platoons = new List<Platoon> {
+                new Platoon { Units = battalions.SelectMany(b => b.GetAllSubUnits()).Where(u => u.SurvivalState == 1).ToList() }
+            } } }
+        };
 
         void EvaluateArmorRules(Battalion a, Battalion b, List<ModifierEntry> aMods, List<ModifierEntry> bMods)
         {

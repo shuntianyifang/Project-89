@@ -14,20 +14,21 @@ namespace ColdWarWargame.Tests
         {
             GD.Print("========== RUN ALL TESTS ==========");
 
-            GridTests.RunAll();
-            OccupationStateCodecTests.RunAll();
-            FrontlineTests.RunAll();
-            VisionTests.RunAll();
-            EngagementTests.RunAll();
-            CombatResolverTests.RunAll();
-            SupplyManagerTests.RunAll();
-            TurnManagerTests.RunAll();
-            VictoryTrackerTests.RunAll();
+            int fails = GridTests.RunAll();
+            fails += OccupationStateCodecTests.RunAll();
+            fails += FrontlineTests.RunAll();
+            fails += VisionTests.RunAll();
+            fails += EngagementTests.RunAll();
+            fails += CombatResolverTests.RunAll();
+            fails += SupplyManagerTests.RunAll();
+            fails += TurnManagerTests.RunAll();
+            fails += VictoryTrackerTests.RunAll();
 
-            int oobFails = OobOverridesTests.RunAll();
+            fails += OobOverridesTests.RunAll();
+            fails += Gameplay.CampaignTests.RunAll();
 
             GD.Print("========== TEST RUN FINISHED ==========");
-            return oobFails;
+            return fails;
         }
     }
 }

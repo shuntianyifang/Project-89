@@ -73,6 +73,18 @@ namespace ColdWarWargame.Systems.Victory
         public int RedVehicleLossTotal { get; private set; }
         public int CombatCount { get; private set; }
 
+        public int[] CaptureStatistics() => new[] { BlueVP, RedVP, BlueSoldierLossTotal,
+            BlueVehicleLossTotal, RedSoldierLossTotal, RedVehicleLossTotal, CombatCount };
+
+        public void RestoreStatistics(int[] values)
+        {
+            if (values == null || values.Length != 7 || values.Any(v => v < 0))
+                throw new ArgumentException("Invalid saved campaign statistics");
+            BlueVP = values[0]; RedVP = values[1]; BlueSoldierLossTotal = values[2];
+            BlueVehicleLossTotal = values[3]; RedSoldierLossTotal = values[4];
+            RedVehicleLossTotal = values[5]; CombatCount = values[6];
+        }
+
         public int BlueControlledCount => _blueControlled.Count;
         public int RedControlledCount => _redControlled.Count;
         public int[,] ControlMap => _controlMap;
@@ -133,12 +145,12 @@ namespace ColdWarWargame.Systems.Victory
         {
             return string.Join("\n", new[]
             {
-                "Campaign Casualty Stats",
-                "Battles resolved: " + CombatCount,
-                "Blue losses: soldiers " + BlueSoldierLossTotal + ", vehicles " + BlueVehicleLossTotal,
-                "Red losses: soldiers " + RedSoldierLossTotal + ", vehicles " + RedVehicleLossTotal,
-                "Blue total losses: " + (BlueSoldierLossTotal + BlueVehicleLossTotal),
-                "Red total losses: " + (RedSoldierLossTotal + RedVehicleLossTotal)
+                "战役伤亡统计",
+                "已结算战斗：" + CombatCount,
+                "北约损失：人员 " + BlueSoldierLossTotal + "，载具 " + BlueVehicleLossTotal,
+                "华约损失：人员 " + RedSoldierLossTotal + "，载具 " + RedVehicleLossTotal,
+                "北约损失总数：" + (BlueSoldierLossTotal + BlueVehicleLossTotal),
+                "华约损失总数：" + (RedSoldierLossTotal + RedVehicleLossTotal)
             });
         }
 
@@ -203,7 +215,9 @@ namespace ColdWarWargame.Systems.Victory
             IEnumerable<Vector2I> blueEnteredTiles = null,
             IEnumerable<Vector2I> redEnteredTiles = null,
             IEnumerable<Vector2I> bluePathZocTiles = null,
-            IEnumerable<Vector2I> redPathZocTiles = null)
+            IEnumerable<Vector2I> redPathZocTiles = null,
+            HashSet<Vector2I> blueActiveZoc = null,
+            HashSet<Vector2I> redActiveZoc = null)
         {
             int width = map.Width;
             int height = map.Height;
@@ -220,8 +234,8 @@ namespace ColdWarWargame.Systems.Victory
                 }
             }
 
-            var blueZOC = zocMgr.GetFactionZOC(blueUnitPositions);
-            var redZOC = zocMgr.GetFactionZOC(redUnitPositions);
+            var blueZOC = blueActiveZoc != null ? new HashSet<Vector2I>(blueActiveZoc) : zocMgr.GetFactionZOC(blueUnitPositions);
+            var redZOC = redActiveZoc != null ? new HashSet<Vector2I>(redActiveZoc) : zocMgr.GetFactionZOC(redUnitPositions);
 
             var blueEntered = blueEnteredTiles != null
                 ? new HashSet<Vector2I>(blueEnteredTiles)
@@ -274,6 +288,11 @@ namespace ColdWarWargame.Systems.Victory
                 }
             }
 
+            // A unit without active ZOC still occupies its own tile.
+            foreach (var p in blueUnitPositions)
+                if (map.IsInBounds(p) && !blueZOC.Contains(p)) updated[p.X, p.Y] = 1;
+            foreach (var p in redUnitPositions)
+                if (map.IsInBounds(p) && !redZOC.Contains(p)) updated[p.X, p.Y] = 2;
             _controlMap = updated;
             RebuildControlSetsFromMap(updated);
             return CloneMap(updated);

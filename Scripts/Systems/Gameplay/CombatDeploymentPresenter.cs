@@ -1,4 +1,4 @@
-﻿using Godot;
+using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -140,7 +140,7 @@ namespace ColdWarWargame.Systems.Gameplay
                 }
                else
                {
-                    _panel.ShowOpponentPreview("Attacker deployment locked. See panel above for details.");
+                    _panel.ShowOpponentPreview("进攻方部署已锁定，详见上方面板");
                }
 
                 if (effectiveDefForce == null || effectiveDefForce.GetAllBattalions().Count == 0)
@@ -192,10 +192,10 @@ namespace ColdWarWargame.Systems.Gameplay
 
         private static IEnumerable<string> FormatForceLines(CombatForce force)
         {
-            yield return "MAIN 1: " + (force?.LeadBattalion?.Name ?? "(empty)");
-            yield return "MAIN 2: " + (force?.MainSlot2?.Name ?? "(empty)");
-            yield return "SUPPORT: " + (force?.SupportSlot?.Name ?? "(empty)");
-            yield return "ARTILLERY: " + (force?.ArtillerySlot?.Name ?? "(empty)");
+            yield return "主力一：" + (force?.LeadBattalion?.Name ?? "（空）");
+            yield return "主力二：" + (force?.MainSlot2?.Name ?? "（空）");
+            yield return "辅助：" + (force?.SupportSlot?.Name ?? "（空）");
+            yield return "炮兵：" + (force?.ArtillerySlot?.Name ?? "（空）");
         }
 
         public void Dismiss()

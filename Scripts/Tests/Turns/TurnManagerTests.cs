@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using ColdWarWargame.Models;
 using ColdWarWargame.Systems.Combat;
@@ -134,7 +134,7 @@ namespace ColdWarWargame.Tests.Turns
             Assert(tm.CurrentFaction == 1, "After 4 end-turns -> Blue active");
         }
 
-        public static void RunAll()
+        public static int RunAll()
         {
             _fails = 0;
             GD.Print("--- TurnManager 测试 ---");
@@ -147,6 +147,7 @@ namespace ColdWarWargame.Tests.Turns
             Test_MultipleTurns();
             if (_fails == 0) GD.Print("All TurnManagerTests passed");
             else GD.PrintErr(_fails + " TurnManagerTests FAILED");
+            return _fails;
         }
     }
 }

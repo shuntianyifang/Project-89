@@ -6,16 +6,18 @@ namespace ColdWarWargame.Models
     {
         // 持有对静态数据的引用，极大地节省内存
         public UnitTemplate Template { get; private set; }
+        public string UnitId { get; private set; }
         
         // 运行时动态可变状态
         public int CurrentHp { get; set; }
         
         // 状态函数 Si：存活返回 1，阵亡返回 0
-        public int SurvivalState => CurrentHp * 10 >= Template.CombatStats.MaxHp * 3 ? 1 : 0;  // HP < 30% MaxHp => eliminated (PRD §2.9) 
+        public int SurvivalState => CurrentHp > 0 ? 1 : 0;
         
         // 构造函数：注入模板，初始化满血
         public SubUnitInstance(string unitId)
         {
+            UnitId = unitId;
             Template = UnitDatabase.GetTemplate(unitId);
             CurrentHp = Template.CombatStats.MaxHp;
         }

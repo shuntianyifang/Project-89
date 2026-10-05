@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
@@ -11,7 +11,7 @@ namespace ColdWarWargame.Tests.Combat
     {
         static int _fails = 0;
         static void Assert(bool c, string m) { if (!c) { _fails++; GD.PrintErr("[ENGAGE FAIL] " + m); } else GD.Print("[ENGAGE PASS] " + m); }
-        public static void RunAll()
+        public static int RunAll()
         {
             _fails = 0; GD.Print("--- Engagement 测试 ---");
             var defPos = new Vector2I(10, 10);
@@ -24,6 +24,7 @@ namespace ColdWarWargame.Tests.Combat
             Assert(far.Count == 0, "Unit at (0,0) too far from (10,10) with maxDist=2");
             if (_fails == 0) GD.Print("All EngagementTests passed");
             else GD.PrintErr(_fails + " EngagementTests FAILED");
+            return _fails;
         }
     }
 }

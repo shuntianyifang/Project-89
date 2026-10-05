@@ -92,7 +92,7 @@ namespace ColdWarWargame.Tests.Battlefield
             Assert(chains[0].Points[0].DistanceTo(chains[0].Points[^1]) < 0.5f, "Loop chain should close back on itself");
         }
 
-        public static void RunAll()
+        public static int RunAll()
         {
             _fails = 0;
 
@@ -105,6 +105,7 @@ namespace ColdWarWargame.Tests.Battlefield
                 GD.Print("All FrontlineTests passed");
             else
                 GD.PrintErr(_fails + " FrontlineTests FAILED");
+            return _fails;
         }
     }
 }
