@@ -61,6 +61,8 @@ namespace ColdWarWargame.Systems.Gameplay
             Session = new GameSessionController(_owner, Scenario, TurnManager, Renderer, _hud);
             _hud.ConfigureCampaignActions(() => Session?.OnEndCampaign(), () => _owner.RestartGame(),
                 () => Session?.OnSaveCampaign(), () => Session?.OnLoadCampaign());
+            _hud.ConfigureMissions(()=>Session?.OnExitSelected(),()=>Session?.ShowMissions());
+            Renderer.SetMissionMarkers(Scenario.Missions.Configuration);
             _hud.SetStatusText(GetStatusText());
             Session.InitializeCampaignPresentation();
             IsStarted = true;

@@ -10,6 +10,13 @@ namespace ColdWarWargame.Tests
 {
     public static class AllTestsRunner
     {
+        public static async System.Threading.Tasks.Task<int> RunAllAsync(Node root)
+        {
+            int fails = RunAll();
+            fails += await Gameplay.HudLifecycleTests.RunAll(root);
+            GD.Print("========== TEST RUN FINISHED ==========");
+            return fails;
+        }
         public static int RunAll()
         {
             GD.Print("========== RUN ALL TESTS ==========");
@@ -27,8 +34,8 @@ namespace ColdWarWargame.Tests
             fails += OobOverridesTests.RunAll();
             fails += Gameplay.CampaignTests.RunAll();
             fails += Gameplay.HistoricalScenarioTests.RunAll();
+            fails += Gameplay.MissionTests.RunAll();
 
-            GD.Print("========== TEST RUN FINISHED ==========");
             return fails;
         }
     }

@@ -1,0 +1,16 @@
+{
+  "Id": "fulda_missions_v1",
+  "WindowRounds": 12,
+  "MinimumCE": 0.5,
+  "BreakthroughTarget": 2.0,
+  "BreakthroughPoints": 70,
+  "DelayPoints": 70,
+  "PreservationPoints": 30,
+  "PreservationUnits": ["11ACR_1Sqdn", "11ACR_3Sqdn"],
+  "RedExits": [[0, 8]],
+  "BlueExits": [[0, 8], [14, 29]],
+  "Objectives": [
+    {"Name": "巴德赫斯费尔德通道", "X": 13, "Y": 8, "Points": 15},
+    {"Name": "富尔达交通节点", "X": 13, "Y": 28, "Points": 15}
+  ]
+}

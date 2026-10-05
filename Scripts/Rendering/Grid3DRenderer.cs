@@ -41,6 +41,23 @@ namespace ColdWarWargame.Rendering
     private Node3D _controlOverlayRoot;
         private Node3D _roadRoot;
         private Node3D _markerRoot;
+        private Node3D _missionRoot;
+        public void SetMissionMarkers(ColdWarWargame.Systems.Victory.MissionConfiguration config)
+        {
+            _missionRoot?.QueueFree(); _missionRoot=new Node3D(); AddChild(_missionRoot);
+            void Mark(int x,int y,string text,Color color)
+            {
+                var mesh=new MeshInstance3D { Mesh=new BoxMesh { Size=new Vector3(CellSize*.9f,.025f,CellSize*.9f) },
+                    Position=new Vector3((x+.5f)*CellSize,.09f,(y+.5f)*CellSize),
+                    MaterialOverride=new StandardMaterial3D { AlbedoColor=color,ShadingMode=BaseMaterial3D.ShadingModeEnum.Unshaded } };
+                _missionRoot.AddChild(mesh);
+                _missionRoot.AddChild(new Label3D { Text=text,FontSize=32,PixelSize=.008f,
+                    Position=new Vector3((x+.5f)*CellSize,.7f,(y+.5f)*CellSize),Billboard=BaseMaterial3D.BillboardModeEnum.Enabled });
+            }
+            foreach(var o in config.Objectives) Mark(o.X,o.Y,o.Name,new Color(1,.8f,.2f));
+            foreach(var p in config.BlueExits) Mark(p[0],p[1],config.RedExits.Any(r=>r[0]==p[0]&&r[1]==p[1])?"突破 / 撤离出口":"北约撤离区",new Color(.3f,.6f,.9f));
+            foreach(var p in config.RedExits.Where(p=>!config.BlueExits.Any(b=>b[0]==p[0]&&b[1]==p[1]))) Mark(p[0],p[1],"华约突破出口",new Color(.9f,.3f,.3f));
+        }
        private readonly List<MultiMeshInstance3D> _supplyOverlayInstances = new();
     private readonly List<MultiMeshInstance3D> _controlOverlayInstances = new();
         private float _flashTimer = 0f;

@@ -12,7 +12,7 @@ public partial class GameManager : Node
     private Grid3DRenderer _renderer;
     private GameCamera _camCtrl;
 
-    public override void _Ready()
+    public override async void _Ready()
     {
         string replay = OS.GetEnvironment("CW_SUPPLY_REPLAY");
         if (!string.IsNullOrEmpty(replay))
@@ -23,7 +23,7 @@ public partial class GameManager : Node
         }
         if (OS.GetEnvironment("CW_RUN_TESTS") == "1")
         {
-            try { GetTree().Quit(AllTestsRunner.RunAll() > 0 ? 1 : 0); }
+            try { GetTree().Quit(await AllTestsRunner.RunAllAsync(this) > 0 ? 1 : 0); }
             catch (Exception ex) { GD.PrintErr(ex); GetTree().Quit(1); }
             return;
         }

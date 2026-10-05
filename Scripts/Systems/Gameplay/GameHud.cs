@@ -38,6 +38,47 @@ namespace ColdWarWargame.Systems.Gameplay
         public CanvasLayer Canvas => _canvasLayer;
         private Button _endCampaignButton;
         private AcceptDialog _resultDialog;
+        private AcceptDialog _missionDialog;
+        private RichTextLabel _missionText;
+        private Button _exitButton;
+        private bool _restartPending;
+
+        private void RequestRestart(Action restart)
+        {
+            if (_restartPending) return;
+            _restartPending = true;
+            // A dialog is also a Viewport. Keep it in the tree until input dispatch returns.
+            Callable.From(() =>
+            {
+                _restartPending = false;
+                if (GodotObject.IsInstanceValid(_canvasLayer) && _canvasLayer.IsInsideTree()
+                    && !_canvasLayer.IsQueuedForDeletion())
+                    restart();
+            }).CallDeferred();
+        }
+        public void ConfigureMissions(Action exit,Action show)
+        {
+            _exitButton=new Button { Text="突破／撤离所选单位",Position=new Vector2(10,358) };
+            _exitButton.Pressed+=()=>exit(); _canvasLayer.AddChild(_exitButton);
+            var button=new Button { Text="任务与区域",Position=new Vector2(10,390) };
+            button.Pressed+=()=>show(); _canvasLayer.AddChild(button);
+            _missionDialog=new AcceptDialog { Title="战役任务与进度" };
+            _missionText=new RichTextLabel { FitContent=false };
+            _missionText.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+            _missionText.OffsetLeft=16; _missionText.OffsetTop=32; _missionText.OffsetRight=-16; _missionText.OffsetBottom=-56;
+            _missionDialog.AddChild(_missionText); _canvasLayer.AddChild(_missionDialog);
+        }
+        public void ShowMissions(string text)
+        { _missionText.Text=text; _missionDialog.PopupCentered(new Vector2I(680,520)); }
+        public void UpdateMissionPanel(MissionTracker missions,int[,] control,int turn)
+        {
+            float width=_canvasLayer.GetViewport().GetVisibleRect().Size.X;
+            _vpPanel.Position=new Vector2(Math.Max(0,(width-_vpPanel.Size.X)/2),4);
+            _vpNatoLabel.Text=$"北约任务 {missions.BlueScore:0.0} 分";
+            _vpPactLabel.Text=$"华约任务 {missions.RedScore(control):0.0} 分";
+            _vpTurnLabel.Text=$"迟滞 {missions.State.DelayRounds}/{missions.Configuration.WindowRounds} · 突破 {missions.BreakthroughEquivalent:0.0}/{missions.Configuration.BreakthroughTarget:0.#}";
+            if(_missionText!=null) _missionText.Text=missions.Summary(control);
+        }
 
         public void ConfigureCampaignActions(Action endCampaign, Action restart, Action save, Action load)
         {
@@ -46,7 +87,7 @@ namespace ColdWarWargame.Systems.Gameplay
             _canvasLayer.AddChild(_endCampaignButton);
             var restartButton = new Button { Text = "重新开局", Position = new Vector2(10, 156) };
             var confirmation = new ConfirmationDialog { Title = "重新开局", DialogText = "放弃当前对局并恢复初始部署？" };
-            confirmation.Confirmed += () => restart();
+            confirmation.Confirmed += () => RequestRestart(restart);
             _canvasLayer.AddChild(confirmation);
             restartButton.Pressed += () => confirmation.PopupCentered();
             _canvasLayer.AddChild(restartButton);
@@ -62,12 +103,13 @@ namespace ColdWarWargame.Systems.Gameplay
             _resultDialog = new AcceptDialog { Title = "Fulda Gap 战役结算", Exclusive = true };
             _resultDialog.GetOkButton().Text = "查看战场";
             _resultDialog.AddButton("重新开局", true, "restart");
-            _resultDialog.CustomAction += action => { if (action == "restart") restart(); };
+            _resultDialog.CustomAction += action => { if (action == "restart") RequestRestart(restart); };
             _canvasLayer.AddChild(_resultDialog);
         }
 
         public void ShowCampaignResult(CampaignResult result)
         {
+            if(_exitButton!=null) _exitButton.Disabled=true;
             _endTurnButton.Disabled = true;
             _endCampaignButton.Disabled = true;
             _resultDialog.DialogText = result.Summary;
@@ -78,6 +120,7 @@ namespace ColdWarWargame.Systems.Gameplay
 
         public void ResetCampaignResult()
         {
+            if(_exitButton!=null) _exitButton.Disabled=false;
             _endTurnButton.Disabled = false;
             _endCampaignButton.Disabled = false;
             _resultDialog.Hide();

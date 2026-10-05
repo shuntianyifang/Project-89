@@ -356,16 +356,7 @@ namespace ColdWarWargame.Systems.Victory
             else
                 R = Math.Clamp((float)BlueVP / RedVP, 0.1f, 10.0f);
 
-            var level = R switch
-            {
-                >= 4.0f => VictoryLevel.DecisiveVictory,
-                >= 2.0f => VictoryLevel.MajorVictory,
-                >= 1.25f => VictoryLevel.MarginalVictory,
-                >= 0.8f => VictoryLevel.Stalemate,
-                >= 0.5f => VictoryLevel.MarginalDefeat,
-                >= 0.25f => VictoryLevel.MajorDefeat,
-                _ => VictoryLevel.CrushingDefeat
-            };
+            var level = LevelForRatio(R);
 
             return new VictoryAssessment
             {
@@ -378,5 +369,16 @@ namespace ColdWarWargame.Systems.Victory
                 TurnNumber = turnNumber
             };
         }
+        public static VictoryLevel LevelForRatio(float R) => R switch
+            {
+                >= 4.0f => VictoryLevel.DecisiveVictory,
+                >= 2.0f => VictoryLevel.MajorVictory,
+                >= 1.25f => VictoryLevel.MarginalVictory,
+                >= 0.8f => VictoryLevel.Stalemate,
+                >= 0.5f => VictoryLevel.MarginalDefeat,
+                >= 0.25f => VictoryLevel.MajorDefeat,
+                _ => VictoryLevel.CrushingDefeat
+            };
+
     }
 }

@@ -23,6 +23,7 @@ namespace ColdWarWargame.Scenarios
         public const string SavedOccupationStatePath = "user://Fulda_Gap_occupation_state.json";
 
         private HistoricalMapData _historicalMap;
+        public ColdWarWargame.Systems.Victory.MissionTracker Missions { get; } = new(ColdWarWargame.Systems.Victory.MissionConfiguration.Load());
 
         public Systems.Battlefield.GridMap Map { get; private set; }
         public MovementResolver Movement { get; private set; }

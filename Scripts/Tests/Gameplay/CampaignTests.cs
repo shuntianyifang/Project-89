@@ -103,6 +103,7 @@ namespace ColdWarWargame.Tests.Gameplay
             original.CurrentAP = 5.5f; original.Fatigue = 6; original.TurnsOOS = 1; original.WasOOSLastTurn = true;
             var firstUnit = original.GetAllSubUnits().First(); firstUnit.CurrentHp = 1;
             turns.RestoreStrategicState(2, 4);
+            for(int round=1;round<4;round++) scenario.Missions.CompleteRound(round);
             victory.RestoreStatistics(new[] { 123, 456, 10, 20, 30, 40, 5 });
             var save = CampaignSave.Capture(scenario, turns, victory);
             var path = "user://campaign-test-" + Guid.NewGuid() + ".json";

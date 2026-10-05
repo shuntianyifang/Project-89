@@ -11,7 +11,8 @@ namespace ColdWarWargame.Scenarios
 {
     public sealed class CampaignSave
     {
-        public int Version { get; set; } = 1;
+        public int Version { get; set; } = 2;
+        public ColdWarWargame.Systems.Victory.MissionState Missions { get; set; }
         public string ScenarioId { get; set; } = "fulda_gap_1989_historical_v1";
         public int Faction { get; set; }
         public int Turn { get; set; }
@@ -27,6 +28,7 @@ namespace ColdWarWargame.Scenarios
             var control = scenario.GetOccupationMap();
             return new CampaignSave {
                 Faction = turns.CurrentFaction, Turn = turns.TurnNumber,
+                Missions = scenario.Missions.Capture(),
                 Width = scenario.Map.Width, Height = scenario.Map.Height,
                 Control = control.Cast<int>().ToArray(), Statistics = victory.CaptureStatistics(),
                 Units = scenario.BlueBattalions.Concat(scenario.RedBattalions)
@@ -50,12 +52,13 @@ namespace ColdWarWargame.Scenarios
 
         public void Apply(FuldaGapScenario scenario, TurnManager turns, VictoryTracker victory)
         {
-            if (Version != 1 || ScenarioId != "fulda_gap_1989_historical_v1" || Width != scenario.Map.Width || Height != scenario.Map.Height ||
+            if (Version != 2 || ScenarioId != "fulda_gap_1989_historical_v1" || Width != scenario.Map.Width || Height != scenario.Map.Height ||
                 Control == null || Control.Length != Width * Height || Control.Any(v => v < 0 || v > 2) ||
                 Faction is not (1 or 2) || Turn < 1 || Statistics == null || Statistics.Length != 7 || Statistics.Any(v => v < 0) || Units == null)
                 throw new InvalidOperationException("存档版本、场景或状态不匹配");
             // Construct and validate everything before mutating the live scenario.
             var restored = Units.Select(u => (bat: u.Restore(), pos: new Vector2I(u.X, u.Y))).ToList();
+            scenario.Missions.Validate(Missions,restored.Select(u=>u.bat),Turn);
             if (restored.Any(u => !scenario.Map.IsInBounds(u.pos) || !scenario.Map.GetTile(u.pos).IsPassable) ||
                 restored.Select(u => u.pos).Distinct().Count() != restored.Count ||
                 restored.Select(u => u.bat.InstanceId).Distinct().Count() != restored.Count)
@@ -72,6 +75,7 @@ namespace ColdWarWargame.Scenarios
             scenario.ApplyOccupationState(control);
             turns.RestoreStrategicState(Faction, Turn);
             victory.RestoreStatistics(Statistics);
+            scenario.Missions.Restore(Missions);
         }
     }
 

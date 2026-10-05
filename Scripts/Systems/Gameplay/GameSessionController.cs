@@ -40,7 +40,7 @@ namespace ColdWarWargame.Systems.Gameplay
         public void InitializeCampaignPresentation()
         {
             RefreshOccupationFromEntryAndZoc();
-            _hud.UpdateVPPanel(_victoryTracker, _owner.GetViewport().GetVisibleRect().Size.X, _turnMgr.TurnNumber);
+            RefreshMissionPanel();
             CheckCampaignEnd();
         }
 
@@ -69,7 +69,7 @@ namespace ColdWarWargame.Systems.Gameplay
                 _hud.ResetCampaignResult();
                 RefreshOccupationFromEntryAndZoc();
                 RefreshPresentationByVision();
-                _hud.UpdateVPPanel(_victoryTracker, _owner.GetViewport().GetVisibleRect().Size.X, _turnMgr.TurnNumber);
+                RefreshMissionPanel();
                 _hud.SetStatusText(GetStatusText());
                 _hud.SetInfoText("已恢复保存的对局");
                 RefreshCampaignCasualtyPanel();
@@ -89,7 +89,7 @@ namespace ColdWarWargame.Systems.Gameplay
         {
             if (Result != null) return;
             RefreshOccupationFromEntryAndZoc();
-            Result = new CampaignResult(_victoryTracker, _turnMgr.TurnNumber, reason);
+            Result = new CampaignResult(_victoryTracker, _turnMgr.TurnNumber, reason,_scenario.Missions,_scenario.GetOccupationMap());
             _eventHub.Publish(new GameplayEvent(Result.EndEvent));
             ClearSelection();
             _hud.ShowCampaignResult(Result);
@@ -97,12 +97,30 @@ namespace ColdWarWargame.Systems.Gameplay
 
         private void CheckCampaignEnd()
         {
-            bool blueAlive = CampaignResult.HasLivingBattalions(_scenario.BlueBattalions.Select(u => u.bat));
-            bool redAlive = CampaignResult.HasLivingBattalions(_scenario.RedBattalions.Select(u => u.bat));
+            var exited=_scenario.Missions.State.Exits.Select(e=>e.Unit.Restore()).ToList();
+            bool blueAlive = CampaignResult.HasLivingBattalions(_scenario.BlueBattalions.Select(u => u.bat).Concat(exited.Where(b=>b.Faction==1)));
+            bool redAlive = CampaignResult.HasLivingBattalions(_scenario.RedBattalions.Select(u => u.bat).Concat(exited.Where(b=>b.Faction==2)));
             if (!blueAlive || !redAlive)
                 FinishCampaign(!blueAlive && !redAlive ? "双方均无存活营" : !blueAlive ? "北约已无存活营" : "华约已无存活营");
         }
         private SupplyOverlayDisplayMode _supplyOverlayMode = SupplyOverlayDisplayMode.Off;
+        public void OnExitSelected()
+        {
+            if(!_rules.IsActionAllowed(_flow.CurrentState,GameAction.EndTurn) || !_flow.HasSelection) { _hud.SetInfoText("请在战略阶段选择本方出口上的单位"); return; }
+            var selected=_flow.CurrentSelection; var unit=selected.Unit;
+            if(unit.Faction!=_turnMgr.CurrentFaction) return;
+            RefreshOccupationFromEntryAndZoc(); RefreshSupplyVisualization();
+            float supply=(unit.Faction==1?_blueSupply:_redSupply)[selected.Pos.X,selected.Pos.Y];
+            var error=_scenario.Missions.TryExit(unit,selected.Pos,_turnMgr.TurnNumber,_scenario.Map,_scenario.GetOccupationMap(),supply);
+            if(error!=null) { _hud.SetInfoText(error); return; }
+            (unit.Faction==1?_scenario.BlueBattalions:_scenario.RedBattalions).RemoveAll(u=>u.bat==unit);
+            _turnMgr.ReplaceBattalions(GetAllUnits().Select(u=>u.bat));
+            ClearSelection(); RefreshOccupationFromEntryAndZoc(); RefreshPresentationByVision();
+            RefreshMissionPanel(); CheckCampaignEnd();
+            _hud.SetInfoText(unit.Name+(unit.Faction==1?"已完成有组织撤离":"已完成有效突破"));
+        }
+        public void ShowMissions()=>_hud.ShowMissions(_scenario.Missions.Summary(_scenario.GetOccupationMap()));
+        private void RefreshMissionPanel()=>_hud.UpdateMissionPanel(_scenario.Missions,_scenario.GetOccupationMap(),_turnMgr.TurnNumber);
         private ControlOverlayDisplayMode _controlOverlayMode = ControlOverlayDisplayMode.Off;
 
         private static readonly string[] TerrainNames = { "平原", "森林", "半城镇", "城镇" };
@@ -340,6 +358,7 @@ namespace ColdWarWargame.Systems.Gameplay
             CheckCampaignEnd();
             if (Result != null) return;
             _turnMgr.EndStrategicTurn();
+            if(endingFaction==2) _scenario.Missions.CompleteRound(_turnMgr.TurnNumber-1);
             RefreshPresentationByVision();
             _hud.SetStatusText(GetStatusText());
             _hud.SetInfoText(GetStatusText());
@@ -431,7 +450,7 @@ namespace ColdWarWargame.Systems.Gameplay
                     ClearSelection();
                     RefreshPresentationByVision();
                     RefreshCampaignCasualtyPanel();
-_hud.UpdateVPPanel(_victoryTracker, _owner.GetViewport().GetVisibleRect().Size.X, _turnMgr.TurnNumber);
+RefreshMissionPanel();
                 },
                 () =>
                 {
@@ -482,11 +501,9 @@ _hud.UpdateVPPanel(_victoryTracker, _owner.GetViewport().GetVisibleRect().Size.X
             RefreshOccupationFromEntryAndZoc();
             _scenario.SaveOccupationState(_scenario.GetOccupationMap());
             RefreshFrontline();
-            _victoryTracker.ScoreControlVP();
+            RefreshMissionPanel();
 
-            var assessment = _victoryTracker.Evaluate(_turnMgr.TurnNumber);
-            _hud.UpdateVPPanel(_victoryTracker, _owner.GetViewport().GetVisibleRect().Size.X, _turnMgr.TurnNumber);
-            _hud.SetInfoText("北约 VP：" + assessment.BlueVP + " 华约 VP：" + assessment.RedVP + " 北约态势：" + assessment.BlueLevel.DisplayName());
+            RefreshMissionPanel();
         }
 
         private void RefreshPresentationByVision()
@@ -507,6 +524,7 @@ _hud.UpdateVPPanel(_victoryTracker, _owner.GetViewport().GetVisibleRect().Size.X
             RefreshSupplyVisualization();
             RefreshControlVisualization();
             RefreshFrontline();
+            RefreshMissionPanel();
         }
 
        private void RefreshSupplyVisualization()
