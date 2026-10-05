@@ -64,7 +64,7 @@ namespace ColdWarWargame.Systems.Gameplay
                 _resolver);
             _debug = new GameDebugInspector(scenario, turnMgr, renderer, hud.Canvas);
             RefreshPresentationByVision();
-            if (OS.GetEnvironment("CW_DEBUG_MODE") == "1") _debug.HandleKey(Key.F8);
+            if (OS.GetEnvironment("CW_DEBUG_MODE") == "1") _debug.HandleKey(Key.F3);
         }
 
         public string GetStatusText() =>

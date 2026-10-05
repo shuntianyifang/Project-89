@@ -827,7 +827,9 @@ namespace ColdWarWargame.Tests.Supply
             var inspector = new ColdWarWargame.Systems.Gameplay.GameDebugInspector(scenario,
                 new TurnManager(), renderer, canvas);
             inspector.SetDisplayed(maps[1], maps[2]);
-            inspector.HandleKey(Key.F8);
+            Assert(!inspector.HandleKey(Key.F8), "Debug shortcut: editor Stop/F8 is not bound by game");
+            inspector.HandleKey(Key.F3);
+            Assert(inspector.Enabled, "Debug shortcut: F3 opens inspector");
             inspector.Hover(new Vector2I(0,0));
             inspector.RecordSettlement(2, "before");
             using var doc = System.Text.Json.JsonDocument.Parse(System.Text.Json.JsonSerializer.Serialize(inspector.Capture("test")));
@@ -836,7 +838,8 @@ namespace ColdWarWargame.Tests.Supply
             inspector.HandleKey(Key.F9);
             Assert(inspector.LastExportPath != null && SupplySnapshotReplay.Run(inspector.LastExportPath) == 0,
                 "Debug snapshot: exported JSON file and settlement history replay exactly");
-            inspector.HandleKey(Key.F8);
+            inspector.HandleKey(Key.F3);
+            Assert(!inspector.Enabled, "Debug shortcut: F3 closes inspector");
             canvas.Free(); renderer.Free();
         }
 

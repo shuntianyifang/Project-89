@@ -47,11 +47,15 @@ namespace ColdWarWargame.Systems.Gameplay
             _text = new Label { AutowrapMode = TextServer.AutowrapMode.WordSmart, CustomMinimumSize = new Vector2(415, 0), MouseFilter = Control.MouseFilterEnum.Ignore };
             _text.AddThemeFontSizeOverride("font_size", 14); column.AddChild(_text);
             canvas.AddChild(_panel);
+            var toggle = new Button { Text = "补给调试 [F3]", Position = new Vector2(180, 92),
+                FocusMode = Control.FocusModeEnum.None };
+            toggle.Pressed += () => HandleKey(Key.F3);
+            canvas.AddChild(toggle);
         }
 
         public bool HandleKey(Key key)
         {
-            if (key == Key.F8)
+            if (key == Key.F3)
             {
                 Enabled = !Enabled; _panel.Visible = Enabled;
                 if (Enabled) Refresh(); else _renderer.ClearPath();
@@ -96,7 +100,7 @@ namespace ColdWarWargame.Systems.Gameplay
         private void Present()
         {
             if (!Enabled || _sp[1] == null) return;
-            var text = new StringBuilder($"调试 [F8]  回合 {_turn.TurnNumber} / 当前行动方 {_turn.CurrentFaction}\n检查阵营：{_faction}（1蓝 / 2红）\n");
+            var text = new StringBuilder($"调试 [F3]  回合 {_turn.TurnNumber} / 当前行动方 {_turn.CurrentFaction}\n检查阵营：{_faction}（1蓝 / 2红）\n");
             text.AppendLine($"覆盖：蓝 {_sp[1].Cast<float>().Count(v => v > 0)} / 红 {_sp[2].Cast<float>().Count(v => v > 0)}");
             if (_hover is Vector2I p && _scenario.Map.IsInBounds(p))
             {
