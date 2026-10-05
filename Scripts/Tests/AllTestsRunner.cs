@@ -27,6 +27,7 @@ namespace ColdWarWargame.Tests
             fails += VisionTests.RunAll();
             fails += EngagementTests.RunAll();
             fails += CombatResolverTests.RunAll();
+            fails += CombatCommandTests.RunAll();
             fails += SupplyManagerTests.RunAll();
             fails += TurnManagerTests.RunAll();
             fails += VictoryTrackerTests.RunAll();
